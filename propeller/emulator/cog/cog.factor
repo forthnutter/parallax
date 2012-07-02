@@ -9,9 +9,20 @@ TUPLE: cog-memory < model n string ;
 : <cog-memory> ( n value -- cog-memory )
    cog-memory new-model swap >>n ;
 
+GENERIC: PAR ( cog-memory -- )
 
 CONSTANT: COG_MEMORY_SIZE 496
 CONSTANT: COG_SPR_SIZE    16
+
+
+M: cog-memory PAR
+   drop
+;
+
+
+: add-cog-memory ( object memory -- memory )
+   [ add-connection ] keep 
+;
 
 
 TUPLE: cog pc memory ;
@@ -29,7 +40,7 @@ TUPLE: cog pc memory ;
       drop drop
    ] each-index
    >vector dup
-   496 0 <cog-memory> swap push dup
+   496 0 <cog-memory> \ PAR swap add-cog-memory swap push dup
    497 0 <cog-memory> swap push dup
    498 0 <cog-memory> swap push dup
    499 0 <cog-memory> swap push dup
@@ -44,7 +55,7 @@ TUPLE: cog pc memory ;
    508 0 <cog-memory> swap push dup
    509 0 <cog-memory> swap push dup
    510 0 <cog-memory> swap push dup
-   511 0 <cog-memory> swap push dup
+   511 0 <cog-memory> swap push
    ;
 
 : reset ( cog -- cog )
