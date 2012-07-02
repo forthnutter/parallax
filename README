@@ -1,6 +1,6 @@
 
 I have been playing with the Parallax Propeller CPU, was looking at how to
-make an emulator for this multi-core MCU.
+make an emulator for this multi-core MCU in factor.
 Will also look at making an Assembler.
 
 www.parallax.com
