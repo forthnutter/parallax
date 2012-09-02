@@ -24,7 +24,8 @@ GENERIC: FRQB ( cog-memory -- )
 GENERIC: PHSA ( cog-memory -- )
 GENERIC: PHSB ( cog-memory -- )
 GENERIC: VCFG ( cog-memory -- )
-GENERIC: VSCL ( cog-memory -- )
+! GENERIC: VSCL ( cog-memory -- )
+SYMBOL: VSCL
 
 CONSTANT: COG_MEMORY_SIZE 496
 CONSTANT: COG_SPR_SIZE    16
@@ -90,7 +91,7 @@ M: cog-memory VCFG
    drop
 ;
 
-M: cog-memory VSCL
+M: VSCL model-changed
    drop
 ;
 
@@ -140,7 +141,7 @@ TUPLE: cog pc memory ;
 
 
 : <cog> ( -- cog )
-   cog new COG_MEMORY_SIZE f <array> >>memory reset
+   cog new mem-setup >>memory reset
 ;
 
 
@@ -149,5 +150,10 @@ TUPLE: cog pc memory ;
 ;
 
 : write ( value address cog -- )
-    memory>> set-nth
+   memory>> dup vector?
+   [
+      nth dup cog-memory?
+      [ ?set-model ] [ drop drop ] if
+   ]
+   [ drop drop drop ] if
 ;
