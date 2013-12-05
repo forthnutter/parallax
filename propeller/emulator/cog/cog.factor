@@ -9,6 +9,8 @@ IN: parallax.propeller.emulator.cog
 
 TUPLE: cog pc memory ;
 
+
+
 : mem-setup ( -- vector )
    COG_MEMORY_SIZE f <array> dup
    [
@@ -46,16 +48,16 @@ TUPLE: cog pc memory ;
 ;
 
 
+
 : <cog> ( -- cog )
    cog new mem-setup >>memory reset
 ;
 
 
-: read ( address cog -- value )
-    memory>> nth
-;
+: cog-read ( address cog -- d )
+    memory>> nth read ;
 
-: write ( value address cog -- )
+: cog-write ( value address cog -- )
    memory>> dup vector?
    [
       nth dup cog-memory?

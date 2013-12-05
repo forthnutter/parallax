@@ -27,6 +27,8 @@ GENERIC: VCFG ( cog-memory -- )
 GENERIC: VSCL ( cog-memory -- )
 ! SYMBOL: VSCL
 
+GENERIC: read ( cog-memory -- d )
+
 CONSTANT: COG_MEMORY_SIZE 496
 CONSTANT: COG_SPR_SIZE    16
 
@@ -94,6 +96,11 @@ M: cog-memory VCFG
 M: cog-memory VSCL model-changed
    drop
 ;
+
+
+M: cog-memory read
+   value>> ;
+
 
 
 : add-cog-memory ( object memory -- memory )
