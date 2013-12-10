@@ -43,14 +43,14 @@ TUPLE: cog pc memory ;
    511 0 <cog-memory> \ VSCL swap add-cog-memory swap push     ! Video Scale
    ;
 
-: reset ( cog -- cog )
+: cog-reset ( cog -- cog )
     0 >>pc
 ;
 
 
 
 : <cog> ( -- cog )
-   cog new mem-setup >>memory reset
+   cog new mem-setup >>memory cog-reset
 ;
 
 
