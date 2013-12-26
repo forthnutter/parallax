@@ -1,7 +1,13 @@
 ! Copyright (C) 2011 Joseph L Moschini.
 ! See http://factorcode.org/license.txt for BSD license.
 !
-USING: accessors arrays kernel sequences models vectors parallax.propeller.emulator.cog.memory ;
+USING: accessors arrays kernel sequences models vectors
+       parallax.propeller.emulator.cog.memory
+       parallax.propeller.emulator.cog.par
+       parallax.propeller.emulator.cog.cnt
+       parallax.propeller.emulator.cog.ina
+       parallax.propeller.emulator.cog.inb
+;
 IN: parallax.propeller.emulator.cog
 
 
@@ -25,14 +31,14 @@ TUPLE: cog pc memory ;
    ] each-index
    >vector dup
    ! special purpose registers
-   496 0 <cog-memory> \ PAR swap add-cog-memory swap push dup ! Boot Parameter
-   497 0 <cog-memory> \ CNT swap add-cog-memory swap push dup ! System counter
-   498 0 <cog-memory> \ INA swap add-cog-memory swap push dup ! Port A input
-   499 0 <cog-memory> \ INB swap add-cog-memory swap push dup ! Port B input
-   500 0 <cog-memory> \ OUTA swap add-cog-memory swap push dup ! Port A out
-   501 0 <cog-memory> \ OUTB swap add-cog-memory swap push dup ! Port B out
-   502 0 <cog-memory> \ DIRA swap add-cog-memory swap push dup ! Port A Direction
-   503 0 <cog-memory> \ DIRB swap add-cog-memory swap push dup ! Port B Direction
+   0 <par> 496 0 <cog-memory> add-cog-memory swap push dup ! Boot Parameter
+   0 <cnt> 497 0 <cog-memory> add-cog-memory swap push dup ! System counter
+   0 <ina> 498 0 <cog-memory> add-cog-memory swap push dup ! Port A input
+   0 <inb> 499 0 <cog-memory> add-cog-memory swap push dup ! Port B input
+   0 <outa> 500 0 <cog-memory> add-cog-memory swap push dup ! Port A out
+   0 <outb> 501 0 <cog-memory> add-cog-memory swap push dup ! Port B out
+   0 <dira> 502 0 <cog-memory> add-cog-memory swap push dup ! Port A Direction
+   0 <dirb> 503 0 <cog-memory> add-cog-memory swap push dup ! Port B Direction
    504 0 <cog-memory> \ CTRA swap add-cog-memory swap push dup ! Counter A control
    505 0 <cog-memory> \ CTRB swap add-cog-memory swap push dup ! Counter B control
    506 0 <cog-memory> \ FRQA swap add-cog-memory swap push dup ! Counter A freq
@@ -46,7 +52,6 @@ TUPLE: cog pc memory ;
 : cog-reset ( cog -- cog )
     0 >>pc
 ;
-
 
 
 : <cog> ( -- cog )
