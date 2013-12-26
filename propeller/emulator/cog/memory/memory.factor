@@ -1,7 +1,7 @@
 ! Copyright (C) 2011 Joseph L Moschini.
 ! See http://factorcode.org/license.txt for BSD license.
 !
-USING: accessors arrays kernel sequences models vectors ;
+USING: accessors arrays kernel sequences models vectors tools.continuations ;
 IN: parallax.propeller.emulator.cog.memory
 
 TUPLE: cog-memory < model n string ;
@@ -9,10 +9,7 @@ TUPLE: cog-memory < model n string ;
 : <cog-memory> ( n value -- cog-memory )
    cog-memory new-model swap >>n ;
 
-GENERIC: PAR ( cog-memory -- )
-GENERIC: CNT ( cog-memory -- )
-GENERIC: INA ( cog-memory -- )
-GENERIC: INB ( cog-memory -- )
+
 GENERIC: OUTA ( cog-memory -- )
 GENERIC: OUTB ( cog-memory -- )
 GENERIC: DIRA ( cog-memory -- )
@@ -32,22 +29,14 @@ GENERIC: read ( cog-memory -- d )
 CONSTANT: COG_MEMORY_SIZE 496
 CONSTANT: COG_SPR_SIZE    16
 
+M: cog-memory model-activated
+   drop ;
 
-M: cog-memory PAR
-   drop
+M: cog-memory  model-changed
+   drop drop
 ;
 
-M: cog-memory CNT
-   drop
-;
 
-M: cog-memory INA
-   drop
-;
-
-M: cog-memory INB
-   drop
-;
 
 M: cog-memory OUTA
    drop
@@ -93,7 +82,7 @@ M: cog-memory VCFG
    drop
 ;
 
-M: cog-memory VSCL model-changed
+M: cog-memory VSCL
    drop
 ;
 
@@ -108,3 +97,5 @@ M: cog-memory read
 ;
 
 
+: cog-memory-par-init ( -- )
+   ;
