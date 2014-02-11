@@ -7,6 +7,10 @@ USING: accessors arrays kernel sequences models vectors
        parallax.propeller.emulator.cog.cnt
        parallax.propeller.emulator.cog.ina
        parallax.propeller.emulator.cog.inb
+       parallax.propeller.emulator.cog.outa
+       parallax.propeller.emulator.cog.outb
+       parallax.propeller.emulator.cog.dira
+       parallax.propeller.emulator.cog.dirb       
 ;
 IN: parallax.propeller.emulator.cog
 
