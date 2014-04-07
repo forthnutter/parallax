@@ -43,8 +43,8 @@ TUPLE: cog pc memory ;
    0 <outb> 501 0 <cog-memory> add-cog-memory swap push dup ! Port B out
    0 <dira> 502 0 <cog-memory> add-cog-memory swap push dup ! Port A Direction
    0 <dirb> 503 0 <cog-memory> add-cog-memory swap push dup ! Port B Direction
-   504 0 <cog-memory> \ CTRA swap add-cog-memory swap push dup ! Counter A control
-   505 0 <cog-memory> \ CTRB swap add-cog-memory swap push dup ! Counter B control
+   0 <ctr> 504 0 <cog-memory>  add-cog-memory swap push dup ! Counter A control
+   0 <ctr> 505 0 <cog-memory>  add-cog-memory swap push dup ! Counter B control
    506 0 <cog-memory> \ FRQA swap add-cog-memory swap push dup ! Counter A freq
    507 0 <cog-memory> \ FRQB swap add-cog-memory swap push dup ! Counter B freq
    508 0 <cog-memory> \ PHSA swap add-cog-memory swap push dup ! Counter A phase
