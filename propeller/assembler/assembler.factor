@@ -31,6 +31,13 @@ IN: parallax.propeller.assembler
   } insn ,
 ;
 
+! Get the negative of a number’s absolute value.
+: ABSNEG ( sv av con zcri -- )
+  insn-boundry
+  {
+    { 0b101011 26 } 22 18 9 0
+  } insn , ;
+
 
 ! WRBYTE synchronizes to the Hub and writes the lowest byte
 ! in Value to main memory at Address.
