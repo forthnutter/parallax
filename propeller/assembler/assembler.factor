@@ -38,6 +38,20 @@ IN: parallax.propeller.assembler
     { 0b101011 26 } 22 18 9 0
   } insn , ;
 
+! add two signed values
+: ADD ( sv av con zcri -- )
+  insn-boundry
+  {
+    { 0b100000 26 } 22 18 9 0
+  } insn ,
+;
+
+: ADDABS ( sv av con zcri -- )
+  insn-boundry
+  {
+    { 0b100010 26 } 22 18 9 0
+  } insn , ;
+  
 
 ! WRBYTE synchronizes to the Hub and writes the lowest byte
 ! in Value to main memory at Address.
