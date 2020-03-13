@@ -51,7 +51,116 @@ IN: parallax.propeller.assembler
   {
     { 0b100010 26 } 22 18 9 0
   } insn , ;
-  
+
+: ADDS ( sv av con zcri -- )
+  insn-boundry
+  { { 0b110100 26 } 22 18 9 0 } insn , ;
+
+: ADDSX ( sv av con zcri -- )
+  insn-boundry
+  { { 0b110110 26 } 22 18 9 0 } insn , ;
+
+! Bitwise AND two values
+: AND ( sv av con zcri -- )
+  insn-boundry
+  { { 0b011000 26 } 22 18 9 0 } insn , ;
+
+! Bitwise AND a value with the NOT of another.
+: ANDN ( sv av con zcri -- )
+  insn-boundry
+  { { 0b011001 26 } 22 18 9 0 } insn , ;
+
+! Jump to address with intention to return to next instruction.
+: CALL ( sv av con zcri -- )
+  insn-boundry
+  { { 0b010111 26 } 22 18 9 0 } insn , ;
+
+
+! Set the clock mode at run time.
+: CLKSET ( sv av con zcri -- )
+  insn-boundry
+  { { 0b000011 26 } 22 18 9 0 } insn , ;
+
+! Compare two unsigned values
+: CMP ( sv av con zcri -- )
+  insn-boundry
+  { { 0b100001 26 } 22 18 9 0 } insn , ;
+
+! Compare two signed values.
+: CMPS ( sv av con zcri -- )
+  insn-boundry
+  { { 0b110000 26 } 22 18 9 0 } insn , ;
+
+! Compare two unsigned values and subtract the second if it is lesser or equal.
+: CMPSUB ( sv av con zcri -- )
+  insn-boundry
+  { { 0b111000 26 } 22 18 9 0 } insn , ;
+
+! Compare two signed values plus C.
+: CMPSX ( sv av con zcri -- )
+  insn-boundry
+  { { 0b110001 26 } 22 18 9 0 } insn , ;
+
+! Compare two unsigned values plus C
+: CMPX ( sv av con zcri -- )
+  insn-boundry
+  { { 0b110011 26 } 22 18 9 0 } insn , ;
+
+! Get current cog’s ID.
+: COGID ( sv av con zcri -- )
+  insn-boundry
+  { { 0b000011 26 } 22 18 9 0 } insn , ;
+
+! Start or restart a cog, optionally by ID, to run Propeller Assembly or Spin code.
+: COGINIT ( sv av con zcri -- )
+  insn-boundry
+  { { 0b000011 26 } 22 18 9 0 } insn , ;
+
+! Stop  a cog by its ID.
+: COGSTOP ( sv av con zcri -- )
+  insn-boundry
+  { { 0b000011 26 } 22 18 9 0 } insn , ;
+
+! Decrement value and jump to address if not zero.
+: DJNZ ( sv av con zcri -- )
+  insn-boundry
+  { { 0b111001 26 } 22 18 9 0 } insn , ;
+
+! Perform a hub operation.
+: HUBOP ( sv av con zcri -- )
+  insn-boundry
+  { { 0b000011 26 } 22 18 9 0 } insn , ;
+
+! Jump to address.
+: JMP ( sv av con zcri -- )
+  insn-boundry
+  { { 0b010111 26 } 22 18 9 0 } insn , ;
+
+! Jump to address with intention to “return” to another address.
+: JMPRET ( sv av con zcri -- )
+  insn-boundry
+  { { 0b010111 26 } 22 18 9 0 } insn , ;
+
+! Clear lock to false and get its previous state.
+: LOCKCLR ( sv av con zcri -- )
+  insn-boundry
+  { { 0b000011 26 } 22 18 9 0 } insn , ;
+
+! Check out a new lock and get its ID.
+: LOCKNEW ( sv av con zcri -- )
+  insn-boundry
+  { { 0b000011 26 } 22 18 9 0 } insn , ;
+
+! Release lock back for future “new lock” requests.
+: LOCKRET ( sv av con zcri -- )
+  insn-boundry
+  { { 0b000011 26 } 22 18 9 0 } insn , ;
+
+! Set lock to true and get its previous state.
+: LOCKSET ( sv av con zcri -- )
+  insn-boundry
+  { { 0b000011 26 } 22 18 9 0 } insn , ;
+
 
 ! WRBYTE synchronizes to the Hub and writes the lowest byte
 ! in Value to main memory at Address.
