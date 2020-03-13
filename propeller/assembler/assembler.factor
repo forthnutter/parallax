@@ -161,7 +161,54 @@ IN: parallax.propeller.assembler
   insn-boundry
   { { 0b000011 26 } 22 18 9 0 } insn , ;
 
+! Limit maximum of unsigned value to another unsigned value.
+: MAX ( sv av con zcri -- )
+  { { 0b010011 26 } 22 18 9 0 } insn , ;
 
+! Limit maximum of signed value to another signed value.
+: MAXS ( sv av con zcri -- )
+  { { 0b010001 26 } 22 18 9 0 } insn , ;
+
+! Limit minimum of unsigned value to another unsigned value.
+: MIN ( sv av con zcri -- )
+  { { 0b010010 26 } 22 18 9 0 } insn , ;
+
+! Limit minimum of signed value to another signed value.
+: MINS ( sv av con zcri -- )
+  { { 0b010000 26 } 22 18 9 0 } insn , ;
+
+! Set a register to a value.
+: MOV ( sv av con zcri -- )
+  { { 0b101000 26 } 22 18 9 0 } insn , ;
+
+! Set a register’s destination field to a value.
+: MOVD ( sv av con zcri -- )
+  { { 0b010101 26 } 22 18 9 0 } insn , ;
+
+! Set a register’s instruction and effects fields to a value.
+: MOVI ( sv av con zcri -- )
+  { { 0b010110 26 } 22 18 9 0 } insn , ;
+
+! Set a register’s source field to a value.
+: MOVS ( sv av con zcri -- )
+  { { 0b010100 26 } 22 18 9 0 } insn , ;
+
+! Set discrete bits of a value to the state of C
+: MUXC ( sv av con zcri -- )
+  { { 0b011100 26 } 22 18 9 0 } insn , ;
+
+! Set discrete bits of a value to the state of !C.
+: MUXNC ( sv av con zcri -- )
+  { { 0b011101 26 } 22 18 9 0 } insn , ;
+
+! Set discrete bits of a value to the state of !Z.
+: MUXNZ ( sv av con zcri -- )
+  { { 0b011111 26 } 22 18 9 0 } insn , ;
+
+! Set discrete bits of a value to the state of Z.
+: MUXZ ( sv av con zcri -- )
+  { { 0b011110 26 } 22 18 9 0 } insn , ;
+  
 ! WRBYTE synchronizes to the Hub and writes the lowest byte
 ! in Value to main memory at Address.
 : WRBYTE ( ss dd con zcri -- )
