@@ -208,7 +208,93 @@ IN: parallax.propeller.assembler
 ! Set discrete bits of a value to the state of Z.
 : MUXZ ( sv av con zcri -- )
   { { 0b011110 26 } 22 18 9 0 } insn , ;
+
+! Get the negative of a number.
+: NEG ( sv av con zcri -- )
+  { { 0b101001 26 } 22 18 9 0 } insn , ;
+
+! Get a value, or its additive inverse, based on C
+: NEGC ( sv av con zcri -- )
+  { { 0b101100 26 } 22 18 9 0 } insn , ;
+
+! Get a value, or its additive inverse, based on !C.
+: NEGNC ( sv av con zcri -- )
+  { { 0b101101 26 } 22 18 9 0 } insn , ;
+
+! Get a value, or its additive inverse, based on !Z.
+: NEGNZ ( sv av con zcri -- )
+  { { 0b101111 26 } 22 18 9 0 } insn , ;
+
+! Get a value, or its additive inverse, based on Z.
+: NEGZ ( sv av con zcri -- )
+  { { 0b101110 26 } 22 18 9 0 } insn , ;
+
+
+! No operation, just elapse four clock cycles.
+: NOP ( sv av zcri instr -- )
+  { 26 22 { 0 18 } 9 0 } insn , ;
+
+! Bitwise OR two values.
+: OR ( sv av con zcri -- )
+  { { 0b011010 26 } 22 18 9 0 } insn , ;
+
+! Rotate C left into value by specified number of bits.
+: RCL ( sv av con zcri -- )
+  { { 0b001101 26 } 22 18 9 0 } insn , ;
+
+! Rotate C right into value by specified number of bits.
+: RCR ( sv av con zcri -- )
+  { { 0b001100 26 } 22 18 9 0 } insn , ;
+
+! Read byte of main memory.
+: RDBYTE ( ss dd con zcri -- )
+  { { 0 26 } 22 18 9 0 } insn , ;
+
+! Read long of main memory.
+: RDLONG ( ss dd con zcri -- )
+  { { 0b000010 26 } 22 18 9 0 } insn , ;
+
+! Read word of main memory.
+: RDWORD ( ss dd con zcri -- )
+  { { 0b000001 26 } 22 18 9 0 } insn , ;
+
+! Return to previously recorded address.
+: RET ( ss dd con zcri -- )
+  { { 0b010111 26 } 22 18 9 0 } insn , ;
+
+! Reverse LSBs of value and zero-extend.
+: REV ( ss dd con zcri -- )
+  { { 0b001111 26 } 22 18 9 0 } insn , ;
+
+! Rotate value left by specified number of bits.
+: ROL ( ss dd con zcri -- )
+  { { 0b001001 26 } 22 18 9 0 } insn , ;
+
+! Rotate value right by specified number of bits.
+: ROR ( ss dd con zcri -- )
+  { { 0b001000 26 } 22 18 9 0 } insn , ;
+
+! Shift value arithmetically right by specified number of bits.
+: SAR ( ss dd con zcri -- )
+  { { 0b001110 26 } 22 18 9 0 } insn , ;
+
+! Shift value left by specified number of bits.
+: SHL ( ss dd con zcri -- )
+  { { 0b001011 26 } 22 18 9 0 } insn , ;
+
+! Shift value right by specified number of bits.
+: SHR ( ss dd con zcri -- )
+  { { 0b001010 26 } 22 18 9 0 } insn , ;
+
+! Subtract two unsigned values.
+: SUB ( ss dd con zcri -- )
+  { { 0b100001 26 } 22 18 9 0 } insn , ;
+
+! Subtract an absolute value from another value.
+: SUBABS ( ss dd con zcri -- )
+  { { 0b100011 26 } 22 18 9 0 } insn , ;
   
+
 ! WRBYTE synchronizes to the Hub and writes the lowest byte
 ! in Value to main memory at Address.
 : WRBYTE ( ss dd con zcri -- )
