@@ -293,6 +293,54 @@ IN: parallax.propeller.assembler
 ! Subtract an absolute value from another value.
 : SUBABS ( ss dd con zcri -- )
   { { 0b100011 26 } 22 18 9 0 } insn , ;
+
+! Subtract two signed values.
+: SUBS ( ss dd con zcri -- )
+  { { 0b110101 26 } 22 18 9 0 } insn , ;
+
+! Subtract signed value plus C from another signed value.
+: SUBSX ( ss dd con zcri -- )
+  { { 0b110111 26 } 22 18 9 0 } insn , ;
+
+! Subtract unsigned value plus C from another unsigned value.
+: SUBX ( ss dd con zcri -- )
+  { { 0b110011 26 } 22 18 9 0 } insn , ;
+
+! Sum a signed value with another whose sign is inverted depending on C.
+: SUMC ( ss dd CON zcri -- )
+  { { 0b100100 26 } 22 18 9 0 } insn , ;
+
+! Sum a signed value with another whose sign is inverted depending on !C.
+: SUMNC ( ss dd con zcri -- )
+  { { 0b100101 26 } 22 18 9 0 } insn , ;
+
+! Sum a signed value with another whose sign is inverted depending on !Z.
+: SUMNZ ( ss dd con zcri -- )
+  { { 0b100111 26 } 22 18 9 0 } insn , ;
+
+! Sum a signed value with another whose sign is inverted depending on Z.
+: SUMZ ( ss dd con zcri -- )
+  { { 0b100110 26 } 22 18 9 0 } insn , ;
+
+! Bitwise AND two values to affect flags only.
+: TEST ( ss dd con zcri -- )
+  { { 0b011000 26 } 22 18 9 0 } insn , ;
+
+! Bitwise AND a value with the NOT of another to affect flags only.
+: TESTN ( ss dd con zcri -- )
+  { { 0b011001 26 } 22 18 9 0 } insn , ;
+
+! Test value and jump to address if not zero.
+: TJNZ ( ss dd con zcri -- )
+  { { 0b111010 26 } 22 18 9 0 } insn , ;
+
+! Test value and jump to address if zero.
+: TJZ ( ss dd con zcri -- )
+  { { 0b111011 26 } 22 18 9 0 } insn , ;
+
+! Pause a cog’s execution temporarily.
+: WAITCNT ( ss dd con zcri -- )
+  { { 0b111110 26 } 22 18 9 0 } insn , ;
   
 
 ! WRBYTE synchronizes to the Hub and writes the lowest byte
