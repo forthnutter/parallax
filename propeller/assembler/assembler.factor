@@ -1,14 +1,14 @@
 ! Copyright (C) 2019 forthnutter.
 !
 
-USING: math.bitwise make kernel ;
+USING: math math.bitwise make kernel literals ;
 IN: parallax.propeller.assembler
 
 
 ! effects
 CONSTANT: <#> 0b0001 ! literal indicator
 CONSTANT: WR 0b0010 ! updates destination
-CONSTANT: WC 0x0100 ! update C flag
+CONSTANT: WC 0b0100 ! update C flag
 CONSTANT: WZ 0b1000 ! update Z flag
 
 ! condition
@@ -123,11 +123,16 @@ CONSTANT: VSCL 0x1FF ! Video Scale
   insn-boundry
   { { 0b010111 26 } 22 18 9 0 } insn , ;
 
-
-! Set the clock mode at run time.
-: CLKSET ( sv av con zcri -- )
+! Perform a hub operation.
+: HUBOP ( sv av con zcri -- )
   insn-boundry
   { { 0b000011 26 } 22 18 9 0 } insn , ;
+
+! Set the clock mode at run time.
+: CLKSET ( av con zcri -- )
+  flags{ <#> } bitor  ! make sure i bit is set
+  [ 0 ] 3dip          ! source is 0 for clkset
+  HUBOP ;             ! now pass every thing to the HUBOP
 
 ! Compare two unsigned values
 : CMP ( sv av con zcri -- )
@@ -155,29 +160,27 @@ CONSTANT: VSCL 0x1FF ! Video Scale
   { { 0b110011 26 } 22 18 9 0 } insn , ;
 
 ! Get current cog’s ID.
-: COGID ( sv av con zcri -- )
-  insn-boundry
-  { { 0b000011 26 } 22 18 9 0 } insn , ;
+: COGID ( d con zcri -- )
+  flags{ <#> } bitor  ! make sure i bit is set
+  [ 1 ] 3dip          ! source is 1 for cogid
+  HUBOP ;             ! now pass every thing to the HUBOP
 
 ! Start or restart a cog, optionally by ID, to run Propeller Assembly or Spin code.
-: COGINIT ( sv av con zcri -- )
-  insn-boundry
-  { { 0b000011 26 } 22 18 9 0 } insn , ;
+: COGINIT ( d con zcri -- )
+  flags{ <#> } bitor  ! make sure i bit is set
+  [ 2 ] 3dip          ! source is 2 for coginit
+  HUBOP ;             ! now pass every thing to the HUBOP
 
 ! Stop  a cog by its ID.
-: COGSTOP ( sv av con zcri -- )
-  insn-boundry
-  { { 0b000011 26 } 22 18 9 0 } insn , ;
+: COGSTOP ( d con zcri -- )
+  flags{ <#> } bitor  ! make sure i bit is set
+  [ 3 ] 3dip          ! source is 3 for cogstop
+  HUBOP ;             ! now pass every thing to the HUBOP
 
 ! Decrement value and jump to address if not zero.
 : DJNZ ( sv av con zcri -- )
   insn-boundry
   { { 0b111001 26 } 22 18 9 0 } insn , ;
-
-! Perform a hub operation.
-: HUBOP ( sv av con zcri -- )
-  insn-boundry
-  { { 0b000011 26 } 22 18 9 0 } insn , ;
 
 ! Jump to address.
 : JMP ( sv av con zcri -- )
@@ -190,24 +193,28 @@ CONSTANT: VSCL 0x1FF ! Video Scale
   { { 0b010111 26 } 22 18 9 0 } insn , ;
 
 ! Clear lock to false and get its previous state.
-: LOCKCLR ( sv av con zcri -- )
-  insn-boundry
-  { { 0b000011 26 } 22 18 9 0 } insn , ;
+: LOCKCLR ( d con zcri -- )
+  flags{ <#> } bitor  ! make sure i bit is set
+  [ 7 ] 3dip          ! source is 7 for lockclr
+  HUBOP ;             ! now pass every thing to the HUBOP
 
 ! Check out a new lock and get its ID.
-: LOCKNEW ( sv av con zcri -- )
-  insn-boundry
-  { { 0b000011 26 } 22 18 9 0 } insn , ;
+: LOCKNEW ( d con zcri -- )
+  flags{ <#> } bitor  ! make sure i bit is set
+  [ 4 ] 3dip          ! source is 4 for locknew
+  HUBOP ;             ! now pass every thing to the HUBOP
 
 ! Release lock back for future “new lock” requests.
-: LOCKRET ( sv av con zcri -- )
-  insn-boundry
-  { { 0b000011 26 } 22 18 9 0 } insn , ;
+: LOCKRET ( d con zcri -- )
+  flags{ <#> } bitor  ! make sure i bit is set
+  [ 5 ] 3dip          ! source is 5 for lockret
+  HUBOP ;             ! now pass every thing to the HUBOP
 
 ! Set lock to true and get its previous state.
-: LOCKSET ( sv av con zcri -- )
-  insn-boundry
-  { { 0b000011 26 } 22 18 9 0 } insn , ;
+: LOCKSET ( d con zcri -- )
+  flags{ <#> } bitor  ! make sure i bit is set
+  [ 6 ] 3dip          ! source is 6 for lockset
+  HUBOP ;             ! now pass every thing to the HUBOP
 
 ! Limit maximum of unsigned value to another unsigned value.
 : MAX ( sv av con zcri -- )
