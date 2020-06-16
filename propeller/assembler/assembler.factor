@@ -237,7 +237,7 @@ CONSTANT: VSCL 0x1FF ! Video Scale
   { { 0b010000 26 } 22 18 9 0 } insn , ;
 
 ! Set a register to a value.
-: MOV ( sv av con zcri -- )
+: MOV ( src dest con zcri -- )
   insn-boundry
   { { 0b101000 26 } 22 18 9 0 } insn , ;
 
