@@ -118,10 +118,6 @@ CONSTANT: VSCL 0x1FF ! Video Scale
   insn-boundry
   { { 0b011001 26 } 22 18 9 0 } insn , ;
 
-! Jump to address with intention to return to next instruction.
-: CALL ( sv av con zcri -- )
-  insn-boundry
-  { { 0b010111 26 } 22 18 9 0 } insn , ;
 
 ! Perform a hub operation.
 : HUBOP ( sv av con zcri -- )
@@ -183,14 +179,30 @@ CONSTANT: VSCL 0x1FF ! Video Scale
   { { 0b111001 26 } 22 18 9 0 } insn , ;
 
 ! Jump to address.
-: JMP ( sv av con zcri -- )
+: JUMP ( address dest con zcri -- )
   insn-boundry
-  { { 0b010111 26 } 22 18 9 0 } insn , ;
+    { { 0b010111 26 } 22 18 9 0 } insn , ;
+
+
+! Jump to address.
+: JMP ( address con i -- )
+  1 bits [ 0 ] 3dip JUMP ;
 
 ! Jump to address with intention to “return” to another address.
-: JMPRET ( sv av con zcri -- )
-  insn-boundry
-  { { 0b010111 26 } 22 18 9 0 } insn , ;
+: JMPRET ( address dest cond zcri -- )
+  1 bits flags{ WR } bitor   ! make sure R is set
+  JUMP ;
+
+! Jump to address with intention to return to next instruction.
+: CALL ( address dest con -- )
+  flags{ WR <#> }
+  JUMP ;
+
+! Return to previously recorded address.
+: RET ( address dest con -- )
+  flags{ <#> }
+  JUMP ;
+
 
 ! Clear lock to false and get its previous state.
 : LOCKCLR ( d con zcri -- )
@@ -337,10 +349,6 @@ CONSTANT: VSCL 0x1FF ! Video Scale
   insn-boundry
   { { 0b000001 26 } 22 18 9 0 } insn , ;
 
-! Return to previously recorded address.
-: RET ( ss dd con zcri -- )
-  insn-boundry
-  { { 0b010111 26 } 22 18 9 0 } insn , ;
 
 ! Reverse LSBs of value and zero-extend.
 : REV ( ss dd con zcri -- )
