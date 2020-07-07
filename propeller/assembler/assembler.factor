@@ -46,24 +46,7 @@ CONSTANT: IF_Z_OR_C    0b1110
 CONSTANT: IF_ALWAYS    0b1111    ! default condition
 
 
-! Cog RAM Special Purpose Registers
-CONSTANT: PAR 0x1F0 ! boot parameter
-CONSTANT: CNT 0x1F1 ! System counter
-CONSTANT: INA 0x1F2 ! input states for P31 to P0
-CONSTANT: INB 0x1F3 ! input states for P63 to P32
-CONSTANT: OUTA 0x1F4 ! output states for P31 to P0
-CONSTANT: OUTB 0x1F5 ! output states for P64 to P32
-CONSTANT: DIRA 0x1F6 ! direction states for P31 to P0
-CONSTANT: DIRB 0x1F7 ! direction states for P63 to P32
-CONSTANT: CTRA 0x1F8 ! counter A control
-CONSTANT: CTRB 0x1F9 ! counter B control
-CONSTANT: FRQA 0x1FA ! counter A frequency
-CONSTANT: FRQB 0x1FB ! counter B frequency
-CONSTANT: PHSA 0x1FC ! counter A phase
-CONSTANT: PHSB 0x1FD ! counter B phase
-CONSTANT: VCFG 0x1FE ! Video Configuration
-CONSTANT: VSCL 0x1FF ! Video Scale
-
+! instruction build
 : insn ( bitspec -- ) bitfield ; inline
 
 ! make sure that the parameters are with boundries
