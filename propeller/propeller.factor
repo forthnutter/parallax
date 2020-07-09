@@ -10,7 +10,11 @@ IN: parallax.propeller
 
 REGISTER: param 0x1E0
 
-: start ( -- d )
+: start ( cog -- cog' )
   [
     PAR param IF_ALWAYS flags{ WR } MOV
-  ] { } make ;
+  ] { } make swap cog-code ;
+
+
+: pmain ( -- )
+  <cog> start drop ;

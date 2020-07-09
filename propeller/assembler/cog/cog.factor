@@ -20,6 +20,7 @@ GENERIC: read ( address cog -- data )
 GENERIC: label-write ( value key cog --  )
 GENERIC: label-address ( key cog -- value )
 GENERIC: label-value ( value cog -- key )
+GENERIC: IP+> ( cog -- ip )
 
 
 <<
@@ -54,6 +55,10 @@ REGISTER: PHSB 0x1FD  ! counter B phase
 REGISTER: VCFG 0x1FE  ! Video Configuration
 REGISTER: VSCL 0x1FF  ! Video Scale
 
+
+! read IP add 1
+M: cog IP+> ( cog -- ip )
+  [ ip>> ] [ dup ip>> 1 + >>ip drop ] bi ;
 ! need something to write to cog memory
 M: cog write
   [ COG-ADDRESS-BITS bits ] dip      ! make sure we limit address to 9 bits
@@ -76,6 +81,10 @@ M: cog label-address
 M: cog label-value
   labels>> value-at ;
 
+! add an array of code to cod memory using IP
+! each element needs be 32 bits
+: cog-code ( array cog -- cog )
+  swap [ swap [ IP+> ] keep [ write ] keep ] each ;
 
 ! make cog memory
 : <cog> ( -- cog )
