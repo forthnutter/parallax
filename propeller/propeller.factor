@@ -11,15 +11,52 @@ IN: parallax.propeller
 REGISTER: t1 0x1E0
 REGISTER: t2 0x1E1
 REGISTER: rxmask 0x1E2
+REGISTER: txmask 0x1E3
+REGISTER: rxtxmode 0x1E4
+REGISTER: bitticks 0x1E5
+REGISTER: rxbuff 0x1E6
+REGISTER: txbuff 0x1E7
+REGISTER: txcode 0x1E8
+
+
+CONSTANT: BUFFER_LENGTH 64
 
 
 : start ( cog -- cog' )
   [
-    PAR t1 IF_ALWAYS flags{ WR } MOV
-    4 2 shift t1 IF_ALWAYS flags{ <#> WR } ADD
-    t1 t2 IF_ALWAYS flags{ WR } RDLONG
+    PAR t1 IF_ALWAYS flags{ WR } MOV            ! get structure address
+    4 2 shift t1 IF_ALWAYS flags{ <#> WR } ADD  ! skip past head and tails
+
+    t1 t2 IF_ALWAYS flags{ WR } RDLONG          ! get rx_pin
     1 rxmask IF_ALWAYS flags{ WR <#> } MOV
     t2 rxmask IF_ALWAYS flags{ WR } SHL
+
+    4 t1 IF_ALWAYS flags{ WR <#> } ADD          ! get tx_pin
+    t1 t2 IF_ALWAYS flags{ WR } RDLONG
+    1 txmask IF_ALWAYS flags{ WR <#> } MOV
+    t2 txmask IF_ALWAYS flags{ WR } SHL
+
+    4 t1 IF_ALWAYS flags{ WR <#> } ADD           ! get rxtx_mode
+    t1 rxtxmode IF_ALWAYS flags{ WR } RDLONG
+
+    4 t1 IF_ALWAYS flags{ WR <#> } ADD          ! get bit_ticks
+    t1 bitticks IF_ALWAYS flags{ WR } RDLONG
+
+    4 t1 IF_ALWAYS flags{ WR <#> } ADD           ! get buffer_ptr
+    t1 rxbuff IF_ALWAYS flags{ WR } RDLONG
+    rxbuff txbuff IF_ALWAYS flags{ WR } MOV
+    BUFFER_LENGTH txbuff IF_ALWAYS flags{ WR <#> } ADD
+
+    0b0100 rxtxmode IF_ALWAYS flags{ <#> WZ } TEST  ! init tx pin according to mode
+    0b0010 rxtxmode IF_ALWAYS flags{ <#> WC } TEST
+    txmask OUTA IF_Z_NE_C flags{ WR } OR
+    txmask DIRA IF_Z flags{ WR } OR
+
+    "transmit" define-label
+    "transmit" get txcode IF_ALWAYS flags{ <#> WR } MOV ! init ping-pong multitask
+
+
+    "transmit" resolve-label
   ] { } make swap cog-code ;
 
 
