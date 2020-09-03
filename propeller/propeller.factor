@@ -23,7 +23,9 @@ CONSTANT: BUFFER_LENGTH 64
 
 
 : start ( cog -- cog' )
+
   [
+    init-relocation
     PAR t1 IF_ALWAYS flags{ WR } MOV            ! get structure address
     4 2 shift t1 IF_ALWAYS flags{ <#> WR } ADD  ! skip past head and tails
 
@@ -51,9 +53,10 @@ CONSTANT: BUFFER_LENGTH 64
     0b0010 rxtxmode IF_ALWAYS flags{ <#> WC } TEST
     txmask OUTA IF_Z_NE_C flags{ WR } OR
     txmask DIRA IF_Z flags{ WR } OR
-
+    break
     "transmit" define-label
-    "transmit" get txcode IF_ALWAYS flags{ <#> WR } MOV ! init ping-pong multitask
+    ! "transmit" get txcode IF_ALWAYS flags{ <#> WR } MOV ! init ping-pong multitask
+    txcode "transmit" get pmova
 
 
     "transmit" resolve-label
