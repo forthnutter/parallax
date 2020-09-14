@@ -1,0 +1,13 @@
+ProjectName= Project
+BuildFile= C:\WinForth\P8X32A\Cog.f
+SearchPath= .;SRC;SRC\LIB;SRC\GDI;SRC\TOOLS;SRC\RES;SRC\CONSOLE;DEMOS;DOC
+Project,0
+Modules,3
+C:\WinForth\P8X32A\Cog.f
+C:\WinForth\P8X32A\Processor.f
+C:\WinForth\P8X32A\CogMem.f
+DLLs,0
+Forms,0
+Auxiliary Files,0
+Resources,0
+Docs,0
