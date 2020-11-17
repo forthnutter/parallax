@@ -62,6 +62,14 @@ CONSTANT: BUFFER_LENGTH 64
     "transmit" resolve-label
   ] { } make swap cog-code ;
 
+: stest ( cog -- cog )
+  [
+    break
+    "end" define-label
+    PAR t1 IF_ALWAYS flags{ WR } MOV
+    t1 "end" get pmova
+
+  ] with-scope ;
 
 : pmain ( -- )
-  <cog> start drop ;
+  <cog> stest start drop ;
