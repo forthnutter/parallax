@@ -64,12 +64,14 @@ CONSTANT: BUFFER_LENGTH 64
 
 : stest ( cog -- cog )
   [
-    break
-    "end" define-label
-    PAR t1 IF_ALWAYS flags{ WR } MOV
-    t1 "end" get pmova
+    [
+      break
+      "end" define-label
+      PAR t1 IF_ALWAYS flags{ WR } MOV
+      t1 "end" get pmova
 
-  ] with-scope ;
+    ] with-scope
+  ] { } make cog-code ;
 
 : pmain ( -- )
   <cog> stest start drop ;
