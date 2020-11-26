@@ -6,8 +6,7 @@ IN: parallax.propeller.emulator.cog.memory
 
 TUPLE: memory < model n string ;
 
-: <memory> ( n value -- memory )
-   memory new-model swap >>n ;
+
 
 GENERIC: read ( memory -- d )
 GENERIC: write ( d memory -- )
@@ -22,11 +21,14 @@ M: memory read
 M: memory write
    set-model ;
 
+M: memory model-changed
+  drop drop ;
 
 : add-memory ( object memory -- memory )
-   [ add-connection ] keep 
+   [ add-connection ] keep
 ;
 
-
-: memory-par-init ( -- )
-   ;
+: <memory> ( n value -- memory )
+  memory new-model
+  [ dup add-connection ] keep
+  swap >>n ;

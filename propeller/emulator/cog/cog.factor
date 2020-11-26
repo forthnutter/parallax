@@ -47,9 +47,13 @@ TUPLE: cog pc memory ;
       set-nth
       drop drop
    ] each-index
-   >vector
+   >vector ;
+
+
+! add the special function registers to memory
+: cog-sfr ( cog -- )
    ! special purpose registers
-!  0 <par>  496 0 <cog-memory> add-cog-memory swap push dup ! Boot Parameter
+   [ 496 swap cog-memory ] keep swap 0 <par> swap add-memory ! Boot Parameter
 !  0 <cnt>  497 0 <cog-memory> add-cog-memory swap push dup ! System counter
 !  0 <ina>  498 0 <cog-memory> add-cog-memory swap push dup ! Port A input
 !  0 <inb>  499 0 <cog-memory> add-cog-memory swap push dup ! Port B input
@@ -65,7 +69,7 @@ TUPLE: cog pc memory ;
 !  0 <phsb> 509 0 <cog-memory> add-cog-memory swap push dup ! Counter B phase
 !  0 <vcfg> 510 0 <cog-memory> add-cog-memory swap push dup ! Video Configuration
 !  0 <vscl> 511 0 <cog-memory> add-cog-memory swap push     ! Video Scale
-;
+drop drop ;
 
 : cog-reset ( cog -- cog )
     0 >>pc
@@ -73,7 +77,10 @@ TUPLE: cog pc memory ;
 
 
 : <cog> ( -- cog )
-   cog new cog-setup >>memory cog-reset
+   cog new
+   cog-setup >>memory
+   dup cog-sfr
+   cog-reset
 ;
 
 : cog-read ( address cog -- d )
