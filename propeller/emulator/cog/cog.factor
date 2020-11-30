@@ -18,7 +18,7 @@ USING: accessors arrays kernel sequences models vectors
        parallax.propeller.emulator.cog.phsb
        parallax.propeller.emulator.cog.vcfg
        parallax.propeller.emulator.cog.vscl
-       math
+       math alien.syntax combinators
 ;
 
 IN: parallax.propeller.emulator.cog
@@ -26,9 +26,17 @@ IN: parallax.propeller.emulator.cog
 
 
 
-TUPLE: cog pc memory ;
+TUPLE: cog pc z c memory state isna isnb sorce dest result ;
 
+CONSTANT: COG_INACTIVE                  0
+CONSTANT: COG_EXECUTE_B_FETCH_A         1
+CONSTANT: COG_RESULT_B                  2
+CONSTANT: COG_FETCH_SOURCE_A            3
+CONSTANT: COG_FETCH_DEST_A              4
+CONSTANT: COG_EXCUTE_A_FETCH_B          5
+CONSTANT: COG_RESULT_A                  6
 
+CONSTANT: COG_START_ISN                 0
 
 
 : cog-memory ( address cog -- memory )
@@ -54,41 +62,27 @@ TUPLE: cog pc memory ;
 : cog-sfr ( cog -- )
    ! special purpose registers
    [ 496 swap cog-memory ] keep swap 0 <par> swap add-memory ! Boot Parameter
-!  0 <cnt>  497 0 <cog-memory> add-cog-memory swap push dup ! System counter
-!  0 <ina>  498 0 <cog-memory> add-cog-memory swap push dup ! Port A input
-!  0 <inb>  499 0 <cog-memory> add-cog-memory swap push dup ! Port B input
-!  0 <outa> 500 0 <cog-memory> add-cog-memory swap push dup ! Port A out
-!  0 <outb> 501 0 <cog-memory> add-cog-memory swap push dup ! Port B out
-!  0 <dira> 502 0 <cog-memory> add-cog-memory swap push dup ! Port A Direction
-!  0 <dirb> 503 0 <cog-memory> add-cog-memory swap push dup ! Port B Direction
-!  0 <ctr>  504 0 <cog-memory> add-cog-memory swap push dup ! Counter A control
-!  0 <ctr>  505 0 <cog-memory> add-cog-memory swap push dup ! Counter B control
-!  0 <frqa> 506 0 <cog-memory> add-cog-memory swap push dup ! Counter A freq
-!  0 <frqb> 507 0 <cog-memory> add-cog-memory swap push dup ! Counter B freq
-!  0 <phsa> 508 0 <cog-memory> add-cog-memory swap push dup ! Counter A phase
-!  0 <phsb> 509 0 <cog-memory> add-cog-memory swap push dup ! Counter B phase
-!  0 <vcfg> 510 0 <cog-memory> add-cog-memory swap push dup ! Video Configuration
-!  0 <vscl> 511 0 <cog-memory> add-cog-memory swap push     ! Video Scale
-drop drop ;
+   [ 497 swap cog-memory ] keep swap 0 <cnt> swap add-memory ! System counter
+   [ 498 swap cog-memory ] keep swap 0 <ina> swap add-memory ! Port A input
+   [ 499 swap cog-memory ] keep swap 0 <inb> swap add-memory ! Port B input
+   [ 500 swap cog-memory ] keep swap 0 <outa> swap add-memory ! Port A out
+   [ 501 swap cog-memory ] keep swap 0 <outb> swap add-memory ! Port B out
+   [ 502 swap cog-memory ] keep swap 0 <dira> swap add-memory ! Port A Direction
+   [ 503 swap cog-memory ] keep swap 0 <dirb> swap add-memory ! Port B Direction
+   [ 504 swap cog-memory ] keep swap 0 <ctr> swap add-memory ! Counter A control
+   [ 505 swap cog-memory ] keep swap 0 <ctr> swap add-memory ! Counter B control
+   [ 506 swap cog-memory ] keep swap 0 <frqa> swap add-memory ! Counter A freq
+   [ 507 swap cog-memory ] keep swap 0 <frqb> swap add-memory ! Counter B freq
+   [ 508 swap cog-memory ] keep swap 0 <phsa> swap add-memory ! Counter A phase
+   [ 509 swap cog-memory ] keep swap 0 <phsb> swap add-memory ! Counter B phase
+   [ 510 swap cog-memory ] keep swap 0 <vcfg> swap add-memory ! Video Configuration
+   [ 511 swap cog-memory ] keep swap 0 <vscl> swap add-memory ! Video Scale
+   drop ;
 
-: cog-reset ( cog -- cog )
-    0 >>pc
-;
-
-
-: <cog> ( -- cog )
-   cog new
-   cog-setup >>memory
-   dup cog-sfr
-   cog-reset
-;
-
-: cog-read ( address cog -- d )
-    cog-memory read ;
-
-: cog-write ( value address cog -- )
-   cog-memory write ;
-
+: cog-reset ( cog -- )
+  0 >>pc COG_START_ISN >>isna COG_START_ISN >>isnb
+  COG_INACTIVE >>state
+  drop ;
 
 ! increment PC
 : PC+ ( cog -- ) [ pc>> 1 + ] keep pc<< ;
@@ -96,3 +90,34 @@ drop drop ;
 
 ! decrement PC
 : PC- ( cog -- ) [ pc>> 1 - ] keep pc<< ;
+
+
+: cog-read ( address cog -- d )
+  cog-memory read ;
+
+: cog-write ( value address cog -- )
+  cog-memory write ;
+
+: cog-execute-b ( cog -- )
+  
+
+: cog-execute ( cog -- )
+  [ state>> ] keep swap
+  {
+    { COG_INACTIVE [ drop ] }  ! do nothing
+    { COG_EXECUTE_B_FETCH_A [ drop ] }
+    { COG_RESULT_B [ drop ] }
+    { COG_FETCH_SOURCE_A [ drop ] }
+    { COG_FETCH_DEST_A [ drop ] }
+    { COG_EXCUTE_A_FETCH_B [ drop ] }
+    { COG_RESULT_A [ drop ] }
+    [ drop drop ]
+  } case ;
+
+
+! create a cog and state is inactive
+: <cog> ( -- cog )
+  cog new
+  cog-setup >>memory
+  [ cog-sfr ] keep
+  [ cog-reset ] keep ;

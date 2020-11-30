@@ -24,8 +24,8 @@ M: memory write
 M: memory model-changed
   drop drop ;
 
-: add-memory ( object memory -- memory )
-   [ add-connection ] keep
+: add-memory ( object memory -- )
+   add-connection
 ;
 
 : <memory> ( n value -- memory )
