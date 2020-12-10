@@ -18,7 +18,8 @@ USING: accessors arrays kernel sequences models vectors
        parallax.propeller.emulator.cog.phsb
        parallax.propeller.emulator.cog.vcfg
        parallax.propeller.emulator.cog.vscl
-       math alien.syntax combinators
+       math math.bitwise alien.syntax combinators io.binary
+       grouping intel.hex
 ;
 
 IN: parallax.propeller.emulator.cog
@@ -37,6 +38,41 @@ CONSTANT: COG_EXCUTE_A_FETCH_B          5
 CONSTANT: COG_RESULT_A                  6
 
 CONSTANT: COG_START_ISN                 0
+
+CONSTANT: NEVER        0
+CONSTANT: IF_NC_AND_NZ 1
+CONSTANT: IF_NZ_AND_NC 1
+CONSTANT: IF_A         1
+CONSTANT: IF_NC_AND_Z  2
+CONSTANT: IF_Z_AND_NC  2
+CONSTANT: IF_NC        3
+CONSTANT: IF_AE        3
+CONSTANT: IF_C_AND_NZ  4
+CONSTANT: IF_NZ_AND_C  4
+CONSTANT: IF_NZ        5
+CONSTANT: IF_NE        5
+CONSTANT: IF_C_NE_Z    6
+CONSTANT: IF_Z_NE_C    6
+CONSTANT: IF_NC_OR_NZ  7
+CONSTANT: IF_NZ_OR_NC  7
+CONSTANT: IF_C_AND_Z   8
+CONSTANT: IF_Z_AND_C   8
+CONSTANT: IF_C_EQ_Z    9
+CONSTANT: IF_Z_EQ_C    9
+CONSTANT: IF_Z         10
+CONSTANT: IF_E         10
+CONSTANT: IF_NC_OR_Z   11
+CONSTANT: IF_Z_OR_NC   11
+CONSTANT: IF_C         12
+CONSTANT: IF_B         12
+CONSTANT: IF_C_OR_NZ   13
+CONSTANT: IF_NZ_OR_C   13
+CONSTANT: IF_C_OR_Z    14
+CONSTANT: IF_Z_OR_C    14
+CONSTANT: IF_BE        14
+CONSTANT: ALLWAYS      15
+
+
 
 
 : cog-memory ( address cog -- memory )
@@ -98,14 +134,39 @@ CONSTANT: COG_START_ISN                 0
 : cog-write ( value address cog -- )
   cog-memory write ;
 
+! make cog active
+: cog-active ( cog -- )
+  COG_EXECUTE_B_FETCH_A >>state drop ;
+
+
+! extrac the conditional code
+: isn-cond ( isn -- cond )
+  21 18 bit-range ;
+
 : cog-execute-b ( cog -- )
-  
+  [ isnb>> isn-cond ] keep swap
+  {
+    { NEVER [ drop ] } ! yes do nothing
+    { IF_NC_AND_NZ [ drop ] }
+    { IF_NC_AND_Z [ drop ] }
+    { IF_NC [ drop ] }
+    { IF_C_AND_NZ [ drop ] }
+    { IF_NZ [ drop ] }
+    { IF_C_NE_Z [ drop ] }
+    { IF_NC_OR_NZ [ drop ] }
+    { IF_C_AND_Z [ drop ] }
+    { IF_C_EQ_Z [ drop ] }
+    { IF_Z [ drop ] }
+    { IF_NC_OR_Z [ drop ] }
+    [ drop drop ]
+  } case ;
+
 
 : cog-execute ( cog -- )
   [ state>> ] keep swap
   {
     { COG_INACTIVE [ drop ] }  ! do nothing
-    { COG_EXECUTE_B_FETCH_A [ drop ] }
+    { COG_EXECUTE_B_FETCH_A [ [ cog-execute-b ] keep drop ] }
     { COG_RESULT_B [ drop ] }
     { COG_FETCH_SOURCE_A [ drop ] }
     { COG_FETCH_DEST_A [ drop ] }
@@ -113,6 +174,18 @@ CONSTANT: COG_START_ISN                 0
     { COG_RESULT_A [ drop ] }
     [ drop drop ]
   } case ;
+
+! cog copy memory to memory
+! turn 2K bytes to 512 longs and store in cog memory
+: cog-copy ( barray cog --  )
+    [ dup length 2048 < ] dip swap
+    [
+      swap 4 group
+      [ be>  ] map
+      drop drop
+    ]
+    [ drop drop ] if ;
+
 
 
 ! create a cog and state is inactive
