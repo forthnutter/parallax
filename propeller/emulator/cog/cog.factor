@@ -24,11 +24,7 @@ USING: accessors arrays kernel sequences models vectors
 
 IN: parallax.propeller.emulator.cog
 
-
-
-
-TUPLE: cog pc z c memory state isna isnb sorce dest result ;
-
+! Constants
 CONSTANT: COG_INACTIVE                  0
 CONSTANT: COG_EXECUTE_B_FETCH_A         1
 CONSTANT: COG_RESULT_B                  2
@@ -72,7 +68,7 @@ CONSTANT: IF_Z_OR_C    14
 CONSTANT: IF_BE        14
 CONSTANT: ALLWAYS      15
 
-
+TUPLE: cog pc z c memory state isna isnb sorce dest result ;
 
 
 : cog-memory ( address cog -- memory )
