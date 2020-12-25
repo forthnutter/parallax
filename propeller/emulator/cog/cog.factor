@@ -26,12 +26,11 @@ IN: parallax.propeller.emulator.cog
 
 ! Constants
 CONSTANT: COG_INACTIVE                  0
-CONSTANT: COG_EXECUTE_B_FETCH_A         1
-CONSTANT: COG_RESULT_B                  2
-CONSTANT: COG_FETCH_SOURCE_A            3
-CONSTANT: COG_FETCH_DEST_A              4
-CONSTANT: COG_EXCUTE_A_FETCH_B          5
-CONSTANT: COG_RESULT_A                  6
+CONSTANT: COG_EXECUTE_FETCH             1
+CONSTANT: COG_RESULT                    2
+CONSTANT: COG_FETCH_SOURCE              3
+CONSTANT: COG_FETCH_DEST                4
+
 
 CONSTANT: COG_START_ISN                 0
 
@@ -68,7 +67,8 @@ CONSTANT: IF_Z_OR_C    14
 CONSTANT: IF_BE        14
 CONSTANT: ALLWAYS      15
 
-TUPLE: cog pc z c memory state isna isnb sorce dest result ;
+! tuple to hold cog stuff
+TUPLE: cog pc z c memory state isn fisn sorce dest result bus ;
 
 
 : cog-memory ( address cog -- memory )
@@ -112,7 +112,7 @@ TUPLE: cog pc z c memory state isna isnb sorce dest result ;
    drop ;
 
 : cog-reset ( cog -- )
-  0 >>pc COG_START_ISN >>isna COG_START_ISN >>isnb
+  0 >>pc COG_START_ISN >>isn
   COG_INACTIVE >>state
   drop ;
 
@@ -132,18 +132,32 @@ TUPLE: cog pc z c memory state isna isnb sorce dest result ;
 
 ! make cog active
 : cog-active ( cog -- )
-  COG_EXECUTE_B_FETCH_A >>state drop ;
+  COG_EXECUTE_FETCH >>state drop ;
+
+: cog-set-state ( state cog -- )
+  swap state<< ;
 
 
 ! extrac the conditional code
 : isn-cond ( isn -- cond )
   21 18 bit-range ;
 
-: cog-execute-b ( cog -- )
-  [ isnb>> isn-cond ] keep swap
+: cog-state-z ( cog -- ? )
+  z>> ;
+
+: cog-state-nz ( cog -- ? )
+  z>> not ;
+
+
+: cog-execute-ins ( cog -- )
+  [ isn>> isn-cond ] keep swap
   {
     { NEVER [ drop ] } ! yes do nothing
-    { IF_NC_AND_NZ [ drop ] }
+    { IF_NC_AND_NZ
+      [
+        cog-state-nz
+      ]
+    }
     { IF_NC_AND_Z [ drop ] }
     { IF_NC [ drop ] }
     { IF_C_AND_NZ [ drop ] }
@@ -157,31 +171,48 @@ TUPLE: cog pc z c memory state isna isnb sorce dest result ;
     [ drop drop ]
   } case ;
 
+: cog-fetch ( cog -- inst )
+  [ pc>> ] keep
+  [ cog-read ] keep
+  PC+
+  ;
 
 : cog-execute ( cog -- )
   [ state>> ] keep swap
   {
     { COG_INACTIVE [ drop ] }  ! do nothing
-    { COG_EXECUTE_B_FETCH_A [ [ cog-execute-b ] keep drop ] }
-    { COG_RESULT_B [ drop ] }
-    { COG_FETCH_SOURCE_A [ drop ] }
-    { COG_FETCH_DEST_A [ drop ] }
-    { COG_EXCUTE_A_FETCH_B [ drop ] }
-    { COG_RESULT_A [ drop ] }
+    { COG_EXECUTE_FETCH
+      [
+        [ cog-execute-ins ] keep
+        [ cog-fetch ] keep swap >>isn
+        COG_RESULT cog-set-state
+      ]
+    }
+    { COG_RESULT
+      [
+        [ dup fisn>> swap isn<< ] keep 
+        COG_FETCH_SOURCE cog-set-state
+      ]
+    }
+    { COG_FETCH_SOURCE [ COG_FETCH_DEST cog-set-state ] }
+    { COG_FETCH_DEST [ COG_EXECUTE_FETCH cog-set-state ] }
     [ drop drop ]
   } case ;
 
 ! cog copy memory to memory
 ! turn 2K bytes to 512 longs and store in cog memory
 : cog-copy ( barray cog --  )
-    [ dup length 2048 < ] dip swap
-    [
-      swap 4 group
-      [ be>  ] map
-      drop drop
-    ]
-    [ drop drop ] if ;
+  swap 4 group
+  [ le>  ] map
+  INST_SIZE head swap
+  memory>>
+  [ write ] 2each
+;
 
+
+! wait for hub routine
+: cog-hub ( cog -- cog )
+  ;
 
 
 ! create a cog and state is inactive

@@ -12,6 +12,7 @@ GENERIC: read ( memory -- d )
 GENERIC: write ( d memory -- )
 
 CONSTANT: MEMORY_SIZE 512
+CONSTANT: INST_SIZE   496
 CONSTANT: SPR_SIZE    16
 
 
