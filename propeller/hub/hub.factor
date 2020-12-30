@@ -22,9 +22,13 @@ TUPLE: hub cogs cog bus ram rom enable lock config ;
     <cog>
   ] map-index ;
 
+! sigle cycle cog
+: hub-cog-cycle ( hub -- hub )
+  [ cogs>> first cog-cycle ] keep ;
+  
 ! single step cog
-: hub-cog-step ( hub -- )
-  cogs>> first cog-execute ;
+: hub-cog-step ( hub -- hub )
+  [ cogs>> first cog-execute ] keep ;
 
 ! do the round robin and give access to HUB memory for each cog
 : hub-step ( hub -- )
