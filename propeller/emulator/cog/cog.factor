@@ -20,7 +20,7 @@ USING: accessors arrays kernel sequences models vectors
        parallax.propeller.emulator.cog.vscl
        math math.bitwise alien.syntax combinators io.binary
        grouping intel.hex bit-arrays bit-vectors
-       parallax.propeller.emulator.alu
+       parallax.propeller.emulator.alu tools.continuations
 ;
 
 IN: parallax.propeller.emulator.cog
@@ -74,12 +74,16 @@ CONSTANT: CJMPRET      23
 CONSTANT: CRET         23
 CONSTANT: CAND         24   ! 0x18
 CONSTANT: CTEST        24
+CONSTANT: CANDN        25   ! 0x19
+CONSTANT: COR          26   ! 0x20
 CONSTANT: CMOV         40   ! 0x28
+CONSTANT: CABS         42   ! 0x2A
+CONSTANT: CDJNZ        57   ! 0x39
 
 
 
 ! tuple to hold cog stuff
-TUPLE: cog pc alu z c memory state isn fisn source dest result bus ;
+TUPLE: cog pc alu z c memory state isn fisn source dest result bp ;
 
 
 : cog-memory ( address cog -- memory )
@@ -183,69 +187,134 @@ TUPLE: cog pc alu z c memory state isn fisn source dest result bus ;
   isn>> 31 26 bit-range ;
 
 : cog-and ( cog -- )
-  [ [ source>> ] [ dest>> ] bi ] keep
+  [ [ dest>> ] [ source>> ] bi ] keep
   alu>> alu-and drop ;
+
+: cog-andn ( cog -- )
+  [ [ dest>> ] [ source>> bitnot 32 bits ] bi ] keep
+  alu>> alu-and drop ;
+
+
+: cog-or ( cog -- )
+  [ [ dest>> ] [ source>> ] bi ] keep
+  alu>> alu-or drop ;
+
 
 : cog-jump ( cog -- )
   [ dest>> 0b111111111 unmask ] keep
-  [ pc>> bitor 1 ] keep
+  [ pc>> bitor 0 ] keep
   [ alu>> alu-add drop ] keep
   [ source>> ] keep pc<< ;
 
 
 : cog-mov ( cog -- )
-  ;
+  [ dest>> ] keep
+  [ source>> ] keep
+  alu>> alu-update drop ;
+
+: cog-djnz ( cog -- )
+  [ dest>> 1 ] keep
+  [ alu>> alu-sub ] keep swap
+  alu-z not
+  [ [ source>> ] keep pc<< ] [ drop ] if ;
+
+
+: cog-abs ( cog -- )
+  [ dest>> ] keep
+  [ source>> ] keep
+  alu>> alu-abs drop ;
+
 
 : cog-exec-condition ( cog -- )
+  break
   [ cog-isn-code ] keep swap
   {
     { CJMP [ cog-jump ] }
     { CAND [ cog-and ] }
+    { CANDN [ cog-andn ] }
+    { COR [ cog-or ] }
     { CMOV [ cog-mov ] }
-    [ drop drop ]
+    { CABS [ cog-abs ] }
+    { CDJNZ [ cog-djnz ] }
+    [ break drop drop ]
   } case
 ;
 
 : cog-execute-ins ( cog -- )
   [ isn>> isn-cond ] keep swap
   {
-    { NEVER [ drop ] } ! yes do nothing
+    { NEVER [ break drop ] } ! yes do nothing
     { IF_NC_AND_NZ
       [
-        drop
-        ! cog-state-nz
+        [ [ c>> not ] [ z>> not ] bi and ] keep swap
+        [ cog-exec-condition ] [ drop ] if
       ]
     }
     { IF_NC_AND_Z
       [
         [ [ c>> not ] [ z>> ] bi and ] keep swap
-        [ cog-exec-condition ]
-        [ drop ] if
+        [ cog-exec-condition ] [ drop ] if
       ]
     }
     { IF_NC
       [
         [ c>> not ] keep swap
-        [ cog-exec-condition ]
-        [ drop ] if
+        [ cog-exec-condition ] [ drop ] if
       ]
     }
-    { IF_C_AND_NZ [ drop ] }
-    { IF_NZ [ drop ] }
-    { IF_C_NE_Z [ drop ] }
-    { IF_NC_OR_NZ [ drop ] }
-    { IF_C_AND_Z [ drop ] }
-    { IF_C_EQ_Z [ drop ] }
-    { IF_Z [ drop ] }
-    { IF_NC_OR_Z [ drop ] }
+    { IF_C_AND_NZ
+      [
+        [ [ c>> ] [ z>> not ] bi and ] keep swap
+        [ cog-exec-condition ] [ drop ] if
+      ]
+    }
+    { IF_NZ
+      [
+        [ z>> not ] keep swap
+        [ cog-exec-condition ] [ drop ] if
+      ]
+    }
+    { IF_C_NE_Z
+      [
+        [ [ c>> ] [ z>> ] bi = not ] keep swap
+        [ cog-exec-condition ] [ drop ] if
+      ]
+    }
+    { IF_NC_OR_NZ
+      [
+        [ [ c>> not ] [ z>> not ] bi or ] keep swap
+        [ cog-exec-condition ] [ drop ] if
+      ]
+    }
+    { IF_C_AND_Z
+      [
+        [ [ c>> ] [ z>> ] bi and ] keep swap
+        [ cog-exec-condition ] [ drop ] if
+      ]
+    }
+    { IF_C_EQ_Z
+      [
+        [ [ c>> ] [ z>> ] bi = ] keep swap
+        [ cog-exec-condition ] [ drop ] if
+      ]
+    }
+    { IF_Z
+      [
+        [ z>> not ] keep swap
+        [ cog-exec-condition ] [ drop ] if
+      ]
+    }
+    { IF_NC_OR_Z
+      [
+        [ [ c>> not ] [ z>> ] bi or ] keep swap
+        [ cog-exec-condition ] [ drop ] if
+      ]
+    }
     [ drop cog-exec-condition ]
   } case ;
 
 : cog-fetch ( cog -- inst )
-  [ pc>> ] keep
-  [ cog-read ] keep
-  PC+
-  ;
+  [ pc>> ] keep [ cog-read ] keep PC+ ;
 
 ! get status of update z
 : cog-isn-z ( cog -- ? )
@@ -278,7 +347,13 @@ TUPLE: cog pc alu z c memory state isn fisn source dest result bus ;
   ] when drop ;
 
 
+: cog-state ( cog -- state )
+  state>> ;
 
+: cog-execute? ( cog -- ? )
+  cog-state COG_EXECUTE_FETCH = ;
+
+! single step cog to each state
 : cog-execute ( cog -- )
   [ state>> ] keep swap
   {
@@ -313,6 +388,11 @@ TUPLE: cog pc alu z c memory state isn fisn source dest result bus ;
     }
     [ drop drop ]
   } case ;
+
+: cog-cycle ( cog -- )
+  [ [ cog-execute? ] keep swap ]
+  [ [ cog-execute ] keep ]
+  do until drop ;
 
 ! scamble the code for boot and spin
 : cog-scramble ( array -- array )
@@ -415,4 +495,5 @@ TUPLE: cog pc alu z c memory state isn fisn source dest result bus ;
   cog-setup >>memory
   <alu> >>alu
   [ cog-sfr ] keep
-  [ cog-reset ] keep ;
+  [ cog-reset ] keep
+  H{ } clone >>bp ;

@@ -34,7 +34,35 @@ TUPLE: alu z c result ;
   [ result>> ] keep swap odd-parity? >>c
 ;
 
+! alu add
+: alu-or ( a b alu -- alu )
+  [ bitor ] dip swap >>result
+  [ result>> ] keep swap 0 = >>z
+  [ result>> ] keep swap odd-parity? >>c
+;
 
+
+! alu update flags and result
+: alu-update ( a b alu -- alu )
+  swap >>result      ! just put b into reult
+  [ drop ] dip  ! don't need a
+  [ result>> ] keep swap 0 = >>z
+  [ result>> ] keep swap 31 bit? >>c
+;
+
+! subtract
+: alu-sub ( a b alu -- alu )
+  [ - ] dip swap >>result
+  [ result>> ] keep swap 0 = >>z
+  [ result>> ] keep swap -1 = >>c
+;
+
+! absolute values
+: alu-abs ( a b alu -- alu )
+  [ swap 32 bit? >>c drop ] 2keep
+  [ 32 >signed abs ] dip swap >>result
+  [ drop ] dip
+  [ result>> ] keep swap 0 = >>z ;
 
 ! make a ALU Tuple to store stuff in
 : <alu> ( -- alu )
