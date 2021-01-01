@@ -18,9 +18,10 @@ USING: accessors arrays kernel sequences models vectors
        parallax.propeller.emulator.cog.phsb
        parallax.propeller.emulator.cog.vcfg
        parallax.propeller.emulator.cog.vscl
-       math math.bitwise alien.syntax combinators io.binary
-       grouping intel.hex bit-arrays bit-vectors
+       math math.bitwise math.parser alien.syntax combinators
+       io.binary grouping intel.hex bit-arrays bit-vectors
        parallax.propeller.emulator.alu tools.continuations
+       parallax.propeller.emulator.cogdisasm ascii
 ;
 
 IN: parallax.propeller.emulator.cog
@@ -83,7 +84,7 @@ CONSTANT: CDJNZ        57   ! 0x39
 
 
 ! tuple to hold cog stuff
-TUPLE: cog pc alu z c memory state isn fisn source dest result bp ;
+TUPLE: cog pc alu z c memory state isn fisn source dest result bp mneu ;
 
 
 : cog-memory ( address cog -- memory )
@@ -141,6 +142,13 @@ TUPLE: cog pc alu z c memory state isn fisn source dest result bp ;
 
 : cog-read ( address cog -- d )
   cog-memory read ;
+
+: cog-read-array ( n address cog -- array )
+  [ f <array> ] 2dip rot
+  [
+    drop
+    [ cog-read ] 2keep [ 1 + ] dip rot
+  ] map [ drop drop ] dip ;
 
 : cog-write ( value address cog -- )
   cog-memory write ;
@@ -488,6 +496,22 @@ TUPLE: cog pc alu z c memory state isn fisn source dest result bp ;
 : cog-hub ( cog -- cog )
   ;
 
+! memory display
+! builds up an an array of strings
+: mdw ( n address cog -- str/f )
+  [ dup f = ] dip swap
+  [ drop drop drop f ]
+  [
+    [ cog-read-array ] 2keep drop  [ dup f = ] dip swap
+    [
+      [ drop ] dip
+    ]
+    [
+      >hex 3 CHAR: 0 pad-head >upper ": " append "0x" prepend swap
+      [ >hex 8 CHAR: 0 pad-head >upper " " append "0x" prepend ] { } map-as concat append
+    ] if
+  ] if ;
+
 
 ! create a cog and state is inactive
 : <cog> ( -- cog )
@@ -496,4 +520,5 @@ TUPLE: cog pc alu z c memory state isn fisn source dest result bp ;
   <alu> >>alu
   [ cog-sfr ] keep
   [ cog-reset ] keep
-  H{ } clone >>bp ;
+  <cogdasm> >>mneu
+  V{ } clone >>bp ;
