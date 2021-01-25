@@ -46,6 +46,14 @@ TUPLE: cogs cog-array num-longs ;
     [ cog-mdl ] 3keep [ 4 + ] dip roll
   ] map 3nip ;
 
+: cogs-list ( n cogn address cogs -- $array )
+  [ swap ] dip cog-array>> nth
+  rot f <array>
+  [
+    break
+    drop
+    [ cog-list ] 2keep [ 1 + ] dip rot
+  ] map 2nip ;
 
 : cogs-boot ( array cogs -- )
   cog-array>> first [ cog-copy ] keep cog-active ;

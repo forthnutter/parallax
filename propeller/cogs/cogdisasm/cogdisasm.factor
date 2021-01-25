@@ -146,7 +146,6 @@ TUPLE: cogdasm labels ;
 
 
 : opcode-string ( code cogdisasm -- $ )
-  break
   [ source-exstract$ " " append ] 2keep
   [ dest-exstract$ " " append ] 2keep drop [ append ] dip
   [ cond-exstract$ " " append ] keep [ append ] dip

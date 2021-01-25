@@ -512,7 +512,7 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
   dup cog? not
   [ drop drop drop f ]
   [
-    [ n>> ] keep [ number>string "cog" prepend " " append -rot ] dip
+    [ n>> ] keep [ number>string "cog-" prepend " " append -rot ] dip
     [ cog-read-array ] 2keep drop  [ dup array? not ] dip swap
     [ drop drop drop f ]
     [
@@ -522,6 +522,21 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
         >hex 8 CHAR: 0 pad-head >upper " " append "0x" prepend
       ] { } map-as concat append
     ] if
+  ] if ;
+
+! Display disasembled code
+: cog-list ( address cog --  str/f )
+  dup cog? not  ! make sure we are looking at cog
+  [ drop drop f ]    ! drop everyting and indicate fail
+  [
+    [ n>> ] keep [ number>string "cog-" prepend " " append swap ] dip
+    [ 1 ] 2dip ! how many instructions we need
+    [ cog-read-array first ] 2keep mneu>> [ swap dup ] dip
+    [ >hex 3 CHAR: 0 pad-head >upper ": " append "0x" prepend ] 3dip
+    [ append ] 3dip
+    [ >hex 8 CHAR: 0 pad-head >upper " " append "0x" prepend ] 2dip
+    [ append ] 2dip
+    opcode-string append
   ] if ;
 
 ! create a cog and state is inactive
