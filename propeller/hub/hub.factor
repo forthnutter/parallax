@@ -3,7 +3,7 @@
 
 USING: accessors math math.bitwise make kernel literals byte-arrays binfile
   vectors sequences tools.continuations parallax.propeller.cogs arrays
-  intel.hex bit-arrays bit-vectors
+  intel.hex bit-arrays bit-vectors io
  ;
 IN: parallax.propeller.hub
 
@@ -36,10 +36,21 @@ TUPLE: hub cogs bus ram rom enable lock config ;
   "work/parallax/propeller/hub/hub_rom_low.hex" <ihex>
   array>>
   "work/parallax/propeller/hub/hub_rom_high.hex" <ihex>
-  array>> append
-  ;
+  array>> append ;
 
+! display cog memory
+: hub-cog-mdl ( cogn address hub -- hub )
+  [
+    cogs>> [ 8 ] 3dip cogs-mdl
+    [ print ] each
+  ] keep ;
 
+! display cog disasembley
+: hub-cog-list ( cogn address hub -- hub )
+  [
+    cogs>> [ 4 ] 3dip cogs-list
+    [ print ] each
+  ] keep ;
 
 : <hub> ( -- hub )
   hub new
