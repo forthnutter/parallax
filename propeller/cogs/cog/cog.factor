@@ -5,17 +5,12 @@ USING: accessors arrays kernel sequences models vectors
        parallax.propeller.cogs.cog.memory
        parallax.propeller.cogs.cog.par
        parallax.propeller.cogs.cog.cnt
-       parallax.propeller.cogs.cog.ina
-       parallax.propeller.cogs.cog.inb
-       parallax.propeller.cogs.cog.outa
-       parallax.propeller.cogs.cog.outb
-       parallax.propeller.cogs.cog.dira
-       parallax.propeller.cogs.cog.dirb
+       parallax.propeller.cogs.cog.in
+       parallax.propeller.cogs.cog.out
+       parallax.propeller.cogs.cog.dir
        parallax.propeller.cogs.cog.ctr
-       parallax.propeller.cogs.cog.frqa
-       parallax.propeller.cogs.cog.frqb
-       parallax.propeller.cogs.cog.phsa
-       parallax.propeller.cogs.cog.phsb
+       parallax.propeller.cogs.cog.frq
+       parallax.propeller.cogs.cog.phs
        parallax.propeller.cogs.cog.vcfg
        parallax.propeller.cogs.cog.vscl
        math math.bitwise math.parser alien.syntax combinators
@@ -83,7 +78,9 @@ CONSTANT: CMOV         40   ! 0x28
 CONSTANT: CABS         42   ! 0x2A
 CONSTANT: CDJNZ        57   ! 0x39
 
-
+CONSTANT: MEMORY_SIZE 512
+CONSTANT: INST_SIZE   496
+CONSTANT: SPR_SIZE    16
 
 ! tuple to hold cog stuff
 TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate ;
@@ -92,42 +89,32 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
 : cog-memory ( address cog -- memory )
    memory>> nth ;
 
+: cog-memory-select ( address -- mem/sfr )
+  {
+    { 496 [ 0 <par> ] }   ! boot parameter
+    { 497 [ 0 <cnt> ] }   ! system counter
+    { 498 [ 0 <in> ] }    ! Port A input
+    { 499 [ 0 <in> ] }    ! Port B input
+    { 500 [ 0 <out> ] }   ! Port A output
+    { 501 [ 0 <out> ] }   ! Port B output
+    { 502 [ 0 <dir> ] }   ! Port A Direction
+    { 503 [ 0 <dir> ] }   ! Port B Direction
+    { 504 [ 0 <ctr> ] }   ! Counter A control
+    { 505 [ 0 <ctr> ] }   ! Counter B control
+    { 506 [ 0 <frq> ] }   ! Counter A Frequency
+    { 507 [ 0 <frq> ] }   ! Counter B Frequency
+    { 508 [ 0 <phs> ] }   ! Counter A phase
+    { 509 [ 0 <phs> ] }   ! Counter B phase
+    { 510 [ 0 <vcfg> ] }  ! Video Configuration
+    { 511 [ 0 <vscl> ] }  ! Video Scale
+    [ drop 0 <memory> ]   ! default general memory function
+  } case ;
 
 : cog-setup ( -- vector )
-   MEMORY_SIZE f <array> dup
+   MEMORY_SIZE f <array>
    [
-      pick          ! get array
-      swap dup      ! index
-      0             ! value
-      <memory>
-      swap          ! index
-      pick          ! array
-      set-nth
-      drop drop
-   ] each-index
-   >vector ;
-
-
-! add the special function registers to memory
-: cog-sfr ( cog -- )
-   ! special purpose registers
-   [ 496 swap cog-memory ] keep swap 0 <par> swap add-memory ! Boot Parameter
-   [ 497 swap cog-memory ] keep swap 0 <cnt> swap add-memory ! System counter
-   [ 498 swap cog-memory ] keep swap 0 <ina> swap add-memory ! Port A input
-   [ 499 swap cog-memory ] keep swap 0 <inb> swap add-memory ! Port B input
-   [ 500 swap cog-memory ] keep swap 0 <outa> swap add-memory ! Port A out
-   [ 501 swap cog-memory ] keep swap 0 <outb> swap add-memory ! Port B out
-   [ 502 swap cog-memory ] keep swap 0 <dira> swap add-memory ! Port A Direction
-   [ 503 swap cog-memory ] keep swap 0 <dirb> swap add-memory ! Port B Direction
-   [ 504 swap cog-memory ] keep swap 0 <ctr> swap add-memory ! Counter A control
-   [ 505 swap cog-memory ] keep swap 0 <ctr> swap add-memory ! Counter B control
-   [ 506 swap cog-memory ] keep swap 0 <frqa> swap add-memory ! Counter A freq
-   [ 507 swap cog-memory ] keep swap 0 <frqb> swap add-memory ! Counter B freq
-   [ 508 swap cog-memory ] keep swap 0 <phsa> swap add-memory ! Counter A phase
-   [ 509 swap cog-memory ] keep swap 0 <phsb> swap add-memory ! Counter B phase
-   [ 510 swap cog-memory ] keep swap 0 <vcfg> swap add-memory ! Video Configuration
-   [ 511 swap cog-memory ] keep swap 0 <vscl> swap add-memory ! Video Scale
-   drop ;
+      [ drop ] dip cog-memory-select
+   ] map-index >vector ;
 
 : cog-reset ( cog -- )
   0 >>pc COG_START_ISN >>isn
@@ -143,7 +130,7 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
 
 
 : cog-read ( address cog -- d )
-  cog-memory read ;
+  cog-memory value>> ;
 
 : cog-read-array ( n address cog -- array )
   [ f <array> ] 2dip rot
@@ -544,7 +531,6 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
   new swap >>n        ! allocate memory save the number of cog
   cog-setup >>memory  ! initialise memory componnet
   <alu> >>alu         ! alu is a seperate class
-  [ cog-sfr ] keep    ! this assigns Special function registers to memory
   [ cog-reset ] keep  ! cog is in reset state
   <cogdasm> >>mneu
   COG_HUB_GO >>wstate ! need to know if the cog is waiting for hub

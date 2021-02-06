@@ -3,12 +3,12 @@
 !
 USING: accessors arrays kernel sequences models vectors tools.continuations ;
 
-IN: parallax.propeller.cogs.cog.dira
+IN: parallax.propeller.cogs.cog.out
 
-TUPLE: dira < model ;
+TUPLE: out < model ;
 
-: <dira> ( value -- dira )
-   dira new-model ;
+: <out> ( value -- outa )
+   out new-model ;
 
-M: dira model-changed
+M: out model-changed
    break drop drop ;

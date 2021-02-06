@@ -3,12 +3,17 @@
 !
 USING: accessors arrays kernel sequences models vectors tools.continuations ;
 
-IN: parallax.propeller.cogs.cog.inb
+IN: parallax.propeller.cogs.cog.in
 
-TUPLE: inb < model ;
+TUPLE: in < model ;
 
-: <inb> ( value -- inb )
-   inb new-model ;
+GENERIC: read ( ina -- d )
 
-M: inb model-changed
+M: in read
+  value>> ;
+
+: <in> ( value -- ina )
+   in new-model ;
+
+M: in model-changed
    break drop drop ;

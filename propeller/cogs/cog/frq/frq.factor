@@ -3,12 +3,12 @@
 !
 USING: accessors arrays kernel sequences models vectors tools.continuations ;
 
-IN: parallax.propeller.cogs.cog.ina
+IN: parallax.propeller.cogs.cog.frq
 
-TUPLE: ina < model ;
+TUPLE: frq < model ;
 
-: <ina> ( value -- ina )
-   ina new-model ;
+: <frq> ( value -- par )
+   frq new-model ;
 
-M: ina model-changed
+M: frq model-changed
    break drop drop ;
