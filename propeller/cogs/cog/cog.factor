@@ -14,7 +14,7 @@ USING: accessors arrays kernel sequences models vectors
        parallax.propeller.cogs.cog.vcfg
        parallax.propeller.cogs.cog.vscl
        math math.bitwise math.parser alien.syntax combinators
-       io.binary grouping intel.hex bit-arrays bit-vectors
+       io.binary grouping bit-arrays bit-vectors
        parallax.propeller.cogs.alu tools.continuations
        parallax.propeller.cogs.cogdisasm ascii
 ;
