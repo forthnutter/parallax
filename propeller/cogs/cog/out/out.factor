@@ -7,6 +7,17 @@ IN: parallax.propeller.cogs.cog.out
 
 TUPLE: out < model ;
 
+
+GENERIC: read ( memory -- d )
+GENERIC: write ( d memory -- )
+
+
+M: out read
+   value>> ;
+
+M: out write
+   set-model ;
+
 : <out> ( value -- outa )
    out new-model ;
 
