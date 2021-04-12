@@ -4,7 +4,7 @@
 USING: accessors arrays kernel sequences models vectors tools.continuations ;
 IN: parallax.propeller.cogs.cog.memory
 
-TUPLE: memory < model ;
+TUPLE: memory mread mwrite ;
 
 
 
@@ -23,9 +23,14 @@ M: memory write
 M: memory model-changed
   drop drop ;
 
-: add-memory ( object memory -- )
-   add-connection
+: add-memory-read ( object memory -- )
+   mread>> add-connection
 ;
 
+: add-memory-write ( object memory -- )
+   mwrite>> add-connection ;
+
 : <memory> ( value -- memory )
-  memory new-model ;
+  memory new
+  [ <model> ] dip swap >>mwrite
+  [ 0 <model> ] dip swap >>mread ;

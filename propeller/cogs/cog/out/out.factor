@@ -1,25 +1,21 @@
 ! Copyright (C) 2011 Joseph L Moschini.
 ! See http://factorcode.org/license.txt for BSD license.
 !
-USING: accessors arrays kernel sequences models vectors tools.continuations ;
+USING: accessors arrays kernel sequences models
+   vectors tools.continuations parallax.propeller.cogs.cog.memory ;
 
 IN: parallax.propeller.cogs.cog.out
 
-TUPLE: out < model ;
+TUPLE: out value ;
 
+GENERIC: read ( out -- data )
+GENERIC: write ( data out -- )
 
-GENERIC: read ( memory -- d )
-GENERIC: write ( d memory -- )
-
-
-M: out read
+M: memory read
    value>> ;
 
-M: out write
-   set-model ;
+M: memory write
+    ;
 
-: <out> ( value -- outa )
-   out new-model ;
-
-M: out model-changed
-   break drop drop ;
+: <out> ( value -- out )
+   out new >>value ;

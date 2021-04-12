@@ -116,6 +116,15 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
       [ drop ] dip cog-memory-select
    ] map-index >vector ;
 
+: cog-mem-setup ( -- vector )
+  MEMORY_SIZE f <array>
+  [
+    drop 0 <memory> 
+  ] map >vector
+ ! [ 500 swap nth out-write swap add-memory ] keep
+ ;
+
+
 : cog-reset ( cog -- )
   0 >>pc COG_START_ISN >>isn
   COG_INACTIVE >>state
@@ -140,6 +149,7 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
   ] map [ drop drop ] dip ;
 
 : cog-write ( value address cog -- )
+  break
   cog-memory write ;
 
 ! make cog active
