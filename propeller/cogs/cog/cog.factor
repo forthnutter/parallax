@@ -121,7 +121,7 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
   [
     drop 0 <memory> 
   ] map >vector
- ! [ 500 swap nth out-write swap add-memory ] keep
+  [ 500 swap nth \ out-write swap add-memory-write ] keep
  ;
 
 

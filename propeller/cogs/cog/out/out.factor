@@ -9,12 +9,12 @@ IN: parallax.propeller.cogs.cog.out
 TUPLE: out value ;
 
 GENERIC: read ( out -- data )
-GENERIC: write ( data out -- )
+GENERIC: out-write ( data out -- )
 
 M: memory read
    value>> ;
 
-M: memory write
+M: memory out-write
     ;
 
 : <out> ( value -- out )
