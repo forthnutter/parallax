@@ -539,7 +539,7 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
 ! create a cog and state is inactive
 : new-cog ( n cog -- cog' )
   new swap >>n        ! allocate memory save the number of cog
-  cog-setup >>memory  ! initialise memory componnet
+  cog-mem-setup >>memory  ! initialise memory componnet
   <alu> >>alu         ! alu is a seperate class
   [ cog-reset ] keep  ! cog is in reset state
   <cogdasm> >>mneu

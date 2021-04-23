@@ -18,7 +18,7 @@ M: memory read
    value>> ;
 
 M: memory write
-   set-model ;
+   mwrite>> set-model ;
 
 M: memory model-changed
   drop drop ;
