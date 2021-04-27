@@ -117,6 +117,7 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
    ] map-index >vector ;
 
 : cog-mem-setup ( -- vector )
+  break
   MEMORY_SIZE f <array>
   [
     drop 0 <memory> 
@@ -139,7 +140,7 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
 
 
 : cog-read ( address cog -- d )
-  cog-memory value>> ;
+  cog-memory memory-read ;
 
 : cog-read-array ( n address cog -- array )
   [ f <array> ] 2dip rot
@@ -150,7 +151,7 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
 
 : cog-write ( value address cog -- )
   break
-  cog-memory write ;
+  cog-memory memory-write ;
 
 ! make cog active
 : cog-active ( cog -- )
@@ -370,6 +371,7 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
 
 ! single step cog to each state
 : cog-execute ( cog -- )
+  break
   [ state>> ] keep swap
   {
     { COG_INACTIVE [ drop ] }  ! do nothing
@@ -495,7 +497,7 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
   [ le>  ] map
   INST_SIZE head cog-unscramble swap
   memory>>
-  [ write ] 2each
+  [ memory-write ] 2each
 ;
 
 
