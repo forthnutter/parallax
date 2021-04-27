@@ -2,19 +2,19 @@
 ! to display memory and registers
 
 USING: accessors arrays kernel parallax.propeller.cogs.cog math
-        sequences tools.continuations ;
+        sequences tools.continuations vectors ;
 
 
 IN: parallax.propeller.cogs
 
-CONSTANT: COGNUMBER 8
+CONSTANT: COGNUMBEROF 8
 
 TUPLE: cogs cog-array num-longs ;
 
 
 ! create an instance of 8 cogs
 : cogs-array ( -- array )
-  COGNUMBER f <array>
+  COGNUMBEROF f <array>
   [
     swap drop
     <cog>
@@ -25,6 +25,7 @@ TUPLE: cogs cog-array num-longs ;
 : cogs-step-cycle ( cogs -- )
   cog-array>>
   [
+    break
     cog-execute-cycle
   ] each ;
 
@@ -50,6 +51,24 @@ TUPLE: cogs cog-array num-longs ;
   [
     drop [ cog-list ] 2keep [ 1 + ] dip rot
   ] map 2nip ;
+
+! get the pc address of each cog string the mnuemonic into list
+: cogs-list-pc ( cogs -- $array )
+  COGNUMBEROF <vector>      ! the array to send back
+  swap cog-array>>          ! swap to get cogs back now get cog array
+  [
+    cog-list-pc swap [ push ] keep
+  ] each ;
+
+! get all actve list pc instructions for each cog
+: cogs-alist-pc ( cogs -- $array )
+  COGNUMBEROF <vector>      ! make an array for return
+  swap cog-array>>          ! get the array of cogs
+  [
+    [ cog-active? ] keep swap
+    [ cog-list-pc swap [ push ] keep ]
+    [ drop ] if
+  ] each ; 
 
 : cogs-boot ( array cogs -- )
   cog-array>> first [ cog-copy ] keep cog-active ;

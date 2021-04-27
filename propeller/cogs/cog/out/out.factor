@@ -6,16 +6,18 @@ USING: accessors arrays kernel sequences models
 
 IN: parallax.propeller.cogs.cog.out
 
-TUPLE: out value ;
+TUPLE: out < model ;
 
-GENERIC: read ( out -- data )
-GENERIC: out-write ( data out -- )
 
-M: memory read
+: out-read ( out -- data )
    value>> ;
 
-M: memory out-write
-    ;
+: out-write ( data out -- )
+   set-model ;
+
+M: out model-changed
+   drop drop ;
+   
 
 : <out> ( value -- out )
-   out new >>value ;
+   out new-model ;

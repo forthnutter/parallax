@@ -52,6 +52,21 @@ TUPLE: hub cogs bus ram rom enable lock config ;
     [ print ] each
   ] keep ;
 
+
+! list all cogs PC instruction
+: hub-pc-list ( hub -- hub )
+  [
+    cogs>> cogs-list-pc
+    [ print ] each
+  ] keep ;
+
+! list all active cogs PC instruction
+: hub-pc-alist ( hub -- hub )
+  [
+    cogs>> cogs-alist-pc
+    [ print ] each
+  ] keep ;
+
 : <hub> ( -- hub )
   hub new
   "work/parallax/propeller/hub/StartupROM.bin" <binfile> >>rom

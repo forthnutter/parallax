@@ -117,7 +117,6 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
    ] map-index >vector ;
 
 : cog-mem-setup ( -- vector )
-  break
   MEMORY_SIZE f <array>
   [
     drop 0 <memory> 
@@ -371,7 +370,6 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
 
 ! single step cog to each state
 : cog-execute ( cog -- )
-  break
   [ state>> ] keep swap
   {
     { COG_INACTIVE [ drop ] }  ! do nothing
@@ -523,6 +521,10 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
     ] if
   ] if ;
 
+! test to if cog is active
+: cog-active? ( cog -- ? )
+  cog-state COG_INACTIVE = not ;
+
 ! Display disasembled code
 : cog-list ( address cog --  str/f )
   dup cog? not  ! make sure we are looking at cog
@@ -537,6 +539,9 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
     [ append ] 2dip
     opcode-string append
   ] if ;
+
+: cog-list-pc ( cog -- str/f )
+  [ pc>> ] keep cog-list ;
 
 ! create a cog and state is inactive
 : new-cog ( n cog -- cog' )
