@@ -25,7 +25,6 @@ TUPLE: cogs cog-array num-longs ;
 : cogs-step-cycle ( cogs -- )
   cog-array>>
   [
-    break
     cog-execute-cycle
   ] each ;
 

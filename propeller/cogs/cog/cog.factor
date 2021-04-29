@@ -83,7 +83,8 @@ CONSTANT: INST_SIZE   496
 CONSTANT: SPR_SIZE    16
 
 ! tuple to hold cog stuff
-TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate ;
+
+TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu wstate ;
 
 
 : cog-memory ( address cog -- memory )
@@ -126,16 +127,20 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
 
 
 : cog-reset ( cog -- )
-  0 >>pc COG_START_ISN >>isn
+  0 >>pc 0 >>pcold COG_START_ISN >>isn
   COG_INACTIVE >>state
   drop ;
 
 ! increment PC
-: PC+ ( cog -- ) [ pc>> 1 + ] keep pc<< ;
+: PC+ ( cog -- )
+  [ [ pc>> ] [ pcold<< ] bi ] keep
+  [ pc>> 1 + ] keep pc<< ;
 
 
 ! decrement PC
-: PC- ( cog -- ) [ pc>> 1 - ] keep pc<< ;
+: PC- ( cog -- )
+  [ [ pc>> ] [ pcold<< ] bi ] keep
+  [ pc>> 1 - ] keep pc<< ;
 
 
 : cog-read ( address cog -- d )
@@ -541,7 +546,7 @@ TUPLE: cog n pc alu z c memory state isn fisn source dest result bp mneu wstate 
   ] if ;
 
 : cog-list-pc ( cog -- str/f )
-  [ pc>> ] keep cog-list ;
+  [ pcold>> ] keep cog-list ;
 
 ! create a cog and state is inactive
 : new-cog ( n cog -- cog' )
