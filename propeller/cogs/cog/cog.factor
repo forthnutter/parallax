@@ -5,7 +5,7 @@ USING: accessors arrays kernel sequences models vectors
        parallax.propeller.cogs.cog.memory
        parallax.propeller.cogs.cog.par
        parallax.propeller.cogs.cog.cnt
-       parallax.propeller.cogs.cog.in
+       parallax.propeller.cogs.cog.inp
        parallax.propeller.cogs.cog.out
        parallax.propeller.cogs.cog.dir
        parallax.propeller.cogs.cog.ctr
@@ -94,8 +94,8 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
   {
     { 496 [ 0 <par> ] }   ! boot parameter
     { 497 [ 0 <cnt> ] }   ! system counter
-    { 498 [ 0 <in> ] }    ! Port A input
-    { 499 [ 0 <in> ] }    ! Port B input
+    { 498 [ 0 <inp> ] }    ! Port A input
+    { 499 [ 0 <inp> ] }    ! Port B input
     { 500 [ 0 <out> ] }   ! Port A output
     { 501 [ 0 <out> ] }   ! Port B output
     { 502 [ 0 <dir> ] }   ! Port A Direction
@@ -122,7 +122,8 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
   [
     drop 0 <memory> 
   ] map >vector
-  [ 500 swap nth \ out-write swap add-memory-write ] keep
+  [ 500 swap nth 0 <out> swap add-memory-write ] keep
+
  ;
 
 
@@ -141,6 +142,10 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
 : PC- ( cog -- )
   [ [ pc>> ] [ pcold<< ] bi ] keep
   [ pc>> 1 - ] keep pc<< ;
+
+! set the PC in special way
+: PC< ( d cog -- )
+  [ pc<< ] [ pcold<< ] 2bi ;
 
 
 : cog-read ( address cog -- d )
@@ -211,24 +216,23 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
   [ [ dest>> ] [ source>> ] bi ] keep
   alu>> alu-or drop ;
 
-
+! multi function jump can return 
 : cog-jump ( cog -- )
   [ dest>> 0b111111111 unmask ] keep
   [ pc>> bitor 0 ] keep
   [ alu>> alu-add drop ] keep
-  [ source>> ] keep pc<< ;
+  [ source>> ] keep PC< ;
 
-
+! instruction to move source to destination
 : cog-mov ( cog -- )
-  [ dest>> ] keep
-  [ source>> ] keep
+  [ [ dest>> ] [ source>> ] bi ] keep
   alu>> alu-update drop ;
 
 : cog-djnz ( cog -- )
   [ dest>> 1 ] keep
   [ alu>> alu-sub ] keep swap
   alu-z not
-  [ [ source>> ] keep pc<< ] [ drop ] if ;
+  [ [ source>> ] keep PC< ] [ drop ] if ;
 
 
 : cog-abs ( cog -- )

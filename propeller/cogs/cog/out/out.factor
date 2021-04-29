@@ -13,10 +13,13 @@ TUPLE: out < model ;
    value>> ;
 
 : out-write ( data out -- )
+   break
    set-model ;
 
 M: out model-changed
-   drop drop ;
+   [ value>> ] dip ! get memory value
+   out-write         ! send it out we may have others
+;
    
 
 : <out> ( value -- out )
