@@ -159,7 +159,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
   ] map [ drop drop ] dip ;
 
 : cog-write ( value address cog -- )
-  break
+  ! break
   cog-memory memory-write ;
 
 ! make cog active
@@ -242,7 +242,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
 
 
 : cog-exec-condition ( cog -- )
-  break
+  ! break
   [ cog-isn-code ] keep swap
   {
     { CJMP [ cog-jump ] }
