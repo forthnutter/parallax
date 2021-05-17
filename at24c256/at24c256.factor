@@ -9,6 +9,10 @@ CONSTANT: AT24C256_SIZE 32767
 TUPLE: 24c256 scl sda address array ;
 
 
+M: 24c256 model-changed
+
+
+;
 
 ! make a context 
 ! set the address of ths memory
