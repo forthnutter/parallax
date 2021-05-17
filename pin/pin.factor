@@ -1,7 +1,7 @@
 ! Pin control starts here
 
 
-USING: kernel ;
+USING: accessors arrays kernel models sequences ;
 
 IN: parallax.pin 
 
@@ -18,8 +18,11 @@ TUPLE: pin < model number ;
 TUPLE: pins array ;
 
 : pins-init ( array -- array' )
-    [ <pin> ] map ;
+    [
+        [ drop ] dip        ! get rid of element
+        <pin>
+    ] map-index ;
 
 : <pins> ( n -- pins )
     pins new
-    f <array> pins-init >>array ;
+    swap f <array> pins-init >>array ;

@@ -19,6 +19,10 @@ M: dir model-changed
    dir-write         ! send it out we may have others
 ;
 
+: dir-add-connection ( object dir -- )
+   add-connection ;
+
+
 : <dir> ( value -- dira )
    dir new-model ;
 
