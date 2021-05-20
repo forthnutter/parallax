@@ -92,22 +92,22 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
 
 : cog-memory-select ( address -- mem/sfr )
   {
-    { 496 [ 0 <par> ] }   ! boot parameter
-    { 497 [ 0 <cnt> ] }   ! system counter
-    { 498 [ 0 <inp> ] }    ! Port A input
-    { 499 [ 0 <inp> ] }    ! Port B input
-    { 500 [ 0 <out> ] }   ! Port A output
-    { 501 [ 0 <out> ] }   ! Port B output
-    { 502 [ 0 <dir> ] }   ! Port A Direction
-    { 503 [ 0 <dir> ] }   ! Port B Direction
-    { 504 [ 0 <ctr> ] }   ! Counter A control
-    { 505 [ 0 <ctr> ] }   ! Counter B control
-    { 506 [ 0 <frq> ] }   ! Counter A Frequency
-    { 507 [ 0 <frq> ] }   ! Counter B Frequency
-    { 508 [ 0 <phs> ] }   ! Counter A phase
-    { 509 [ 0 <phs> ] }   ! Counter B phase
-    { 510 [ 0 <vcfg> ] }  ! Video Configuration
-    { 511 [ 0 <vscl> ] }  ! Video Scale
+    { 496 [ 0 <par> ] }   ! $01f0 boot parameter
+    { 497 [ 0 <cnt> ] }   ! $01f1 system counter
+    { 498 [ 0 <inp> ] }   ! $01f2 Port A input
+    { 499 [ 0 <inp> ] }   ! $01f3 Port B input
+    { 500 [ 0 <out> ] }   ! $01f4 Port A output
+    { 501 [ 0 <out> ] }   ! $01f5 Port B output
+    { 502 [ 0 <dir> ] }   ! $01f6 Port A Direction
+    { 503 [ 0 <dir> ] }   ! $01f7 Port B Direction
+    { 504 [ 0 <ctr> ] }   ! $01f8 Counter A control
+    { 505 [ 0 <ctr> ] }   ! $01f9 Counter B control
+    { 506 [ 0 <frq> ] }   ! $01fa Counter A Frequency
+    { 507 [ 0 <frq> ] }   ! $01fb Counter B Frequency
+    { 508 [ 0 <phs> ] }   ! $01fc Counter A phase
+    { 509 [ 0 <phs> ] }   ! $01fd Counter B phase
+    { 510 [ 0 <vcfg> ] }  ! $01fe Video Configuration
+    { 511 [ 0 <vscl> ] }  ! $01ff Video Scale
     [ drop 0 <memory> ]   ! default general memory function
   } case ;
 
