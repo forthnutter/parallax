@@ -513,6 +513,26 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
 : cog-hub ( cog -- cog )
   ;
 
+! return string value z
+: z-string ( ? -- str )
+  [ "Z" ] [ "z" ] if ;
+
+! return string vale c
+: c-string ( ? -- str )
+  [ "C" ] [ "c" ] if ;
+
+! build up a string that indicate
+! cogs flag codition
+: cog-condition ( cog -- str/f )
+  dup cog? not
+  [ drop f ]
+  [
+    [ z>> z-string ] [ c>> c-string ] bi ! get the two cog status
+    [ " " append ] dip append 
+  ] if ;
+
+
+
 ! memory display
 ! builds up an an array of strings
 : cog-mdl ( n address cog -- str/f )
