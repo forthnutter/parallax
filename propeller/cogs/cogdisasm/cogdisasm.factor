@@ -145,17 +145,31 @@ TUPLE: cogdasm labels ;
 
 
 
-: opcode-string ( code cogdisasm -- $ )
+: opcode-string ( code cogdasm -- $ )
   [ source-exstract$ " " append ] 2keep
   [ dest-exstract$ " " append ] 2keep drop [ append ] dip
   [ cond-exstract$ " " append ] keep [ append ] dip
   [ flag$ " " append ] keep [ append ] dip
   opcode-exstract$ append ;
 
-: dasm-add ( label address  cogdisasm -- )
-  labels>> ?set-at drop ;
+: dasm-add ( address label cogdasm -- cogdasm' )
+  [ labels>> ?set-at drop ] keep ;
+
+: default-labels ( cogdasm -- cogdasm' )
+  [
+    labels>>
+    H{
+       { 496 "PAR" }  { 497 "CNT" }  { 498 "INA" }  { 499 "INB" }
+      { 500 "OUTA" } { 501 "OUTB" } { 502 "DIRA" } { 503 "DIRB" }
+      { 504 "CTRA" } { 505 "CTRB" } { 506 "FRQA" } { 507 "FRQB" }
+      { 508 "PHSA" } { 509 "PHSB" } { 510 "VCFG" } { 511 "VSCL" }
+    }
+    assoc-combine 
+   ] keep ;
+
 
 
 : <cogdasm> ( -- cogdasm )
   cogdasm new
-  H{ } clone >>labels ;
+  512 <hashtable> >>labels
+  default-labels ;
