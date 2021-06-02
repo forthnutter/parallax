@@ -159,7 +159,7 @@ TUPLE: cogdasm labels ;
   [
     labels>>
     H{
-       { 496 "PAR" }  { 497 "CNT" }  { 498 "INA" }  { 499 "INB" }
+      { 496 "PAR"  } { 497 "CNT"  } { 498 "INA"  } { 499 "INB" }
       { 500 "OUTA" } { 501 "OUTB" } { 502 "DIRA" } { 503 "DIRB" }
       { 504 "CTRA" } { 505 "CTRB" } { 506 "FRQA" } { 507 "FRQB" }
       { 508 "PHSA" } { 509 "PHSB" } { 510 "VCFG" } { 511 "VSCL" }
