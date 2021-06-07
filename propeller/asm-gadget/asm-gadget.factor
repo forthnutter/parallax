@@ -20,7 +20,7 @@ asm-gadget H{
     }
 } set-gestures
 
-M: asm-gadget pref-dim* drop { 224 256 } ;
+M: asm-gadget pref-dim* drop { 256 256 } ;
 
 : <asm-gadget> ( -- gadget )
     asm-gadget new f >>quit? ;
