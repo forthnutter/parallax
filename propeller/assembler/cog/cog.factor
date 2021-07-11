@@ -11,6 +11,7 @@ IN: parallax.propeller.assembler.cog
 
 TUPLE: cog ip dp memory labels ;
 
+TUPLE: cog-memory start array ;
 CONSTANT: COG-CELL 4    ! cell size 4 bytes
 CONSTANT: COG-SIZE 512  ! cog memory size
 CONSTANT: COG-ADDRESS-BITS 9 ! cog addressing limit 9 bits
