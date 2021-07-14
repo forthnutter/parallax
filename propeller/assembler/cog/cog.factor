@@ -40,11 +40,11 @@ SYNTAX: REGISTER:
 
 >>
 
-
+! startup label generator
 : <cog-label> ( address -- cog-label )
   cog-label new
   swap >>start ;
-  
+
 
 ! Register Special Function Register
 REGISTER: PAR  0x1F0  ! boot parameter
@@ -68,6 +68,7 @@ REGISTER: VSCL 0x1FF  ! Video Scale
 ! read IP add 1
 M: cog IP+> ( cog -- ip )
   [ ip>> ] [ dup ip>> 1 + >>ip drop ] bi ;
+
 ! need something to write to cog memory
 M: cog write
   [ COG-ADDRESS-BITS bits ] dip      ! make sure we limit address to 9 bits
