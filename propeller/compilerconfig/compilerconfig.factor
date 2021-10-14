@@ -1,7 +1,7 @@
 ! Copyright (C) 2019 forthnutter.
 !
 
-USING: math math.bitwise make kernel literals ;
+USING: math math.bitwise make kernel literals accessors ;
 IN: parallax.propeller.compilerconfig
 
 
@@ -10,12 +10,12 @@ TUPLE: compilerconfig verbose quiet filetreeoutputonly filelistoutputonly dumpsy
         usepreprocessor alternatepreprocessormode unusedmethodelimination docmode datonly
         binary eeprom-size ;
 
+GENERIC: init ( obj -- )
 
 
+M: compilerconfig init
 
-:M compilerconfig init
-
-
+drop
 ;
 
 : <compilerconfig> ( -- compilerconfig )
