@@ -1,8 +1,9 @@
 ! Copyright (C) 2021 forthnutter.
 !
 
-USING: math math.bitwise make kernel literals accessors namespaces command-line sequences
-        strings vectors parallax.propeller.compilerconfig  ;
+USING: arrays math math.bitwise make kernel literals accessors namespaces command-line math.parser
+    sequences strings vectors io.encodings.ascii io.files io.files.info
+    parallax.propeller.compilerconfig  ;
 IN: parallax.propeller.compiler
 
 
@@ -23,7 +24,24 @@ SYMBOL: outfile
     pathentry get delete-all ;
 
 
+
+
+: get-file-size ( path -- size )
+    file-info size>> ;
+
+
+: get-ascii-file ( pfile -- array )
+    [ exists? ] keep swap
+    [
+        ascii file-lines 
+    ] 
+    [ drop 0 <array> ] if ;
+
+
+
 : <compiler> ( -- )
+    "C:\\Users\\jmoschini\\Downloads\\PushbuttonLedTest-v1.0.spin"
+    get-ascii-file drop
     <compilerconfig> config set     ! make conf tuple
     16 <vector> pathentry set       ! create somewhere to store paths
 
@@ -39,5 +57,9 @@ SYMBOL: outfile
     "Binary" get config get binary<<
     "Dat" get config get datonly<<
     "Quiet" get config get quiet<<
-    ""
+    "Verbose" get config get verbose<<
+
+ 
+
+
 ;
