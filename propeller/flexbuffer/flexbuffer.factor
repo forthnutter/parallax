@@ -5,14 +5,16 @@ USING: math math.bitwise make kernel literals accessors namespaces command-line 
         strings vectors parallax.propeller.compilerconfig  ;
 IN: parallax.propeller.compilespin
 
-TUPLE: compilerspin verbose quiet filetressoutputonly filelistoutputonly dump usepreprocessor
-        alternatepreprocessormode unusedmethodelimination docmode datonly binary eeprom-size ;
+
+TUPLE: fexbuf data len space growsize ;
 
 
-: <compilerspin> ( -- cs )
-
-
-
+: <flexbuffer> ( gs -- fb )
+    flexbuf new
+    f >>data 
+    0 >>len
+    0 >>space
+    swap >>growsize
 ;
 
 
