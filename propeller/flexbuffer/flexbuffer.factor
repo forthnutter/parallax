@@ -3,14 +3,14 @@
 
 USING: math math.bitwise make kernel literals accessors namespaces command-line sequences
         strings vectors parallax.propeller.compilerconfig  ;
-IN: parallax.propeller.compilespin
+IN: parallax.propeller.flexbuffer
 
 
-TUPLE: fexbuf data len space growsize ;
+TUPLE: flexbuffer data len space growsize ;
 
 
 : <flexbuffer> ( gs -- fb )
-    flexbuf new
+    flexbuffer new
     f >>data 
     0 >>len
     0 >>space
