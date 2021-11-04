@@ -35,39 +35,7 @@ SYMBOL: outfile
     [
         ascii file-lines 
     ] 
-    [ drop 0 <array> ] if ;
-
-
-! returns NULL if the file failed to open or is 0 length
-: LoadFile ( File-name length File-Path -- string )
-    Buffer = 0
-    File = OpenFileInPath(pFilename, "rb")
-    [ File != NULL ] keep swap
-    [
-        ! get the length of the file by seeking to the end and using ftell
-        fseek(pFile, 0, SEEK_END);
-        *pnLength = ftell(pFile);
-
-        if (*pnLength > 0)
-        {
-            pBuffer = (char*)malloc(*pnLength+1); // allocate a buffer that is the size of the file plus one char
-            pBuffer[*pnLength] = 0; // set the end of the buffer to 0 (null)
-
-            // seek back to the beginning of the file and read it in
-            fseek(pFile, 0, SEEK_SET);
-            fread(pBuffer, 1, *pnLength, pFile);
-        }
-
-        fclose(pFile);
-
-        *ppFilePath = &(s_filesAccessed[s_nFilesAccessed-1][0]);
-    ]
-    [
-        return 0;
-    ]
-
-    return pBuffer;
-;
+    [ drop f 1array ] if ;
 
 
 
