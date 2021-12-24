@@ -1,24 +1,41 @@
 ! Copyright (C) 2021 forthnutter.
 !
 
-USING: math math.bitwise make kernel literals accessors namespaces command-line sequences
-        strings vectors parallax.propeller.compilerconfig parallax.propeller.preprocess ;
+USING: math math.bitwise make kernel literals accessors
+    namespaces command-line sequences
+    strings vectors parallax.propeller.compilerconfig
+    parallax.propeller.preprocess ;
+
 IN: parallax.propeller.compilespin
 
-TUPLE: compilespin verbose quiet filetressoutputonly filelistoutputonly dump usepreprocessor
-        alternatepreprocessormode unusedmethodelimination docmode datonly binary eeprom-size
-        freefile loadfile pp ;
+SYMBOL: s_nObjStackPtr
+SYMBOL: s_pCompilerData
+SYMBOL: s_bFinalCompile
+SYMBOL: s_pCompileResultBuffer
+SYMBOL: s_compilerConfig
+SYMBOL: s_preprocess
+!  
+: <compilespin> ( pCompilerConfig pLoadFileFunc pFreeFileBufferFunc -- )
 
-! lff = load file func
-! ffbf free file buffer function
-: <compilespin> ( lff ffbf -- cs )
-        compilespin new
-        swap >>freefile
-        swap >>loadfile
+    0 s_nObjStackPtr set
+    0 s_pCompilerData set
+    f s_bFinalCompile set
+    0 s_pCompileResultBuffer set
 
-        [ alternatepreprocessormode>> <preprocess> ] keep swap >>pp 
+    rot dup [ s_compilerConfig set ] [ drop ] if
+ 
+    s_pFreeFileBufferFunc set
+    s_pLoadFileFunc set
 
-        [ loadfile>> ] [ freefile>> ] [ pp>> pp-set-file-func ] tri 
+    s_pLoadFileFunc get
+    s_pFreeFileBufferFunc get
+    pp-setfilefunctions
+
+    preprocess new [ s_preprocess set ] keep
+    s_compilerConfig get alternatepreprocessormode>>
+    pp_init
+
+    s_preprocess get
+    "\\'" "{" "}"
+    pp_setcomments
 ;
-
-
