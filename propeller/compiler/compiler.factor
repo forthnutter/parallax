@@ -4,7 +4,9 @@
 USING: arrays math math.bitwise make kernel literals accessors
     namespaces command-line math.parser tools.continuations
     sequences strings vectors io.encodings.ascii io.files io.files.info
-    parallax.propeller.compilerconfig parallax.propeller.compilespin ;
+    parallax.propeller.compilerconfig parallax.propeller.compilespin
+    parallax.propeller.pathentry ;
+
 IN: parallax.propeller.compiler
 
 
@@ -101,6 +103,10 @@ SYMBOL: outfile
     "Verbose" get config get verbose<<
 
     break
+    <pathentry>
+    "C:\\Users\\jmoschini\\Downloads\\PushbuttonLedTest-v1.0.spin"
+    AddFilePath drop
+
     config get
     \ loadfile
     \ freefilebuffer
