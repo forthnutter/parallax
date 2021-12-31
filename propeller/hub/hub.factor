@@ -69,8 +69,11 @@ TUPLE: hub cogs bus ram rom enable lock config ;
 
 : <hub> ( -- hub )
   hub new
+  ! spin vm and loader Plus math tables and character fonts
+  ! needs to be loaded into ROM to be loaded into cog memory
   "work/parallax/propeller/hub/StartupROM.bin" <binfile> >>rom
-  RAMSIZE <byte-array> >>ram
+  RAMSIZE <byte-array> >>ram  ! ram needed for user programs
   <cogs> >>cogs ! cogs is seperate class
-  [ hub-cog-boot ] keep
+  [ hub-cog-boot ] keep   ! boot cog 0 to start loader
+  hub-cog-step  ! do a cog cycle to init cog state
  ;
