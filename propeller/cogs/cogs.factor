@@ -9,6 +9,8 @@ IN: parallax.propeller.cogs
 
 CONSTANT: COGNUMBEROF 8
 
+
+
 TUPLE: cogs cog-array num-longs ;
 
 

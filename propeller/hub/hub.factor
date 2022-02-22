@@ -2,7 +2,9 @@
 !
 
 USING: accessors math math.bitwise make kernel literals byte-arrays binfile
-  vectors sequences tools.continuations parallax.propeller.cogs arrays
+  vectors sequences tools.continuations
+  parallax.propeller.cogs parallax.propeller.inx
+  arrays namespaces
   intel.hex bit-arrays bit-vectors io
  ;
 IN: parallax.propeller.hub
@@ -11,6 +13,8 @@ CONSTANT: ROMSIZE 32768
 CONSTANT: BOOTLOC 0x7800   ! $F800
 CONSTANT: RAMSIZE 32768
 
+SYMBOL: inag
+SYMBOL: inbg
 
 TUPLE: hub cogs bus ram rom enable lock config ;
 
@@ -67,7 +71,16 @@ TUPLE: hub cogs bus ram rom enable lock config ;
     [ print ] each
   ] keep ;
 
+! let get the INA and display it
+: hub-ina ( hub -- hub )
+  [
+
+  ] keep ;
+
+! initalise the HUB 
 : <hub> ( -- hub )
+  0 <inx> inag set ! put INA Object
+  0 <inx> inbg set ! INB object
   hub new
   ! spin vm and loader Plus math tables and character fonts
   ! needs to be loaded into ROM to be loaded into cog memory

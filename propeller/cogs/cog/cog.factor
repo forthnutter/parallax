@@ -2,10 +2,11 @@
 ! See http://factorcode.org/license.txt for BSD license.
 !
 USING: accessors arrays kernel sequences models vectors
+        namespaces
        parallax.propeller.cogs.cog.memory
        parallax.propeller.cogs.cog.par
        parallax.propeller.cogs.cog.cnt
-       parallax.propeller.cogs.cog.inp
+       parallax.propeller.inx
        parallax.propeller.cogs.cog.out
        parallax.propeller.cogs.cog.dir
        parallax.propeller.cogs.cog.ctr
@@ -94,8 +95,8 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
   {
     { 496 [ 0 <par> ] }   ! $01f0 boot parameter
     { 497 [ 0 <cnt> ] }   ! $01f1 system counter
-    { 498 [ 0 <inp> ] }   ! $01f2 Port A input
-    { 499 [ 0 <inp> ] }   ! $01f3 Port B input
+    { 498 [ inag get ] }   ! $01f2 Port A input
+    { 499 [ 0 <inx> ] }   ! $01f3 Port B input
     { 500 [ 0 <out> ] }   ! $01f4 Port A output
     { 501 [ 0 <out> ] }   ! $01f5 Port B output
     { 502 [ 0 <dir> ] }   ! $01f6 Port A Direction
