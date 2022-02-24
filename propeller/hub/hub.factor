@@ -13,8 +13,6 @@ CONSTANT: ROMSIZE 32768
 CONSTANT: BOOTLOC 0x7800   ! $F800
 CONSTANT: RAMSIZE 32768
 
-SYMBOL: inag
-SYMBOL: inbg
 
 TUPLE: hub cogs bus ram rom enable lock config ;
 
@@ -79,8 +77,8 @@ TUPLE: hub cogs bus ram rom enable lock config ;
 
 ! initalise the HUB 
 : <hub> ( -- hub )
-  0 <inx> inag set ! put INA Object
-  0 <inx> inbg set ! INB object
+  0 <inx> "INA" set ! put INA Object
+  0 <inx> "INB" set ! INB object
   hub new
   ! spin vm and loader Plus math tables and character fonts
   ! needs to be loaded into ROM to be loaded into cog memory

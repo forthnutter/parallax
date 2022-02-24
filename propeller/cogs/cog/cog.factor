@@ -95,7 +95,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
   {
     { 496 [ 0 <par> ] }   ! $01f0 boot parameter
     { 497 [ 0 <cnt> ] }   ! $01f1 system counter
-    { 498 [ inag get ] }   ! $01f2 Port A input
+    { 498 [ "INA" get ] }   ! $01f2 Port A input
     { 499 [ 0 <inx> ] }   ! $01f3 Port B input
     { 500 [ 0 <out> ] }   ! $01f4 Port A output
     { 501 [ 0 <out> ] }   ! $01f5 Port B output
@@ -123,6 +123,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
   [
     drop 0 <memory> 
   ] map >vector
+  [ 498 swap nth "INA" get swap add-memory-read ] keep
   [ 500 swap nth 0 <out> swap add-memory-write ] keep   ! out A
   [ 502 swap nth 0 <dir> swap add-memory-write ] keep   ! dir A
 

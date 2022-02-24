@@ -1,7 +1,8 @@
 ! Copyright (C) 2011 Joseph L Moschini.
 ! See http://factorcode.org/license.txt for BSD license.
 !
-USING: accessors arrays kernel sequences models vectors tools.continuations ;
+USING: accessors arrays kernel sequences models
+   vectors tools.continuations ;
 
 IN: parallax.propeller.inx
 
@@ -17,6 +18,7 @@ M: inx read
    value>> ;
 
 : inx-read ( inx -- d )
+   break
   value>> ;
 
 ! we cannot write to this port 
