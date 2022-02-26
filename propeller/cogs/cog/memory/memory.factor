@@ -23,5 +23,11 @@ M: memory model-changed
 : add-memory-write ( object memory -- )
    add-connection ;
 
+: memory-add-dependency ( object memory -- )
+   add-dependency ;
+
+: memory-activate ( memory -- )
+   activate-model ;
+
 : <memory> ( value -- memory )
   memory new-model ;
