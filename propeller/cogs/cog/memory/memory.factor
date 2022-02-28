@@ -29,5 +29,9 @@ M: memory model-changed
 : memory-activate ( memory -- )
    activate-model ;
 
+: memory-deactivate ( memory -- )
+   deactivate-model ;
+
+   
 : <memory> ( value -- memory )
   memory new-model ;
