@@ -127,13 +127,19 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
     memory-activate
   ] each ;
 
-: cog-mem-deactivate (cog -- )
+: cog-mem-deactivate ( cog -- )
   memory>>
+  [
+    memory-deactivate
+  ] each ;
 
 ! routine to inject a object into dependecy
 ! may require memory deactivation and then activation
-: cog-set-mem-dependency( object address vector -- )
+: memory-set-dependency ( object address memory -- )
   nth memory-add-dependency ;
+
+: cog-mem-dependency ( object address cog -- )
+  memory>> memory-set-dependency ;
 
 ! Build the cog memory
 : cog-mem-setup ( -- vector )
