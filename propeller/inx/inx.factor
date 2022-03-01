@@ -12,18 +12,20 @@ TUPLE: inx < model ;
 
 ! basic read of INX
 GENERIC: read ( inx -- d )
+GENERIC: write ( d inx -- )
 
 ! Just read the value
 M: inx read
    value>> ;
 
-: inx-read ( inx -- d )
-   break
-  value>> ;
+M: inx write
+   set-model ;
 
-! we cannot write to this port 
-: inx-write ( d inp -- )
-   drop drop ;
+! make sure when activated the value is passed back
+! cogs memory
+M: inx model-activated
+   break
+   [ value>> ] keep write ;
 
 : <inx> ( value -- inp )
    inx new-model ;
