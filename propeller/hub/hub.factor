@@ -19,7 +19,7 @@ TUPLE: hub cogs bus ram rom enable lock config ;
 
 
 ! sigle cycle cog
-: hub-cog-step ( hub -- hub )
+: hub-step ( hub -- hub )
   [ cogs>> cogs-step-cycle ] keep ;
 
 ! single step cog
@@ -72,13 +72,12 @@ TUPLE: hub cogs bus ram rom enable lock config ;
 ! let get the INA and display it
 : hub-ina ( hub -- hub )
   [
-
+    cogs>> cogs-ina-read
+    [ print ] each
   ] keep ;
 
 ! initalise the HUB 
 : <hub> ( -- hub )
-  0 <inx> "INA" set ! put INA Object
-  0 <inx> "INB" set ! INB object
   hub new
   ! spin vm and loader Plus math tables and character fonts
   ! needs to be loaded into ROM to be loaded into cog memory
@@ -86,5 +85,5 @@ TUPLE: hub cogs bus ram rom enable lock config ;
   RAMSIZE <byte-array> >>ram  ! ram needed for user programs
   <cogs> >>cogs ! cogs is seperate class
   [ hub-cog-boot ] keep   ! boot cog 0 to start loader
-  hub-cog-step  ! do a cog cycle to init cog state
+  hub-step  ! do a cog cycle to init cog state
  ;
