@@ -121,13 +121,13 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
 
 ! this will make all dependency point to memory 
 ! so the memory will update to dependency changes
-: cog-mem-activate ( cog -- )
+: cog-activate ( cog -- )
   memory>>
   [
     memory-activate
   ] each ;
 
-: cog-mem-deactivate ( cog -- )
+: cog-deactivate ( cog -- )
   memory>>
   [
     memory-deactivate
@@ -147,8 +147,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
   [
     drop 0 <memory> 
   ] map >vector
-  [ 498 swap nth "INA" get swap memory-add-dependency ] keep
-  [ 499 swap nth "INB" get swap memory-add-dependency ] keep 
   [ 500 swap nth 0 <out> swap add-memory-write ] keep   ! out A
   [ 502 swap nth 0 <dir> swap add-memory-write ] keep   ! dir A
 
@@ -177,7 +175,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
 
 
 : cog-read ( address cog -- d )
-  cog-memory memory-read ;
+  cog-memory read ;
 
 : cog-read-array ( n address cog -- array )
   [ f <array> ] 2dip rot
@@ -536,10 +534,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
 ;
 
 
-! wait for hub routine
-: cog-hub ( cog -- cog )
-  ;
-
 ! return string value z
 : z-string ( ? -- str )
   [ "Z" ] [ "z" ] if ;
@@ -604,7 +598,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
 : new-cog ( n cog -- cog' )
   new swap >>n        ! allocate memory save the number of cog
   cog-mem-setup >>memory  ! initialise memory componnet
-  [ cog-mem-activate ] keep
   <alu> >>alu         ! alu is a seperate class
   [ cog-reset ] keep  ! cog is in reset state
   <cogdasm> >>mneu
