@@ -1,8 +1,8 @@
 ! Wraper for cog
 ! to display memory and registers
 
-USING: accessors arrays kernel parallax.propeller.cogs.cog
-      math parallax.propeller.inx
+USING: accessors arrays ascii kernel parallax.propeller.cogs.cog
+      math math.parser parallax.propeller.inx
       sequences tools.continuations vectors ;
 
 
@@ -42,7 +42,6 @@ TUPLE: cogs cog-array num-longs ina inb ;
 
 ! Add to each cog the object dependency
 : cogs-add-dependency ( object address cogs -- )
-  break
   cog-array>>
   [
     [ 2dup ] dip
@@ -53,6 +52,13 @@ TUPLE: cogs cog-array num-longs ina inb ;
   [ [ ina>> INA_ADDRESS ] keep cogs-add-dependency ]
   [ [ inb>> INB_ADDRESS ] keep cogs-add-dependency ]
   bi ;
+
+! go through all cogs and activate all memory dependecies
+: cogs-activate ( cogs -- )
+  cog-array>>
+  [
+    cog-activate
+  ] each ;
 
 ! cog display memory
 : cogs-mdl ( n cogn address cogs -- $array )
@@ -91,6 +97,15 @@ TUPLE: cogs cog-array num-longs ina inb ;
 : cogs-boot ( array cogs -- )
   cog-array>> first [ cog-copy ] keep cog-active ;
 
+
+! read INA value and return string
+: cogs-ina-read ( cogs -- $array )
+  1 <vector> swap   ! cogs first
+  ina>> read >hex 8 CHAR: 0 pad-head >upper
+  "$" prepend swap 
+  [ push ] keep ;
+
+
 : <cogs> ( -- cogs )
   break
   cogs new
@@ -99,4 +114,5 @@ TUPLE: cogs cog-array num-longs ina inb ;
   cogs-array >>cog-array
   4 >>num-longs ! this is the defult number of data longs to display
   [ cogs-set-dependency ] keep
+  [ cogs-activate ] keep
   ;
