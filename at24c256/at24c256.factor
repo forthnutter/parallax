@@ -8,6 +8,8 @@ CONSTANT: AT24C256_SIZE 32767
 
 TUPLE: 24c256 scl sda address array ;
 
+GENERIC: scl ( ? -- )
+GENERIC: sda ( ? -- )
 
 M: 24c256 model-changed
 
