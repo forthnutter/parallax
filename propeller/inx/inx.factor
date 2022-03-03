@@ -18,8 +18,14 @@ GENERIC: write ( d inx -- )
 M: inx read
    value>> ;
 
+! lets write
 M: inx write
    set-model ;
+
+! a change is applied by external routine
+M: inx model-changed
+   break
+   write ;  ! this will change obsevers
 
 ! make sure when activated the value is passed back
 ! cogs memory
