@@ -6,7 +6,6 @@ USING: accessors arrays kernel sequences models vectors
        parallax.propeller.cogs.cog.memory
        parallax.propeller.cogs.cog.par
        parallax.propeller.cogs.cog.cnt
-       parallax.propeller.inx
        parallax.propeller.cogs.cog.out
        parallax.propeller.cogs.cog.dir
        parallax.propeller.cogs.cog.ctr
@@ -21,6 +20,7 @@ USING: accessors arrays kernel sequences models vectors
 ;
 
 IN: parallax.propeller.cogs.cog
+
 
 ! Constants
 CONSTANT: COG_INACTIVE                  0
@@ -95,8 +95,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
   {
     { 496 [ 0 <par> ] }   ! $01f0 boot parameter
     { 497 [ 0 <cnt> ] }   ! $01f1 system counter
-    { 498 [ "INA" get ] }   ! $01f2 Port A input
-    { 499 [ 0 <inx> ] }   ! $01f3 Port B input
     { 500 [ 0 <out> ] }   ! $01f4 Port A output
     { 501 [ 0 <out> ] }   ! $01f5 Port B output
     { 502 [ 0 <dir> ] }   ! $01f6 Port A Direction
