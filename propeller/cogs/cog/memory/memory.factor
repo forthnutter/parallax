@@ -6,6 +6,7 @@ IN: parallax.propeller.cogs.cog.memory
 
 TUPLE: memory < model ;
 
+
 GENERIC: read ( memory -- data )
 
 M: memory read
