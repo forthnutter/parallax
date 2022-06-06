@@ -7,11 +7,21 @@ USING:  accessors kernel math math.functions math.trig
 
 IN: parallax.vp
 
-TUPLE: block-gadget < pack ;
+TUPLE: block-gadget < gadget ;
 
-: <block-gadget> ( -- block-gadget )
-    block-gadget new horizontal >>orientation
+: <block-gadget> ( -- gadget )
+    block-gadget new ;
+
+
+TUPLE: block-frame < pack ;
+
+: <block-frame> ( -- gadget )
+    block-freame new horizontal >>orientation
     { 512 512 } >>pref-dim ;
+
+
+
+
 
 : vec>deg ( vec -- deg ) first2 rect> arg rad>deg ;
 
