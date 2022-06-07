@@ -16,7 +16,7 @@ TUPLE: block-gadget < gadget ;
 TUPLE: block-frame < pack ;
 
 : <block-frame> ( -- gadget )
-    block-freame new horizontal >>orientation
+    block-frame new horizontal >>orientation
     { 512 512 } >>pref-dim ;
 
 
