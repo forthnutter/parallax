@@ -1,11 +1,22 @@
 ! visual Propeller Assembler
 ! Copyright (C) 2022 forthnutter.
 
-USING:  accessors kernel math math.functions math.trig
-    opengl opengl.demo-support opengl.gl sequences
-    ui ui.gadgets ui.gadgets.labels ui.gadgets.packs ;
+USING:  accessors arrays kernel math math.functions math.trig
+    models opengl opengl.demo-support opengl.gl
+    sequences
+    ui ui.gadgets ui.gadgets.labels ui.gadgets.packs
+    ui.gadgets.tables ;
 
 IN: parallax.vp
+
+TUPLE: multi-model < model important? ;
+
+
+TUPLE: basic-model < multi-model ;
+
+
+: <basic> ( value -- model ) basic-model new-model ;
+
 
 TUPLE: block-gadget < gadget ;
 
@@ -19,23 +30,18 @@ TUPLE: block-frame < pack ;
     block-frame new horizontal >>orientation
     { 512 512 } >>pref-dim ;
 
+TUPLE: combo-table < table spawner ;
+
+TUPLE: combobox < label-control table ;
+
+: <combobox> ( options -- combobox )
+    [ first [ combobox new-label ] keep
+        <basic> >>model
+    ] keep
+    <basic> combo-table new-table
+    [ 1array ] >>quot >>table ;
 
 
-
-
-: vec>deg ( vec -- deg ) first2 rect> arg rad>deg ;
-
-
-: block-draw ( block -- )
-    dup pos>>
-    [
-        vel>> vec>deg 0 0 1 glRotated GL_TRIANGLES
-        [
-            -6.0 4.0 glVertex2f
-            -6.0 -4.0 glVertex2f
-            8.0 0.0 glVertex2f
-        ] do-state
-    ] with-translation ;
 
 
 MAIN-WINDOW: vp-go { { title "Visual Parallax Assembler" } }
