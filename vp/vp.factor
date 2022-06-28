@@ -4,8 +4,8 @@
 USING:  accessors arrays kernel math
     math.functions math.rectangles
     math.trig
-    models opengl opengl.demo-support opengl.gl
-    sequences
+    models opengl opengl.demo-support opengl.debug
+    opengl.gl sequences
     ui ui.gadgets ui.gadgets.borders ui.gadgets.glass
     ui.gadgets.labels ui.gadgets.packs
     ui.gadgets.tables 
