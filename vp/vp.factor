@@ -89,7 +89,7 @@ combobox
     <block-frame>
     <block-gadget>
     add-gadget
-    { "first" "second" } <combobox>
+    { "first" "second" "third" } <combobox>
     add-gadget
     { 2 2 } <border> ;
 
