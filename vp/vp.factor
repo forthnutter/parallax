@@ -34,6 +34,10 @@ TUPLE: block-frame < pack ;
     block-frame new horizontal >>orientation
     { 512 512 } >>pref-dim ;
 
+M: block-frame pref-dim* ( gadget -- dim )
+    drop 512 512 2array ;
+
+
 TUPLE: ctable < table { quot initial: [ ] } { val-quot initial: [ ] }
     color-quot column-titles column-alignment actions ;
 
@@ -53,6 +57,7 @@ M: ctable row-color color-quot>> [ call( a -- b ) ] [ drop f ] if* ;
 : <list> ( column-model -- table ) <ctable> [ 1array ] >>quot ;
 : <list*> ( -- table ) V{ } clone <model> <list> ;
 : indexed ( table -- table ) f >>val-quot ;
+
 
 
 TUPLE: combo-table < ctable spawner ;
