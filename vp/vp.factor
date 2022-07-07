@@ -31,8 +31,8 @@ TUPLE: block-gadget < gadget ;
 TUPLE: block-frame < pack ;
 
 : <block-frame> ( -- gadget )
-    block-frame new horizontal >>orientation
-    { 512 512 } >>pref-dim ;
+    block-frame new horizontal >>orientation ;
+   ! { 512 512 } >>pref-dim ;
 
 M: block-frame pref-dim* ( gadget -- dim )
     drop 512 512 2array ;
@@ -100,5 +100,5 @@ combobox
 
 
 MAIN-WINDOW: vp-go { { title "Visual Parallax Assembler" } }
-    B create-gadgets >>gadgets ;
+     create-gadgets >>gadgets ;
 
