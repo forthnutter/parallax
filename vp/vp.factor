@@ -1,7 +1,7 @@
 ! visual Propeller Assembler
 ! Copyright (C) 2022 forthnutter.
 
-USING:  accessors arrays kernel math
+USING:  accessors arrays colors.constants kernel math
     math.functions math.rectangles
     math.trig
     models opengl opengl.demo-support opengl.debug
@@ -9,7 +9,7 @@ USING:  accessors arrays kernel math
     ui ui.gadgets ui.gadgets.borders ui.gadgets.glass
     ui.gadgets.labels ui.gadgets.packs
     ui.gadgets.tables 
-    ui.gestures ;
+    ui.gestures ui.pens.solid ;
 
 IN: parallax.vp 
 
@@ -91,12 +91,17 @@ combobox
 
 
 : create-gadgets ( -- gadgets )
+    B
     <block-frame>
     <block-gadget>
     add-gadget
     { "first" "second" "third" } <combobox>
-    add-gadget
-    { 2 2 } <border> ;
+    { 5 5 } <border>
+    COLOR: cyan
+    <solid> >>boundary
+    
+    add-gadget ;
+ 
 
 
 MAIN-WINDOW: vp-go { { title "Visual Parallax Assembler" } }
