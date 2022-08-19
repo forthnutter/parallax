@@ -2,7 +2,7 @@
 ! to display memory and registers
 
 USING: accessors arrays ascii kernel parallax.propeller.cogs.cog
-      math math.parser parallax.propeller.inx
+      math math.parser parallax.propeller.inx parallax.propeller.ddrx
       sequences tools.continuations vectors ;
 
 
@@ -11,10 +11,15 @@ IN: parallax.propeller.cogs
 CONSTANT: COGNUMBEROF 8
 CONSTANT: INA_ADDRESS 498
 CONSTANT: INB_ADDRESS 499
+CONSTANT: OUTA_ADDRESS 500
+CONSTANT: OUTB_ADDRESS 501
+CONSTANT: DDRA_ADDRESS 502
+CONSTANT: DDRB_ADDRESS 503
 
 
 
-TUPLE: cogs cog-array num-longs ina inb ;
+
+TUPLE: cogs cog-array num-longs ina inb ddra ddrb ;
 
 
 ! create an instance of 8 cogs
@@ -49,8 +54,12 @@ TUPLE: cogs cog-array num-longs ina inb ;
   ] each 2drop ;
 
 : cogs-set-dependency ( cogs -- )
+  [  
   [ [ ina>> INA_ADDRESS ] keep cogs-add-dependency ]
   [ [ inb>> INB_ADDRESS ] keep cogs-add-dependency ]
+  bi ] keep
+  [ [ ddra>> DDRA_ADDRESS ] keep cogs-add-dependency ]
+  [ [ ddrb>> DDRB_ADDRESS ] keep cogs-add-dependency ]
   bi ;
 
 ! go through all cogs and activate all memory dependecies
@@ -111,6 +120,8 @@ TUPLE: cogs cog-array num-longs ina inb ;
   cogs new
   0 <inx> >>ina     ! INA is a global input
   0 <inx> >>inb     ! same for INB 
+  0 <ddrx> >>ddra   ! all cogs have the same 
+  0 <ddrx> >>ddrb
   cogs-array >>cog-array
   4 >>num-longs ! this is the defult number of data longs to display
   [ cogs-set-dependency ] keep
