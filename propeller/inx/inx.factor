@@ -11,41 +11,41 @@ IN: parallax.propeller.inx
 TUPLE: inx < model ;
 
 ! basic read of INX
-GENERIC: read ( inx -- d )
-GENERIC: write ( d inx -- )
+GENERIC: in-read ( inx -- d )
+GENERIC: in-write ( d inx -- )
 
 ! Just read the value
-M: inx read
+M: inx in-read
    value>> ;
 
 ! lets write
-M: inx write
+M: inx in-write
    set-model ;
 
 ! a change is applied by external routine
 M: inx model-changed
    break
-   write ;  ! this will change obsevers
+   in-write ;  ! this will change obsevers
 
 ! make sure when activated the value is passed back
 ! cogs memory all cogs will change at the same time as inx
 M: inx model-activated
    break
-   [ value>> ] keep write ;
+   [ value>> ] keep in-write ;
 
 ! Sets the n th bit of inx to one
 : inx-set-bit ( inx n -- )
    [ dup value>> ] dip set-bit
-   swap write ;
+   swap in-write ;
 
 ! Sets the n th bit of inx to zero 
 : inx-clear-bit ( inx n -- )
    [ dup value>> ] dip clear-bit
-   swap write ;
+   swap in-write ;
 
 ! return inx into binary string
 : inx>bin ( inx -- str )
-   read >bin 32 CHAR: 0 pad-head ;
+   in-read >bin 32 CHAR: 0 pad-head ;
 
 : <inx> ( value -- inp )
    inx new-model ;

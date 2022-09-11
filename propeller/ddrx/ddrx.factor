@@ -11,41 +11,41 @@ IN: parallax.propeller.ddrx
 TUPLE: ddrx < model ;
 
 ! basic read of DDRx
-GENERIC: read ( ddrx -- d )
-GENERIC: write ( d ddrx -- )
+GENERIC: ddr-read ( ddrx -- d )
+GENERIC: ddr-write ( d ddrx -- )
 
 ! Just read the value
-M: ddrx read
+M: ddrx ddr-read
    value>> ;
 
 ! lets write
-M: ddrx write
+M: ddrx ddr-write
    set-model ;
 
 ! a change is applied by external routine
 M: ddrx model-changed
    break
-   write ;  ! this will change obsevers
+   ddr-write ;  ! this will change obsevers
 
 ! make sure when activated the value is passed back
 ! cogs memory all cogs will change at the same time as inx
 M: ddrx model-activated
    break
-   [ value>> ] keep write ;
+   [ value>> ] keep ddr-write ;
 
 ! Sets the n th bit of DDR to one
 : ddrx-set-bit ( ddrx n -- )
    [ dup value>> ] dip set-bit
-   swap write ;
+   swap ddr-write ;
 
 ! Sets the n th bit of inx to zero 
 : ddrx-clear-bit ( ddrx n -- )
    [ dup value>> ] dip clear-bit
-   swap write ;
+   swap ddr-write ;
 
 ! return DDR into binary string
 : ddrx>bin ( ddrx -- str )
-   read >bin 32 CHAR: 0 pad-head ;
+   ddr-read >bin 32 CHAR: 0 pad-head ;
 
 : <ddrx> ( value -- inp )
    ddrx new-model ;

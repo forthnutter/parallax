@@ -110,7 +110,7 @@ TUPLE: cogs cog-array num-longs ina inb ddra ddrb ;
 ! read INA value and return string
 : cogs-ina-read ( cogs -- $array )
   1 <vector> swap   ! cogs first
-  ina>> read >hex 8 CHAR: 0 pad-head >upper
+  ina>> in-read >hex 8 CHAR: 0 pad-head >upper
   "$" prepend swap 
   [ push ] keep ;
 

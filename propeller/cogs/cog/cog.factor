@@ -85,7 +85,8 @@ CONSTANT: SPR_SIZE    16
 
 ! tuple to hold cog stuff
 
-TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu wstate ;
+TUPLE: cog n pc pcold alu z c memory state isn fisn
+    source dest result bp mneu wstate orio ;
 
 
 : cog-memory ( address cog -- memory )
@@ -133,11 +134,11 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
 
 ! routine to inject a object into dependecy
 ! may require memory deactivation and then activation
-: memory-set-dependency ( object address memory -- )
-  nth memory-add-dependency ;
+! : memory-set-dependency ( object address memory -- )
+!  nth memory-add-dependency ;
 
 : cog-mem-dependency ( object address cog -- )
-  memory>> memory-set-dependency ;
+  memory>> nth memory-add-dependency ;
 
 ! Build the cog memory
 : cog-mem-setup ( -- vector )
@@ -145,12 +146,16 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
   [
     drop 0 <memory> 
   ] map >vector
-  [ 500 swap nth 0 <out> swap add-memory-write ] keep   ! out A
+!  [ 500 swap nth 0 <out> swap add-memory-write ] keep   ! out A
   [ 502 swap nth 0 <dir> swap add-memory-write ] keep   ! dir A
 
  ;
 
+! set up cog dependency for all special functions
+: cog-set-dependency ( cog -- )
+    [ 0 <out> 500 ] dip cog-mem-dependency ;
 
+ 
 : cog-reset ( cog -- )
   0 >>pc 0 >>pcold COG_START_ISN >>isn
   COG_INACTIVE >>state
@@ -600,8 +605,12 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn source dest result bp mneu w
   [ cog-reset ] keep  ! cog is in reset state
   <cogdasm> >>mneu
   COG_HUB_GO >>wstate ! need to know if the cog is waiting for hub
-  V{ } clone >>bp ;   ! break points
+  V{ } clone >>bp     ! break points
+  [ cog-set-dependency ] keep
+;
 
 ! create a cog and state is inactive
 : <cog> ( n -- cog )
-  cog new-cog ; ! create the cog class
+    break
+  cog new-cog ! create the cog class
+;
