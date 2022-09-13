@@ -54,12 +54,8 @@ TUPLE: cogs cog-array num-longs ina inb ddra ddrb ;
   ] each 2drop ;
 
 : cogs-set-dependency ( cogs -- )
-  [  
   [ [ ina>> INA_ADDRESS ] keep cogs-add-dependency ]
   [ [ inb>> INB_ADDRESS ] keep cogs-add-dependency ]
-  bi ] keep
-  [ [ ddra>> DDRA_ADDRESS ] keep cogs-add-dependency ]
-  [ [ ddrb>> DDRB_ADDRESS ] keep cogs-add-dependency ]
   bi ;
 
 ! go through all cogs and activate all memory dependecies
@@ -120,8 +116,6 @@ TUPLE: cogs cog-array num-longs ina inb ddra ddrb ;
   cogs new
   0 <inx> >>ina     ! INA is a global input
   0 <inx> >>inb     ! same for INB 
-  0 <ddrx> >>ddra   ! all cogs have the same 
-  0 <ddrx> >>ddrb
   cogs-array >>cog-array
   4 >>num-longs ! this is the defult number of data longs to display
   [ cogs-set-dependency ] keep
