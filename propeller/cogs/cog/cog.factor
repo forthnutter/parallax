@@ -6,13 +6,14 @@ USING: accessors arrays kernel sequences models vectors
        parallax.propeller.cogs.cog.memory
        parallax.propeller.cogs.cog.par
        parallax.propeller.cogs.cog.cnt
-       parallax.propeller.cogs.cog.out
        parallax.propeller.cogs.cog.dir
        parallax.propeller.cogs.cog.ctr
        parallax.propeller.cogs.cog.frq
        parallax.propeller.cogs.cog.phs
        parallax.propeller.cogs.cog.vcfg
        parallax.propeller.cogs.cog.vscl
+       parallax.propeller.orx
+       parallax.propeller.outx
        math math.bitwise math.parser alien.syntax combinators
        io.binary grouping bit-arrays bit-vectors
        parallax.propeller.cogs.alu tools.continuations
@@ -86,7 +87,7 @@ CONSTANT: SPR_SIZE    16
 ! tuple to hold cog stuff
 
 TUPLE: cog n pc pcold alu z c memory state isn fisn
-    source dest result bp mneu wstate orio ;
+    source dest result bp mneu wstate outor ;
 
 
 : cog-memory ( address cog -- memory )
@@ -96,8 +97,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   {
     { 496 [ 0 <par> ] }   ! $01f0 boot parameter
     { 497 [ 0 <cnt> ] }   ! $01f1 system counter
-    { 500 [ 0 <out> ] }   ! $01f4 Port A output
-    { 501 [ 0 <out> ] }   ! $01f5 Port B output
+
     { 502 [ 0 <dir> ] }   ! $01f6 Port A Direction
     { 503 [ 0 <dir> ] }   ! $01f7 Port B Direction
     { 504 [ 0 <ctr> ] }   ! $01f8 Counter A control
@@ -151,9 +151,18 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
  ;
 
+! create an Out and then add orx model
+: cog-out-set ( cog -- outx )
+    [ 0 <outx> ] dip ! outx cog
+    outor>>           ! outx orx
+     swap             ! orx outx
+    [ add-connection ] keep
+;
+
+
 ! set up cog dependency for all special functions
 : cog-set-dependency ( cog -- )
-    [ 0 <out> 500 ] dip cog-mem-dependency ;
+    [ cog-out-set 500 ] keep cog-mem-dependency ;
 
  
 : cog-reset ( cog -- )
@@ -606,7 +615,9 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   <cogdasm> >>mneu
   COG_HUB_GO >>wstate ! need to know if the cog is waiting for hub
   V{ } clone >>bp     ! break points
+  0 <orx> >>outor      ! or all the out amd some special function
   [ cog-set-dependency ] keep
+
 ;
 
 ! create a cog and state is inactive

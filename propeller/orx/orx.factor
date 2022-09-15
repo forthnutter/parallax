@@ -2,7 +2,7 @@
 ! See http://factorcode.org/license.txt for BSD license.
 
 
-USING: accessors arrays kernel sequences models
+USING: accessors arrays kernel sequences math models
    vectors tools.continuations ;
 
 IN: parallax.propeller.orx
@@ -32,7 +32,7 @@ M: orx model-changed
    or-write ;  ! this will change obsevers
 
 ! make sure when activated the value is passed back
-! cogs memory all cogs will change at the same time as inx
+! cogs memory all cogs will change at the same time as orx
 M: orx model-activated
    break
    [ value>> ] keep or-write ;
