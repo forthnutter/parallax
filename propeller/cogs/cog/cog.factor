@@ -6,14 +6,15 @@ USING: accessors arrays kernel sequences models vectors
        parallax.propeller.cogs.cog.memory
        parallax.propeller.cogs.cog.par
        parallax.propeller.cogs.cog.cnt
-       parallax.propeller.cogs.cog.dir
-       parallax.propeller.cogs.cog.ctr
        parallax.propeller.cogs.cog.frq
        parallax.propeller.cogs.cog.phs
        parallax.propeller.cogs.cog.vcfg
        parallax.propeller.cogs.cog.vscl
        parallax.propeller.orx
        parallax.propeller.outx
+       parallax.propeller.andx
+       parallax.propeller.ddrx
+       parallax.propeller.ctrx
        math math.bitwise math.parser alien.syntax combinators
        io.binary grouping bit-arrays bit-vectors
        parallax.propeller.cogs.alu tools.continuations
@@ -87,7 +88,8 @@ CONSTANT: SPR_SIZE    16
 ! tuple to hold cog stuff
 
 TUPLE: cog n pc pcold alu z c memory state isn fisn
-    source dest result bp mneu wstate outor ;
+    source dest result bp mneu wstate gateone gatetwo
+    gatethree gatefour ;
 
 
 : cog-memory ( address cog -- memory )
@@ -98,10 +100,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     { 496 [ 0 <par> ] }   ! $01f0 boot parameter
     { 497 [ 0 <cnt> ] }   ! $01f1 system counter
 
-    { 502 [ 0 <dir> ] }   ! $01f6 Port A Direction
-    { 503 [ 0 <dir> ] }   ! $01f7 Port B Direction
-    { 504 [ 0 <ctr> ] }   ! $01f8 Counter A control
-    { 505 [ 0 <ctr> ] }   ! $01f9 Counter B control
     { 506 [ 0 <frq> ] }   ! $01fa Counter A Frequency
     { 507 [ 0 <frq> ] }   ! $01fb Counter B Frequency
     { 508 [ 0 <phs> ] }   ! $01fc Counter A phase
@@ -146,23 +144,37 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   [
     drop 0 <memory> 
   ] map >vector
-!  [ 500 swap nth 0 <out> swap add-memory-write ] keep   ! out A
-  [ 502 swap nth 0 <dir> swap add-memory-write ] keep   ! dir A
+;
 
- ;
 
+! create and 
 ! create an Out and then add orx model
 : cog-out-set ( cog -- outx )
     [ 0 <outx> ] dip ! outx cog
-    outor>>           ! outx orx
-     swap             ! orx outx
+    gateone>> swap             ! orx outx
     [ add-connection ] keep
+;
+
+: cog-ddr-set ( cog -- ddrx )
+    [ 0 <ddrx> ] dip
+    [ gatetwo>> swap [ add-connection ] keep ] keep
+    gatefour>> swap [ add-connection ] keep
+;
+
+: cog-ctr-set ( cog -- ctrx )
+    [ 0 <ctrx> ] dip
+    gateone>> swap [ add-connection ] keep
 ;
 
 
 ! set up cog dependency for all special functions
-: cog-set-dependency ( cog -- )
-    [ cog-out-set 500 ] keep cog-mem-dependency ;
+: cog-set-dependency ( cog -- cog )
+    break
+    [ [ cog-out-set 500 ] keep cog-mem-dependency ] keep
+    [ [ cog-ddr-set 502 ] keep cog-mem-dependency ] keep
+    [ [ cog-ctr-set 503 ] keep cog-mem-dependency ] keep
+    [ [ cog-ctr-set 504 ] keep cog-mem-dependency ] keep
+    ;
 
  
 : cog-reset ( cog -- )
@@ -606,6 +618,18 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-list-pc ( cog -- str/f )
   [ pcold>> ] keep cog-list ;
 
+! or connects to and
+: cog-orand ( cog -- cog )
+    [ gatetwo>> ] keep
+    [ gateone>> add-connection ] keep
+; 
+
+: cog-andor ( cog -- cog )
+    [ gatethree>> ] keep
+    [ gatetwo>> add-connection ] keep
+;
+
+
 ! create a cog and state is inactive
 : new-cog ( n cog -- cog' )
   new swap >>n        ! allocate memory save the number of cog
@@ -615,13 +639,16 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   <cogdasm> >>mneu
   COG_HUB_GO >>wstate ! need to know if the cog is waiting for hub
   V{ } clone >>bp     ! break points
-  0 <orx> >>outor      ! or all the out amd some special function
-  [ cog-set-dependency ] keep
+  0 <orx> >>gateone      ! or all the out amd some special function
+  0 <andx> >>gatetwo     !
+  0 <orx> >>gatethree    ! or out to next cog
+  0 <orx> >>gatefour
+  cog-orand
+  cog-set-dependency
 
 ;
 
 ! create a cog and state is inactive
 : <cog> ( n -- cog )
-    break
   cog new-cog ! create the cog class
 ;
