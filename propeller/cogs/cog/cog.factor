@@ -8,13 +8,13 @@ USING: accessors arrays kernel sequences models vectors
        parallax.propeller.cogs.cog.cnt
        parallax.propeller.cogs.cog.frq
        parallax.propeller.cogs.cog.phs
-       parallax.propeller.cogs.cog.vcfg
        parallax.propeller.cogs.cog.vscl
        parallax.propeller.orx
        parallax.propeller.outx
        parallax.propeller.andx
        parallax.propeller.ddrx
        parallax.propeller.ctrx
+       parallax.propeller.vcfgx
        math math.bitwise math.parser alien.syntax combinators
        io.binary grouping bit-arrays bit-vectors
        parallax.propeller.cogs.alu tools.continuations
@@ -104,7 +104,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     { 507 [ 0 <frq> ] }   ! $01fb Counter B Frequency
     { 508 [ 0 <phs> ] }   ! $01fc Counter A phase
     { 509 [ 0 <phs> ] }   ! $01fd Counter B phase
-    { 510 [ 0 <vcfg> ] }  ! $01fe Video Configuration
+
     { 511 [ 0 <vscl> ] }  ! $01ff Video Scale
     [ drop 0 <memory> ]   ! default general memory function
   } case ;
@@ -166,6 +166,12 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     gateone>> swap [ add-connection ] keep
 ;
 
+: cog-vcfg-set ( cog -- vcfgx )
+    [ 0 <vcfgx> ] dip
+    gateone>> swap
+    [ add-connection ] keep
+;
+
 
 ! set up cog dependency for all special functions
 : cog-set-dependency ( cog -- cog )
@@ -174,7 +180,8 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ [ cog-ddr-set 502 ] keep cog-mem-dependency ] keep
     [ [ cog-ctr-set 503 ] keep cog-mem-dependency ] keep
     [ [ cog-ctr-set 504 ] keep cog-mem-dependency ] keep
-    ;
+    [ [ cog-vcfg-set 510 ] keep cog-mem-dependency ] keep
+;
 
  
 : cog-reset ( cog -- )
