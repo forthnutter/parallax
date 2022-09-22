@@ -138,6 +138,10 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-mem-dependency ( object address cog -- )
   memory>> nth memory-add-dependency ;
 
+
+: cog-mem-connection ( object address cog -- )
+  memory>> nth add-connection ;
+
 ! Build the cog memory
 : cog-mem-setup ( -- vector )
   MEMORY_SIZE f <array>
@@ -174,13 +178,12 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 
 ! set up cog dependency for all special functions
-: cog-set-dependency ( cog -- cog )
-    break
-    [ [ cog-out-set 500 ] keep cog-mem-dependency ] keep
-    [ [ cog-ddr-set 502 ] keep cog-mem-dependency ] keep
-    [ [ cog-ctr-set 503 ] keep cog-mem-dependency ] keep
-    [ [ cog-ctr-set 504 ] keep cog-mem-dependency ] keep
-    [ [ cog-vcfg-set 510 ] keep cog-mem-dependency ] keep
+: cog-set-connections ( cog -- cog )
+    [ [ cog-out-set 500 ] keep cog-mem-connection ] keep
+    [ [ cog-ddr-set 502 ] keep cog-mem-connection ] keep
+    [ [ cog-ctr-set 503 ] keep cog-mem-connection ] keep
+    [ [ cog-ctr-set 504 ] keep cog-mem-connection ] keep
+    [ [ cog-vcfg-set 510 ] keep cog-mem-connection ] keep
 ;
 
  
@@ -637,6 +640,17 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 ;
 
 
+! make this cog have a connection to next OUT
+: cog-out-connection ( nextcog cog -- )
+    [ gatethree>> ] dip
+    gatethree>> add-connection ;
+
+! make this cog have a connection to next DDR
+: cog-ddr-connection ( nextcog cog -- )
+    [ gatefour>> ] dip
+    gatefour>> add-connection ;
+
+
 ! create a cog and state is inactive
 : new-cog ( n cog -- cog' )
   new swap >>n        ! allocate memory save the number of cog
@@ -651,7 +665,8 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   0 <orx> >>gatethree    ! or out to next cog
   0 <orx> >>gatefour
   cog-orand
-  cog-set-dependency
+  cog-andor
+  cog-set-connections
 
 ;
 

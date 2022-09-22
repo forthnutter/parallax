@@ -1,8 +1,12 @@
 ! Wraper for cog
 ! to display memory and registers
 
-USING: accessors arrays ascii kernel parallax.propeller.cogs.cog
-      math math.parser parallax.propeller.inx parallax.propeller.ddrx
+USING: accessors arrays ascii combinators
+     kernel parallax.propeller.cogs.cog
+      math math.parser models
+       parallax.propeller.ddrx
+       parallax.propeller.inx
+       parallax.propeller.outx
       sequences tools.continuations vectors ;
 
 
@@ -19,7 +23,7 @@ CONSTANT: DDRB_ADDRESS 503
 
 
 
-TUPLE: cogs cog-array num-longs ina inb ddra ddrb ;
+TUPLE: cogs cog-array num-longs ina inb outa outb ddra ddrb ;
 
 
 ! create an instance of 8 cogs
@@ -110,14 +114,76 @@ TUPLE: cogs cog-array num-longs ina inb ddra ddrb ;
   "$" prepend swap 
   [ push ] keep ;
 
+! make cog 0 out or with cog 1 out
+: cogs-01-out ( cogs -- )
+    [ [ 1 ] dip cog-array>> nth ]
+    [ [ 0 ] dip cog-array>> nth ]
+    bi cog-out-connection ;
+
+! make cog 1 out or with cog 2 out
+: cogs-12-out ( cogs -- )
+    [ [ 2 ] dip cog-array>> nth ]
+    [ [ 1 ] dip cog-array>> nth ]
+    bi cog-out-connection ;
+
+! make cog 2 out or with cog 3 out
+: cogs-23-out ( cogs -- )
+    [ [ 3 ] dip cog-array>> nth ]
+    [ [ 2 ] dip cog-array>> nth ]
+    bi cog-out-connection ;
+
+! make cog 3 out or with cog 4 out
+: cogs-34-out ( cogs -- )
+    [ [ 4 ] dip cog-array>> nth ]
+    [ [ 3 ] dip cog-array>> nth ]
+    bi cog-out-connection ;
+
+! make cog 4 out or with cog 5 out
+: cogs-45-out ( cogs -- )
+    [ [ 5 ] dip cog-array>> nth ]
+    [ [ 4 ] dip cog-array>> nth ]
+    bi cog-out-connection ;
+
+! make cog 5 out or with cog 6 out
+: cogs-56-out ( cogs -- )
+    [ [ 6 ] dip cog-array>> nth ]
+    [ [ 5 ] dip cog-array>> nth ]
+    bi cog-out-connection ;
+
+! make cog 6 out or with cog 7 out
+: cogs-67-out ( cogs -- )
+    [ [ 7 ] dip cog-array>> nth ]
+    [ [ 6 ] dip cog-array>> nth ]
+    bi cog-out-connection ;
+
+! make cog 7 out or with out
+: cogs-7A-out ( cogs -- )
+    [ outa>> ]
+    [ [ 7 ] dip cog-array>> nth gatethree>> ]
+    bi add-connection ;
+
+: cogs-link-out ( cogs -- )
+    {
+        [ cogs-01-out ]
+        [ cogs-12-out ]
+        [ cogs-23-out ]
+        [ cogs-34-out ]
+        [ cogs-45-out ]
+        [ cogs-56-out ]
+        [ cogs-67-out ]
+        [ cogs-7A-out ]
+    } cleave ;
 
 : <cogs> ( -- cogs )
-  break
+  ! break
   cogs new
   0 <inx> >>ina     ! INA is a global input
-  0 <inx> >>inb     ! same for INB 
+  0 <inx> >>inb     ! same for INB
+  0 <outx> >>outa   ! global out
   cogs-array >>cog-array
   4 >>num-longs ! this is the defult number of data longs to display
   [ cogs-set-dependency ] keep
   [ cogs-activate ] keep
+  break
+  [ cogs-link-out ] keep
   ;

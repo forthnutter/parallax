@@ -28,14 +28,11 @@ M: orx or-write
 
 ! a change is applied by external routine
 M: orx model-changed
-   break
+    break
+   [ value>> ] dip
    or-write ;  ! this will change obsevers
 
-! make sure when activated the value is passed back
-! cogs memory all cogs will change at the same time as orx
-M: orx model-activated
-   break
-   [ value>> ] keep or-write ;
+
 
 ! init this object 
 : <orx> ( value -- orx )

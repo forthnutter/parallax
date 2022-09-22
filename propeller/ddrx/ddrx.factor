@@ -30,7 +30,6 @@ M: ddrx model-changed
 ! make sure when activated the value is passed back
 ! cogs memory all cogs will change at the same time as inx
 M: ddrx model-activated
-   break
    [ value>> ] keep ddr-write ;
 
 ! Sets the n th bit of DDR to one

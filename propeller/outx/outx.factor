@@ -22,8 +22,6 @@ M: outx model-changed
    outx-write         ! send it out we may have others
 ;
 
-M: outx model-activated
-    break drop ;
 
 : <outx> ( value -- out )
    outx new-model ;

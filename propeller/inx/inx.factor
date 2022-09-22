@@ -27,11 +27,7 @@ M: inx model-changed
    break
    in-write ;  ! this will change obsevers
 
-! make sure when activated the value is passed back
-! cogs memory all cogs will change at the same time as inx
-M: inx model-activated
-   break
-   [ value>> ] keep in-write ;
+
 
 ! Sets the n th bit of inx to one
 : inx-set-bit ( inx n -- )
