@@ -29,13 +29,10 @@ M: andx and-write
 ! a change is applied by external routine
 M: andx model-changed
    break
+   [ value>> ] dip
    and-write ;  ! this will change obsevers
 
-! make sure when activated the value is passed back
-! cogs memory all cogs will change at the same time as orx
-M: andx model-activated
-   break
-   [ value>> ] keep and-write ;
+
 
 ! init this object 
 : <andx> ( value -- andx )
