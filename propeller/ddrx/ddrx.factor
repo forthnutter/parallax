@@ -25,6 +25,7 @@ M: ddrx ddr-write
 ! a change is applied by external routine
 M: ddrx model-changed
    break
+   [ value>> ] dip
    ddr-write ;  ! this will change obsevers
 
 ! make sure when activated the value is passed back

@@ -11,6 +11,10 @@ IN: parallax
 
 
 
+: sx ( parallax --  parallax )
+    hub-step
+    hub-pc-alist
+;
 
 : <parallax> ( --  hub )
     <hub> ;

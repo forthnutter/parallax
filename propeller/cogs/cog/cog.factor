@@ -154,27 +154,31 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 ! create and 
 ! create an Out and then add orx model
 : cog-out-set ( cog -- outx )
-    [ 0 <outx> ] dip ! outx cog
-    gateone>> swap             ! orx outx
-    [ add-connection ] keep
-;
+    [ drop 0 <outx> ]
+    [ gateone>> ]
+    bi dupd orx-dependency ;
 
-: cog-ddr-set ( cog -- ddrx )
-    [ 0 <ddrx> ] dip
-    [ gatetwo>> swap [ add-connection ] keep ] keep
-    gatefour>> swap [ add-connection ] keep
-;
 
 : cog-ctr-set ( cog -- ctrx )
-    [ 0 <ctrx> ] dip
-    gateone>> swap [ add-connection ] keep
+    [ drop 0 <ctrx> ]
+    [ gateone>> ]
+    bi dupd orx-dependency ;
+
+
+: cog-ddr-set ( cog -- ddrx )
+    [
+        [ drop 0 <ddrx> ]
+        [ gatetwo>> ]
+        bi dupd andx-dependency
+    ] keep
+    gatefour>> dupd orx-dependency
 ;
 
+
 : cog-vcfg-set ( cog -- vcfgx )
-    [ 0 <vcfgx> ] dip
-    gateone>> swap
-    [ add-connection ] keep
-;
+    [ drop 0 <vcfgx> ]
+    [ gateone>> ]
+    bi dupd orx-dependency ;
 
 
 ! set up cog dependency for all special functions
@@ -268,6 +272,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   alu>> alu-and drop ;
 
 : cog-andn ( cog -- )
+    break
   [ [ dest>> ] [ source>> bitnot 32 bits ] bi ] keep
   alu>> alu-and drop ;
 
@@ -630,13 +635,11 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 ! or connects to and
 : cog-orand ( cog -- cog )
-    [ gatetwo>> ] keep
-    [ gateone>> add-connection ] keep
-; 
+    [ [ gateone>> ] [ gatetwo>> ] bi andx-dependency ] keep ; 
 
 : cog-andor ( cog -- cog )
-    [ gatethree>> ] keep
-    [ gatetwo>> add-connection ] keep
+    [ gatetwo>> ] keep
+    [ gatethree>> orx-dependency ] keep
 ;
 
 
@@ -650,6 +653,11 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ gatefour>> ] dip
     gatefour>> add-connection ;
 
+: cog-gate-activate ( cog -- cog )
+    [ gateone>> orx-activate ] keep
+    [ gatetwo>> andx-activate ] keep
+    [ gatethree>> orx-activate ] keep
+    [ gatefour>> orx-activate ] keep ;
 
 ! create a cog and state is inactive
 : new-cog ( n cog -- cog' )
@@ -667,7 +675,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   cog-orand
   cog-andor
   cog-set-connections
-
+  cog-gate-activate
 ;
 
 ! create a cog and state is inactive

@@ -29,10 +29,18 @@ M: andx and-write
 ! a change is applied by external routine
 M: andx model-changed
    break
-   [ value>> ] dip
-   and-write ;  ! this will change obsevers
+    [ drop ] dip
+    [ -1 ] dip
+    [ dependencies>> ] keep
+    [ [ value>> bitand ] each ] dip
+    set-model ;  ! this will change obsevers
 
+! function add a model to orx input to or
+: andx-dependency ( dep andx -- )
+    add-dependency ;
 
+: andx-activate ( andx -- )
+    activate-model ;
 
 ! init this object 
 : <andx> ( value -- andx )
