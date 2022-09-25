@@ -643,16 +643,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 ;
 
 
-! make this cog have a connection to next OUT
-: cog-out-connection ( nextcog cog -- )
-    [ gatethree>> ] dip
-    gatethree>> add-connection ;
-
-! make this cog have a connection to next DDR
-: cog-ddr-connection ( nextcog cog -- )
-    [ gatefour>> ] dip
-    gatefour>> add-connection ;
-
 : cog-gate-activate ( cog -- cog )
     [ gateone>> orx-activate ] keep
     [ gatetwo>> andx-activate ] keep

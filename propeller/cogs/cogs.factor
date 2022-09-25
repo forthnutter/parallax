@@ -7,6 +7,7 @@ USING: accessors arrays ascii combinators
        parallax.propeller.ddrx
        parallax.propeller.inx
        parallax.propeller.outx
+       parallax.propeller.orx
       sequences tools.continuations vectors ;
 
 
@@ -134,81 +135,81 @@ TUPLE: cogs cog-array num-longs ina inb outa outb ddra ddrb ;
 
 ! make cog 3 out or with cog 4 out
 : cogs-34-out ( cogs -- )
-    [ [ 4 ] dip cog-array>> nth ]
-    [ [ 3 ] dip cog-array>> nth ]
-    bi cog-out-connection ;
+    [ [ 3 ] dip cog-array>> nth gatethree>> ]
+    [ [ 4 ] dip cog-array>> nth gatethree>> ]
+    bi orx-dependency ;
 
 ! make cog 4 out or with cog 5 out
 : cogs-45-out ( cogs -- )
-    [ [ 5 ] dip cog-array>> nth ]
-    [ [ 4 ] dip cog-array>> nth ]
-    bi cog-out-connection ;
+    [ [ 4 ] dip cog-array>> nth gatethree>> ]
+    [ [ 5 ] dip cog-array>> nth gatethree>> ]
+    bi orx-dependency ;
 
 ! make cog 5 out or with cog 6 out
 : cogs-56-out ( cogs -- )
-    [ [ 6 ] dip cog-array>> nth ]
-    [ [ 5 ] dip cog-array>> nth ]
-    bi cog-out-connection ;
+    [ [ 5 ] dip cog-array>> nth gatethree>> ]
+    [ [ 6 ] dip cog-array>> nth gatethree>> ]
+    bi orx-dependency ;
 
 ! make cog 6 out or with cog 7 out
 : cogs-67-out ( cogs -- )
-    [ [ 7 ] dip cog-array>> nth ]
-    [ [ 6 ] dip cog-array>> nth ]
-    bi cog-out-connection ;
+    [ [ 6 ] dip cog-array>> nth gatethree>> ]
+    [ [ 7 ] dip cog-array>> nth gatethree>> ]
+    bi orx-dependency ;
 
 ! make cog 7 out or with out
 : cogs-7A-out ( cogs -- )
-    [ outa>> ]
     [ [ 7 ] dip cog-array>> nth gatethree>> ]
-    bi add-connection ;
+    [ outa>> ]
+    bi orx-dependency ;
 
 ! make cog 0 ddr or with cog 1 ddr
 : cogs-01-ddr ( cogs -- )
-    [ [ 1 ] dip cog-array>> nth ]
-    [ [ 0 ] dip cog-array>> nth ]
-    bi cog-ddr-connection ;
+    [ [ 0 ] dip cog-array>> nth gatefour>> ]
+    [ [ 1 ] dip cog-array>> nth gatefour>> ]
+    bi orx-dependency ;
 
 ! make cog 1 ddr or with cog 2 ddr
 : cogs-12-ddr ( cogs -- )
-    [ [ 2 ] dip cog-array>> nth ]
-    [ [ 1 ] dip cog-array>> nth ]
-    bi cog-ddr-connection ;
+    [ [ 1 ] dip cog-array>> nth gatefour>> ]
+    [ [ 2 ] dip cog-array>> nth gatefour>> ]
+    bi orx-dependency ;
 
 ! make cog 2 ddr or with cog 3 ddr
 : cogs-23-ddr ( cogs -- )
-    [ [ 3 ] dip cog-array>> nth ]
-    [ [ 2 ] dip cog-array>> nth ]
-    bi cog-ddr-connection ;
+    [ [ 2 ] dip cog-array>> nth gatefour>> ]
+    [ [ 3 ] dip cog-array>> nth gatefour>> ]
+    bi orx-dependency ;
 
 ! make cog 3 ddr or with cog 4 ddr
 : cogs-34-ddr ( cogs -- )
-    [ [ 4 ] dip cog-array>> nth ]
-    [ [ 3 ] dip cog-array>> nth ]
-    bi cog-ddr-connection ;
+    [ [ 3 ] dip cog-array>> nth gatefour>> ]
+    [ [ 4 ] dip cog-array>> nth gatefour>> ]
+    bi orx-dependency ;
 
 ! make cog 4 ddr or with cog 5 ddr
 : cogs-45-ddr ( cogs -- )
-    [ [ 5 ] dip cog-array>> nth ]
-    [ [ 4 ] dip cog-array>> nth ]
-    bi cog-ddr-connection ;
+    [ [ 4 ] dip cog-array>> nth gatefour>> ]
+    [ [ 5 ] dip cog-array>> nth gatefour>> ]
+    bi orx-dependency ;
 
 ! make cog 5 ddr or with cog 6 ddr
 : cogs-56-ddr ( cogs -- )
-    [ [ 6 ] dip cog-array>> nth ]
-    [ [ 5 ] dip cog-array>> nth ]
-    bi cog-ddr-connection ;
+    [ [ 5 ] dip cog-array>> nth gatefour>> ]
+    [ [ 6 ] dip cog-array>> nth gatefour>> ]
+    bi orx-dependency ;
 
 ! make cog 6 ddr or with cog 7 ddr
 : cogs-67-ddr ( cogs -- )
-    [ [ 7 ] dip cog-array>> nth ]
-    [ [ 6 ] dip cog-array>> nth ]
-    bi cog-ddr-connection ;
+    [ [ 6 ] dip cog-array>> nth gatefour>> ]
+    [ [ 7 ] dip cog-array>> nth gatefour>> ]
+    bi orx-dependency ;
 
 ! make cog 7 ddr or with ddr
 : cogs-7A-ddr ( cogs -- )
-    [ ddra>> ]
     [ [ 7 ] dip cog-array>> nth gatefour>> ]
-    bi add-connection ;
+    [ ddra>> ]
+    bi orx-dependency ;
 
 ! this links the all the cog out to the next cog out
 : cogs-link-out ( cogs -- )
@@ -236,6 +237,9 @@ TUPLE: cogs cog-array num-longs ina inb outa outb ddra ddrb ;
         [ cogs-7A-ddr ]
     } cleave ;
 
+: cogs-link-activate ( cogs -- )
+    [ 1 ] dip cog-array>> nth gatethree>> activate-model
+    ;
 
 : <cogs> ( -- cogs )
   ! break
@@ -245,8 +249,10 @@ TUPLE: cogs cog-array num-longs ina inb outa outb ddra ddrb ;
   0 <ddrx> >>ddra   ! global ddr
   cogs-array >>cog-array
   4 >>num-longs ! this is the defult number of data longs to display
+  break
   [ cogs-set-dependency ] keep
   [ cogs-activate ] keep
   [ cogs-link-out ] keep
   [ cogs-link-ddr ] keep
+  [ cogs-link-activate ] keep
   ;
