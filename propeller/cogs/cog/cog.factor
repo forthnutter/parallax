@@ -116,13 +116,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
    ] map-index >vector ;
 
 
-! this will make all dependency point to memory 
-! so the memory will update to dependency changes
-: cog-activate ( cog -- )
-  memory>>
-  [
-    memory-activate
-  ] each ;
 
 : cog-deactivate ( cog -- )
   memory>>
@@ -134,8 +127,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 ! may require memory deactivation and then activation
 ! : memory-set-dependency ( object address memory -- )
 !  nth memory-add-dependency ;
-
-: cog-mem-dependency ( object address cog -- )
+: cog-mem-dependency ( dep address cog -- )
   memory>> nth memory-add-dependency ;
 
 
@@ -150,11 +142,15 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   ] map >vector
 ;
 
+! lets get the memory model from memory array
+: cog-get-memory ( address cog -- memory )
+    memory>> nth ;
+
 
 ! create and 
 ! create an Out and then add orx model
 : cog-out-set ( cog -- outx )
-    [ drop 0 <outx> ]
+    [ n>> <outx> ]
     [ gateone>> ]
     bi dupd orx-dependency ;
 
@@ -164,6 +160,10 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ gateone>> ]
     bi dupd orx-dependency ;
 
+: cog-ctr-setr ( cog -- ctrx )
+    [ drop 0 <ctrx> ]
+    [ gateone>> ]
+    bi dupd swap orx-dependency ;
 
 : cog-ddr-set ( cog -- ddrx )
     [
@@ -174,6 +174,14 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     gatefour>> dupd orx-dependency
 ;
 
+: cog-ddr-setr ( cog -- ddrx )
+    [
+        [ drop 0 <ddrx> ]
+        [ gatetwo>> ]
+        bi dupd swap ddrx-dependency
+    ] keep
+    gatefour>> dupd swap ddrx-dependency
+;
 
 : cog-vcfg-set ( cog -- vcfgx )
     [ drop 0 <vcfgx> ]
@@ -181,13 +189,15 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     bi dupd orx-dependency ;
 
 
+
 ! set up cog dependency for all special functions
-: cog-set-connections ( cog -- cog )
-    [ [ cog-out-set 500 ] keep cog-mem-connection ] keep
-    [ [ cog-ddr-set 502 ] keep cog-mem-connection ] keep
-    [ [ cog-ctr-set 503 ] keep cog-mem-connection ] keep
-    [ [ cog-ctr-set 504 ] keep cog-mem-connection ] keep
-    [ [ cog-vcfg-set 510 ] keep cog-mem-connection ] keep
+: cog-set-dependencies ( cog -- cog )
+    [ [ [ 500 ] dip cog-get-memory ] [ cog-out-set ] bi add-dependency ] keep
+    [ [ [ 502 ] dip cog-get-memory ] [ cog-ddr-set ] bi add-dependency ] keep
+!    [ [ cog-ddr-set 502 ] keep cog-mem-dependency ] keep
+!   [ [ cog-ctr-set 503 ] keep cog-mem-dependency ] keep
+!   [ [ cog-ctr-set 504 ] keep cog-mem-dependency ] keep
+!    [ [ cog-vcfg-set 510 ] keep cog-mem-dependency ] keep
 ;
 
  
@@ -272,7 +282,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   alu>> alu-and drop ;
 
 : cog-andn ( cog -- )
-    break
   [ [ dest>> ] [ source>> bitnot 32 bits ] bi ] keep
   alu>> alu-and drop ;
 
@@ -324,7 +333,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-execute-ins ( cog -- )
   [ isn>> isn-cond ] keep swap
   {
-    { NEVER [ break drop ] } ! yes do nothing
+    { NEVER [ drop ] } ! yes do nothing
     { IF_NC_AND_NZ
       [
         [ [ c>> not ] [ z>> not ] bi and ] keep swap
@@ -649,6 +658,15 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ gatethree>> orx-activate ] keep
     [ gatefour>> orx-activate ] keep ;
 
+! this will make all dependency point to memory 
+! so the memory will update to dependency changes
+: cog-activate ( cog -- )
+  memory>>
+  [
+    memory-activate
+  ] each ;
+
+
 ! create a cog and state is inactive
 : new-cog ( n cog -- cog' )
   new swap >>n        ! allocate memory save the number of cog
@@ -664,8 +682,8 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   0 <orx> >>gatefour
   cog-orand
   cog-andor
-  cog-set-connections
-  cog-gate-activate
+  cog-set-dependencies
+  ! cog-gate-activate
 ;
 
 ! create a cog and state is inactive

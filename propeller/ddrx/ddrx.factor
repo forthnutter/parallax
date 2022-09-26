@@ -24,14 +24,9 @@ M: ddrx ddr-write
 
 ! a change is applied by external routine
 M: ddrx model-changed
-   break
    [ value>> ] dip
    ddr-write ;  ! this will change obsevers
 
-! make sure when activated the value is passed back
-! cogs memory all cogs will change at the same time as inx
-M: ddrx model-activated
-   [ value>> ] keep ddr-write ;
 
 ! Sets the n th bit of DDR to one
 : ddrx-set-bit ( ddrx n -- )
@@ -46,6 +41,10 @@ M: ddrx model-activated
 ! return DDR into binary string
 : ddrx>bin ( ddrx -- str )
    ddr-read >bin 32 CHAR: 0 pad-head ;
+
+: ddrx-dependency ( dep ddrx -- )
+    add-dependency ;
+
 
 : <ddrx> ( value -- inp )
    ddrx new-model ;

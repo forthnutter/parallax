@@ -7,14 +7,13 @@ USING: accessors arrays kernel sequences models
 
 IN: parallax.propeller.outx
 
-TUPLE: outx < model ;
+TUPLE: outx < model cogn ;
 
 
 : outx-read ( out -- data )
    value>> ;
 
 : outx-write ( data out -- )
-   break
    set-model ;
 
 M: outx model-changed
@@ -23,5 +22,8 @@ M: outx model-changed
 ;
 
 
+: outx-dependency ( dep outx -- )
+    add-dependency ;
+
 : <outx> ( value -- out )
-   outx new-model ;
+   0 outx new-model swap >>cogn ;

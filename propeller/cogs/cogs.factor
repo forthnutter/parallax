@@ -22,9 +22,19 @@ CONSTANT: DDRA_ADDRESS 502
 CONSTANT: DDRB_ADDRESS 503
 
 
+TUPLE: logoutx < model vec ;
+
+TUPLE: cogs cog-array num-longs ina inb outa outb ddra ddrb 
+        logx ;
 
 
-TUPLE: cogs cog-array num-longs ina inb outa outb ddra ddrb ;
+: <logoutx> ( -- logoutx )
+    0 logoutx new-model 4 <vector> >>vec ;
+
+M: logoutx model-changed
+    break
+    [ value>> >hex " Global out change" append ] dip
+    vec>> push ;
 
 
 ! create an instance of 8 cogs
@@ -63,12 +73,6 @@ TUPLE: cogs cog-array num-longs ina inb outa outb ddra ddrb ;
   [ [ inb>> INB_ADDRESS ] keep cogs-add-dependency ]
   bi ;
 
-! go through all cogs and activate all memory dependecies
-: cogs-activate ( cogs -- )
-  cog-array>>
-  [
-    cog-activate
-  ] each ;
 
 ! cog display memory
 : cogs-mdl ( n cogn address cogs -- $array )
@@ -119,49 +123,49 @@ TUPLE: cogs cog-array num-longs ina inb outa outb ddra ddrb ;
 : cogs-01-out ( cogs -- )
     [ [ 0 ] dip cog-array>> nth gatethree>> ]
     [ [ 1 ] dip cog-array>> nth gatethree>> ]
-    bi orx-dependency ;
+    bi add-dependency ;
 
 ! make cog 1 out or with cog 2 out
 : cogs-12-out ( cogs -- )
     [ [ 1 ] dip cog-array>> nth gatethree>> ]
     [ [ 2 ] dip cog-array>> nth gatethree>> ]
-    bi orx-dependency ;
+    bi add-dependency ;
 
 ! make cog 2 out or with cog 3 out
 : cogs-23-out ( cogs -- )
-    [ [ 3 ] dip cog-array>> nth gatethree>> ]
     [ [ 2 ] dip cog-array>> nth gatethree>> ]
-    bi orx-dependency ;
+    [ [ 3 ] dip cog-array>> nth gatethree>> ]
+    bi add-dependency ;
 
 ! make cog 3 out or with cog 4 out
 : cogs-34-out ( cogs -- )
     [ [ 3 ] dip cog-array>> nth gatethree>> ]
     [ [ 4 ] dip cog-array>> nth gatethree>> ]
-    bi orx-dependency ;
+    bi add-dependency ;
 
 ! make cog 4 out or with cog 5 out
 : cogs-45-out ( cogs -- )
     [ [ 4 ] dip cog-array>> nth gatethree>> ]
     [ [ 5 ] dip cog-array>> nth gatethree>> ]
-    bi orx-dependency ;
+    bi add-dependency ;
 
 ! make cog 5 out or with cog 6 out
 : cogs-56-out ( cogs -- )
     [ [ 5 ] dip cog-array>> nth gatethree>> ]
     [ [ 6 ] dip cog-array>> nth gatethree>> ]
-    bi orx-dependency ;
+    bi add-dependency ;
 
 ! make cog 6 out or with cog 7 out
 : cogs-67-out ( cogs -- )
     [ [ 6 ] dip cog-array>> nth gatethree>> ]
     [ [ 7 ] dip cog-array>> nth gatethree>> ]
-    bi orx-dependency ;
+    bi add-dependency ;
 
 ! make cog 7 out or with out
 : cogs-7A-out ( cogs -- )
     [ [ 7 ] dip cog-array>> nth gatethree>> ]
     [ outa>> ]
-    bi orx-dependency ;
+    bi add-dependency ;
 
 ! make cog 0 ddr or with cog 1 ddr
 : cogs-01-ddr ( cogs -- )
@@ -209,7 +213,14 @@ TUPLE: cogs cog-array num-longs ina inb outa outb ddra ddrb ;
 : cogs-7A-ddr ( cogs -- )
     [ [ 7 ] dip cog-array>> nth gatefour>> ]
     [ ddra>> ]
-    bi orx-dependency ;
+    bi add-dependency ;
+
+: cogs-out-watch ( cogs -- )
+    [ outa>> ]
+    [ logx>> ]
+    bi add-dependency ;
+
+
 
 ! this links the all the cog out to the next cog out
 : cogs-link-out ( cogs -- )
@@ -222,6 +233,7 @@ TUPLE: cogs cog-array num-longs ina inb outa outb ddra ddrb ;
         [ cogs-56-out ]
         [ cogs-67-out ]
         [ cogs-7A-out ]
+        [ cogs-out-watch ]
     } cleave ;
 
 ! link the cods ddr to the next cog ddr
@@ -238,21 +250,32 @@ TUPLE: cogs cog-array num-longs ina inb outa outb ddra ddrb ;
     } cleave ;
 
 : cogs-link-activate ( cogs -- )
-    [ 1 ] dip cog-array>> nth gatethree>> activate-model
-    ;
+    [ logx>> activate-model ]
+    [ ddra>> activate-model ] bi ;
+
+
+! go through all cogs and activate all memory dependecies
+: cogs-activate ( cogs -- )
+  cog-array>>
+  [
+    cog-activate
+  ] each ;
+
+
 
 : <cogs> ( -- cogs )
-  ! break
-  cogs new  0 <inx> >>ina     ! INA is a global input
+  break
+  cogs new
+  0 <inx> >>ina     ! INA is a global input
   0 <inx> >>inb     ! same for INB
-  0 <outx> >>outa   ! global out
+  9 <outx> >>outa   ! global out
   0 <ddrx> >>ddra   ! global ddr
+  <logoutx> >>logx  ! keep a record of out changes
   cogs-array >>cog-array
   4 >>num-longs ! this is the defult number of data longs to display
-  break
   [ cogs-set-dependency ] keep
-  [ cogs-activate ] keep
   [ cogs-link-out ] keep
   [ cogs-link-ddr ] keep
   [ cogs-link-activate ] keep
-  ;
+  [ cogs-activate ] keep
+;

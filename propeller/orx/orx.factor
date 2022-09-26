@@ -28,7 +28,6 @@ M: orx or-write
 
 ! a change is applied by external routine
 M: orx model-changed
-    break
     [ drop ] dip
     [ 0 ] dip
     [ dependencies>> ] keep
@@ -36,12 +35,6 @@ M: orx model-changed
     set-model
     ;  ! this will change obsevers
 
-: orx-dependency ( dep orx -- )
-    add-dependency ;
-
-
-: orx-activate ( orx -- )
-    activate-model ;
 
 ! init this object 
 : <orx> ( value -- orx )
