@@ -77,6 +77,7 @@ CONSTANT: CAND         24   ! 0x18
 CONSTANT: CTEST        24
 CONSTANT: CANDN        25   ! 0x19
 CONSTANT: COR          26   ! 0x20
+CONSTANT: CSUB         33   ! 0x21
 CONSTANT: CMOV         40   ! 0x28
 CONSTANT: CABS         42   ! 0x2A
 CONSTANT: CDJNZ        57   ! 0x39
@@ -152,41 +153,29 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-out-set ( cog -- outx )
     [ n>> <outx> ]
     [ gateone>> ]
-    bi dupd orx-dependency ;
+    bi dupd add-dependency ;
 
 
 : cog-ctr-set ( cog -- ctrx )
     [ drop 0 <ctrx> ]
     [ gateone>> ]
-    bi dupd orx-dependency ;
+    bi dupd add-dependency ;
 
-: cog-ctr-setr ( cog -- ctrx )
-    [ drop 0 <ctrx> ]
-    [ gateone>> ]
-    bi dupd swap orx-dependency ;
 
 : cog-ddr-set ( cog -- ddrx )
     [
         [ drop 0 <ddrx> ]
         [ gatetwo>> ]
-        bi dupd andx-dependency
+        bi dupd add-dependency
     ] keep
-    gatefour>> dupd orx-dependency
+    gatefour>> dupd add-dependency
 ;
 
-: cog-ddr-setr ( cog -- ddrx )
-    [
-        [ drop 0 <ddrx> ]
-        [ gatetwo>> ]
-        bi dupd swap ddrx-dependency
-    ] keep
-    gatefour>> dupd swap ddrx-dependency
-;
 
 : cog-vcfg-set ( cog -- vcfgx )
     [ drop 0 <vcfgx> ]
     [ gateone>> ]
-    bi dupd orx-dependency ;
+    bi dupd add-dependency ;
 
 
 
@@ -303,6 +292,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   alu>> alu-update drop ;
 
 : cog-djnz ( cog -- )
+    break
   [ dest>> 1 ] keep
   [ alu>> alu-sub ] keep swap
   alu-z not
@@ -314,6 +304,10 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   [ source>> ] keep
   alu>> alu-abs drop ;
 
+: cog-sub ( cog -- )
+    [ dest>> ] keep
+    [ source>> ] keep
+    alu>> alu-sub drop ;
 
 : cog-exec-condition ( cog -- )
   ! break
@@ -325,6 +319,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     { COR [ cog-or ] }
     { CMOV [ cog-mov ] }
     { CABS [ cog-abs ] }
+    { CSUB [ cog-sub ] }
     { CDJNZ [ cog-djnz ] }
     [ break drop drop ]
   } case
@@ -648,15 +643,15 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 : cog-andor ( cog -- cog )
     [ gatetwo>> ] keep
-    [ gatethree>> orx-dependency ] keep
+    [ gatethree>> add-dependency ] keep
 ;
 
 
 : cog-gate-activate ( cog -- cog )
-    [ gateone>> orx-activate ] keep
-    [ gatetwo>> andx-activate ] keep
-    [ gatethree>> orx-activate ] keep
-    [ gatefour>> orx-activate ] keep ;
+    [ gateone>> activate-model ] keep
+    [ gatetwo>> activate-model ] keep
+    [ gatethree>> activate-model ] keep
+    [ gatefour>> activate-model ] keep ;
 
 ! this will make all dependency point to memory 
 ! so the memory will update to dependency changes

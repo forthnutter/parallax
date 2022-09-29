@@ -28,7 +28,6 @@ M: andx and-write
 
 ! a change is applied by external routine
 M: andx model-changed
-   break
     [ drop ] dip
     [ -1 ] dip
     [ dependencies>> ] keep

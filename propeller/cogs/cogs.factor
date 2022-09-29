@@ -32,7 +32,6 @@ TUPLE: cogs cog-array num-longs ina inb outa outb ddra ddrb
     0 logoutx new-model 4 <vector> >>vec ;
 
 M: logoutx model-changed
-    break
     [ value>> >hex " Global out change" append ] dip
     vec>> push ;
 
@@ -171,43 +170,43 @@ M: logoutx model-changed
 : cogs-01-ddr ( cogs -- )
     [ [ 0 ] dip cog-array>> nth gatefour>> ]
     [ [ 1 ] dip cog-array>> nth gatefour>> ]
-    bi orx-dependency ;
+    bi add-dependency ;
 
 ! make cog 1 ddr or with cog 2 ddr
 : cogs-12-ddr ( cogs -- )
     [ [ 1 ] dip cog-array>> nth gatefour>> ]
     [ [ 2 ] dip cog-array>> nth gatefour>> ]
-    bi orx-dependency ;
+    bi add-dependency ;
 
 ! make cog 2 ddr or with cog 3 ddr
 : cogs-23-ddr ( cogs -- )
     [ [ 2 ] dip cog-array>> nth gatefour>> ]
     [ [ 3 ] dip cog-array>> nth gatefour>> ]
-    bi orx-dependency ;
+    bi add-dependency ;
 
 ! make cog 3 ddr or with cog 4 ddr
 : cogs-34-ddr ( cogs -- )
     [ [ 3 ] dip cog-array>> nth gatefour>> ]
     [ [ 4 ] dip cog-array>> nth gatefour>> ]
-    bi orx-dependency ;
+    bi add-dependency ;
 
 ! make cog 4 ddr or with cog 5 ddr
 : cogs-45-ddr ( cogs -- )
     [ [ 4 ] dip cog-array>> nth gatefour>> ]
     [ [ 5 ] dip cog-array>> nth gatefour>> ]
-    bi orx-dependency ;
+    bi add-dependency ;
 
 ! make cog 5 ddr or with cog 6 ddr
 : cogs-56-ddr ( cogs -- )
     [ [ 5 ] dip cog-array>> nth gatefour>> ]
     [ [ 6 ] dip cog-array>> nth gatefour>> ]
-    bi orx-dependency ;
+    bi add-dependency ;
 
 ! make cog 6 ddr or with cog 7 ddr
 : cogs-67-ddr ( cogs -- )
     [ [ 6 ] dip cog-array>> nth gatefour>> ]
     [ [ 7 ] dip cog-array>> nth gatefour>> ]
-    bi orx-dependency ;
+    bi add-dependency ;
 
 ! make cog 7 ddr or with ddr
 : cogs-7A-ddr ( cogs -- )
