@@ -1,8 +1,10 @@
 ! Copyright (C) 2020 forthnutter.
 !
 
-USING: math math.bitwise make kernel literals parallax.propeller.assembler
-  parallax.propeller.assembler.cog
+USING: math math.bitwise make kernel literals
+    parallax.propeller.assembler
+    parallax.propeller.assembler.cog
+    parallax.propeller.hub
   compiler.codegen.labels namespaces accessors sequences arrays hashtables
   assocs tools.continuations ;
 
@@ -20,6 +22,8 @@ REGISTER: txcode 0x1E8
 
 
 CONSTANT: BUFFER_LENGTH 64
+
+TUPLE: propeller hub ;
 
 
 : start ( cog -- cog' )
@@ -76,3 +80,15 @@ CONSTANT: BUFFER_LENGTH 64
 
 : pmain ( -- )
   <cog> stest start drop ;
+
+
+! kind of a wrapper
+: propeller-step ( propeller -- )
+    hub>> hub-step drop ;
+
+: propeller-pc-alist ( propeller -- )
+    hub>> hub-pc-alist drop ;
+
+: <propeller> ( -- propeller )
+    propeller new
+    <hub> >>hub ;

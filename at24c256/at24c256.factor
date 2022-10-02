@@ -12,7 +12,7 @@ GENERIC: scl ( ? -- )
 GENERIC: sda ( ? -- )
 
 M: 24c256 model-changed
-
+    break
 
 ;
 
