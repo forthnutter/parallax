@@ -260,7 +260,8 @@ M: logoutx model-changed
     cog-activate
   ] each ;
 
-
+: cogs-add-output ( model cogs -- )
+    outa>> add-connection ;
 
 : <cogs> ( -- cogs )
   break

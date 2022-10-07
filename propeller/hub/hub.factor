@@ -76,6 +76,11 @@ TUPLE: hub cogs bus ram rom enable lock config ;
     [ print ] each
   ] keep ;
 
+
+: hub-add-output ( model hub -- )
+    cogs>> cogs-add-output ;
+
+
 ! initalise the HUB 
 : <hub> ( -- hub )
   hub new

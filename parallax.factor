@@ -7,12 +7,13 @@ USING: accessors arrays ascii
         parallax.propeller
         parallax.propeller.hub
         parallax.propeller.cogs.cog
+        parallax.at24c256
         sequences tools.continuations vectors ;
 
 
 IN: parallax
 
-TUPLE: parallax propeller ;
+TUPLE: parallax propeller at24 ;
 
 
 : sx ( parallax --  parallax )
@@ -22,4 +23,6 @@ TUPLE: parallax propeller ;
 
 : <parallax> ( --  parallax )
     parallax new
-    <propeller> >>propeller ;
+    0 <24c256> >>at24
+    <propeller> >>propeller
+    [ [ at24>> ] [ propeller>> propeller-add-output ] bi ] keep ;

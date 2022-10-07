@@ -5,7 +5,8 @@ USING: math math.bitwise make kernel literals
     parallax.propeller.assembler
     parallax.propeller.assembler.cog
     parallax.propeller.hub
-  compiler.codegen.labels namespaces accessors sequences arrays hashtables
+  compiler.codegen.labels
+    models namespaces accessors sequences arrays hashtables
   assocs tools.continuations ;
 
 IN: parallax.propeller
@@ -81,6 +82,9 @@ TUPLE: propeller hub ;
 : pmain ( -- )
   <cog> stest start drop ;
 
+! need to add moduel to output
+: propeller-add-output ( model propeller --  )
+    hub>> hub-add-output ;
 
 ! kind of a wrapper
 : propeller-step ( propeller -- )
