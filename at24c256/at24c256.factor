@@ -9,29 +9,33 @@ CONSTANT: AT24C256_SIZE 32767
 
 TUPLE: 24c256 < model data clock sda scl tdata byte mask address array ;
 
+! modify bit 0 of x using status and return result
+: bit-zero ( x ? -- a )
+    [ 0 set-bit ]
+    [ 0 clear-bit ]
+    if ;
+
+: data-shift ( t -- d )
+    [ data>> ] keep
+    [ 1 shift ] dip
+    [ data<< ] keep data>> ;
+
+: clock-shift ( t -- d )
+    [ clock>> ] keep
+    [ 1 shift ] dip
+    [ clock<< ] keep clock>> ;
+
 
 M: 24c256 model-changed
    break
     [ [ value>> ] [ sda>> ] bi* ] 2keep
-    [ bit? ] 2dip rot        ! x y ?
-    [
-        [ data>> 1 shift 0 set-bit ] keep
-        [ data<< ] keep
-    ]
-    [
-        [ data>> 1 shift 0 clear-bit ] keep
-        [ data<< ] keep
-    ] if 
+    [ bit? ] 2dip [ data-shift ] keep swap roll        ! x y ?
+    bit-zero swap [ data<< ] keep
+
     [ [ value>> ] [ scl>> ] bi* ] 2keep
-    [ bit? ] 2dip rot        ! x y ?
-    [
-        [ clock>> 1 shift 0 set-bit ] keep
-        [ clock<< ] keep
-    ]
-    [
-        [ clock>> 1 shift 0 clear-bit ] keep
-        [ clock<< ] keep
-    ] if 
+    [ bit? ] 2dip [ clock-shift ] keep swap roll       ! x y ?
+    bit-zero swap [ clock<< ] keep
+
     [ value>> ] dip set-model ;
 
 ! make a context 
