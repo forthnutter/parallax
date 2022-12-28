@@ -619,22 +619,36 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-active? ( cog -- ? )
   cog-state COG_INACTIVE = not ;
 
+! Build a string for cog number
+: cog-number$ ( cog -- str )
+    n>> number>string "COG-" prepend " " append ;
+
+! Build a string to for an address
+: cog-address$ ( address -- str )
+    >hex 3 CHAR: 0 pad-head >upper ": " append "0x" prepend ;
+
+: cog-read-address ( address cog -- value )
+    [ 1 ] 2dip cog-read-array first ;
+
+! Build a string for th value found at address
+: cog-value$ ( value -- str )
+    >hex 8 CHAR: 0 pad-head >upper " " append "0x" prepend ;
+
 ! Display disasembled code
 : cog-list ( address cog --  str/f )
   dup cog? not  ! make sure we are looking at cog
   [ drop drop f ]    ! drop everyting and indicate fail
   [
-    [ n>> ] keep [ number>string "cog-" prepend " " append swap ] dip
-    [ 1 ] 2dip ! how many instructions we need
-    [ cog-read-array first ] 2keep mneu>> [ swap dup ] dip
-    [ >hex 3 CHAR: 0 pad-head >upper ": " append "0x" prepend ] 3dip
-    [ append ] 3dip
-    [ >hex 8 CHAR: 0 pad-head >upper " " append "0x" prepend ] 2dip
-    [ append ] 2dip
+    break
+    [ cog-number$ swap ] keep
+    [ drop cog-address$ append ] 2keep
+    [ cog-read-address dup cog-value$ swap [ append ] dip ] keep 
+    
     opcode-string append
   ] if ;
 
 : cog-list-pc ( cog -- str/f )
+    break
   [ pcold>> ] keep cog-list ;
 
 ! or connects to and

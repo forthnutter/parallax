@@ -96,7 +96,7 @@ TUPLE: cogdasm labels ;
   31 26 bit-range ;
 
 
-: opcode-sub-read ( code -- $/? )
+: opcode-sub-test ( code -- $/? )
     [ flag-r ] [ opcode-exstract ] bi swap
     [
         H{
@@ -104,31 +104,22 @@ TUPLE: cogdasm labels ;
             { 23 "JMPRET" } { 24 "AND" } { 33 "SUB" }
         } at
     ]
-    [ drop f ] if
-;
-
-: opcode-write-never ( code -- $/? )
-    cond-exstract
-    dup 0 = [ drop "NOP" ] when ;
-
-
-: opcode-sub-write ( code -- $/? )
-    [ flag-r ] keep swap
-    [
-        opcode-exstract
+    [ 
         H{
-            { 1 "WRWORD" } { 2 "WRLONG" }
+            { 0 "WRBYTE" } { 1 "WRWORD" } { 2 "WRLONG" }
             { 23 "JMP" } { 24 "TEST" } { 33 "CMP" }
-        } at
-     ] unless
+        } at  
+    ] if
 ;
-
 
 : opcode-subcode ( code -- $/? )
     break
-    [ opcode-sub-read ] keep swap
-    [ drop "ERROR" ] unless
-    opcode-sub-write
+    dup 0 = 
+    [ drop "NOP" ]
+    [ 
+        [ opcode-sub-test ] keep swap
+        [ drop "ERROR" ] unless
+    ] if
   ;
 
 : opcode-exstract$ ( code -- $/? )
