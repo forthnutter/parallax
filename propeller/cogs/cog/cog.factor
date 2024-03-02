@@ -2,7 +2,7 @@
 ! See http://factorcode.org/license.txt for BSD license.
 !
 USING: accessors arrays kernel sequences models vectors
-        namespaces
+        namespaces endian
        parallax.propeller.cogs.cog.memory
        parallax.propeller.cogs.cog.par
        parallax.propeller.cogs.cog.cnt
@@ -16,7 +16,8 @@ USING: accessors arrays kernel sequences models vectors
        parallax.propeller.ctrx
        parallax.propeller.vcfgx
        math math.bitwise math.parser alien.syntax combinators
-       io.binary grouping bit-arrays bit-vectors
+       ! io.binary
+       grouping bit-arrays bit-vectors
        parallax.propeller.cogs.alu tools.continuations
        parallax.propeller.cogs.cogdisasm ascii
 ;
@@ -644,7 +645,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ drop cog-address$ append ] 2keep
     [ cog-read-address dup cog-value$ swap [ append ] dip ] keep 
     
-    opcode-string append
+    mneu>> opcode-string append
   ] if ;
 
 : cog-list-pc ( cog -- str/f )
