@@ -1,7 +1,9 @@
 ! disasembler for Parallax Propeller P8X32A
 
 USING: accessors arrays kernel math sequences byte-arrays io
-    math.parser math.ranges unicode.case namespaces parser lexer
+    math.parser
+    ! math.ranges
+    ranges unicode.case namespaces parser lexer
     tools.continuations peg fry assocs combinators sequences.deep make
     words quotations math.bitwise models ascii
     parallax.propeller.cogs.cog hashtables ;
@@ -31,6 +33,7 @@ TUPLE: cogdasm labels ;
 
 ! source destination condition flags opcode
 : source-exstract$ ( code cogdisasm -- source )
+    break
   [ [ source-exstract ] dip label-exstract ] 2keep drop swap dup
   [ swap drop ] [ drop source-exstract >hex-pad3 "0x" prepend ] if ;
 
