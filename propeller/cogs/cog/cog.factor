@@ -1,7 +1,7 @@
 ! Copyright (C) 2011 Joseph L Moschini.
 ! See http://factorcode.org/license.txt for BSD license.
 !
-USING: accessors arrays kernel sequences models vectors
+USING: accessors arrays assocs kernel sequences models vectors
         namespaces endian
        parallax.propeller.cogs.cog.memory
        parallax.propeller.cogs.cog.par
@@ -91,7 +91,7 @@ CONSTANT: SPR_SIZE    16
 
 TUPLE: cog n pc pcold alu z c memory state isn fisn
     source dest result bp mneu wstate gateone gatetwo
-    gatethree gatefour ;
+    gatethree gatefour labels ;
 
 
 : cog-memory ( address cog -- memory )
@@ -237,8 +237,11 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-isn-i ( cog -- ? )
   isn>> 22 bit? ;
 
+
+
 : cog-source-address ( cog -- address )
   isn>> 8 0 bit-range ;
+
 
 : cog-source-value ( cog -- value )
   [ cog-source-address ] keep cog-read ;
@@ -253,6 +256,32 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 : cog-fetch-dest ( cog -- value )
   [ cog-dest-address ] keep cog-read ;
+
+! find out if the current address has a label
+: cog-label-string ( address cog -- $/? )
+  labels>> at ;
+
+! generate a string of source this includes labels
+: cog-source-string ( cog -- string/? )
+    dup ! cog cog
+    [ cog-source-address ] keep ! cog address cog
+    [ cog-label-string ] 2keep ! cog label address cog 
+    rot ! cog address cog label
+    dup ! cog address cog label label
+    [
+        ! cog address cog label
+        [ drop drop ] dip   ! label
+    ]
+    [
+        ! cog address cog label
+        drop    ! cog address cog
+        drop    ! cog address
+        >hex-pad3 "0x" prepend ! cog hex-string
+    ] if    ! cog string
+    [ cog-source-value ] dip    ! value string
+    [ >hex 8 CHAR: 0 pad-head " [0x" prepend "]" append ] dip prepend
+;
+
 
 ! extrac the conditional code
 : isn-cond ( isn -- cond )
@@ -676,6 +705,16 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     memory-activate
   ] each ;
 
+: cog-default-labels ( -- labels )
+  H{
+    { 496 "PAR" }  { 497 "CNT" }  { 498 "INA" }  { 499 "INB" }
+    { 500 "OUTA" } { 501 "OUTB" } { 502 "DIRA" } { 503 "DIRB" }
+    { 504 "CTRA" } { 505 "CTRB" } { 506 "FRQA" } { 507 "FRQB" }
+    { 508 "PHSA" } { 509 "PHSB" } { 510 "VCFG" } { 511 "VSCL" }
+  } ;
+
+
+
 
 ! create a cog and state is inactive
 : new-cog ( n cog -- cog' )
@@ -693,8 +732,12 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   cog-orand
   cog-andor
   cog-set-dependencies
+  cog-default-labels >>labels
   ! cog-gate-activate
 ;
+
+
+
 
 ! create a cog and state is inactive
 : <cog> ( n -- cog )
