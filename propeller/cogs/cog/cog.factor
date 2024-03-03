@@ -90,9 +90,14 @@ CONSTANT: SPR_SIZE    16
 ! tuple to hold cog stuff
 
 TUPLE: cog n pc pcold alu z c memory state isn fisn
-    source dest result bp mneu wstate gateone gatetwo
-    gatethree gatefour labels ;
+    source dest result bp wstate gateone gatetwo
+    gatethree gatefour labels hashmneu ;
 
+
+
+! 32 bit hex string of value "0xHHHHHHHH" upper case
+: >hex-pad8 ( value -- string )
+    >hex 8 CHAR: 0 pad-head >upper "0x" prepend ;
 
 : cog-memory ( address cog -- memory )
    memory>> nth ;
@@ -237,7 +242,8 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-isn-i ( cog -- ? )
   isn>> 22 bit? ;
 
-
+: cog-address-value ( address cog -- value )
+  cog-read ;
 
 : cog-source-address ( cog -- address )
   isn>> 8 0 bit-range ;
@@ -251,8 +257,14 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   [ cog-source-address ] ! immeadiate
   [ cog-source-value ] if ;
 
+
+! get isn destination address
 : cog-dest-address ( cog -- address )
   isn>> 17 9 bit-range ;
+
+: cog-dest-value ( cog -- value )
+  [ cog-dest-address ] keep cog-read ;
+
 
 : cog-fetch-dest ( cog -- value )
   [ cog-dest-address ] keep cog-read ;
@@ -279,7 +291,29 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
         >hex-pad3 "0x" prepend ! cog hex-string
     ] if    ! cog string
     [ cog-source-value ] dip    ! value string
-    [ >hex 8 CHAR: 0 pad-head " [0x" prepend "]" append ] dip prepend
+    [ >hex-pad8 " [0x" prepend "]" append ] dip prepend
+;
+
+
+! generate a string of destination this includes labels
+: cog-dest-string ( cog -- string/? )
+    dup ! cog cog
+    [ cog-dest-address ] keep ! cog address cog
+    [ cog-label-string ] 2keep ! cog label address cog 
+    rot ! cog address cog label
+    dup ! cog address cog label label
+    [
+        ! cog address cog label
+        [ drop drop ] dip   ! label
+    ]
+    [
+        ! cog address cog label
+        drop    ! cog address cog
+        drop    ! cog address
+        >hex-pad3 "0x" prepend ! cog hex-string
+    ] if    ! cog string
+    [ cog-dest-value ] dip    ! value string
+    [ >hex-pad8 " [0x" prepend "]" append ] dip prepend
 ;
 
 
@@ -664,17 +698,26 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-value$ ( value -- str )
     >hex 8 CHAR: 0 pad-head >upper " " append "0x" prepend ;
 
+
+! string of value from address
+: cog-address-value$ ( address cog -- string )
+    cog-address-value >hex-pad8 ;
+
 ! Display disasembled code
 : cog-list ( address cog --  str/f )
-  dup cog? not  ! make sure we are looking at cog
-  [ drop drop f ]    ! drop everyting and indicate fail
+  dup cog? not      ! address cog ? make sure we are looking at cog
+  [ drop drop f ]   ! drop everyting and indicate fail
   [
     break
-    [ cog-number$ swap ] keep
-    [ drop cog-address$ append ] 2keep
-    [ cog-read-address dup cog-value$ swap [ append ] dip ] keep 
-    
-    mneu>> opcode-string append
+    [ cog-number$ swap cog-address$ append ] 2keep       ! string address cog
+    [ cog-address-value$ append ] keep                  ! string cog
+    [ " " append ] dip                                  ! string cog
+    [ cog-source-string append ] keep                   ! string cog
+    [ " " append ] dip                                  ! string cog
+    [ cog-dest-string append ] keep                     ! string cog
+    [ " " append ] dip                                  ! string cog
+    drop
+    ! mneu>> opcode-string append
   ] if ;
 
 : cog-list-pc ( cog -- str/f )
@@ -705,7 +748,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     memory-activate
   ] each ;
 
-: cog-default-labels ( -- labels )
+: cog-default-labels ( -- hash )
   H{
     { 496 "PAR" }  { 497 "CNT" }  { 498 "INA" }  { 499 "INB" }
     { 500 "OUTA" } { 501 "OUTB" } { 502 "DIRA" } { 503 "DIRB" }
@@ -713,7 +756,70 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     { 508 "PHSA" } { 509 "PHSB" } { 510 "VCFG" } { 511 "VSCL" }
   } ;
 
+: cog-mnuemonic ( -- hash )
+  H{
+    { 1 "DWORD" } { 2 "DLONG" }
+    { 3 "SYSOP" } { 8 "ROR" }
+    { 9 "ROL" } { 10 "SHR" } { 11 "SHL" }
+    { 12 "RCR" } { 13 "RCL" } { 14 "SAR" }
+    { 15 "REV" } { 16 "MINS" } { 17 "MAXS" }
+    { 18 "MIN" } { 19 "MAX" } { 20 "MOVS" }
+    { 21 "MOVD" } { 22 "MOVI" } { 23 "JMPRET" }
+    { 24 "AND" } { 25 "ANDN" } { 26 "OR" }
+    { 27 "XOR" } { 28 "MUXC" } { 29 "MUXNC" }
+    { 30 "MUXZ" } { 31 "MUXNZ" } { 32 "ADD" }
+    { 33 "SUB" } { 34 "ADDABS" } { 35 "SUBABS" }
+    { 36 "SUMC" } { 37 "SUMNC" } { 38 "SUMZ" }
+    { 39 "SUMNZ" } { 40 "MOV" } { 41 "NEG" }
+    { 42 "ABS" } { 43 "ABSNEG" } { 44 "NEGC" }
+    { 45 "NEGNC" } { 46 "NEGZ" } { 47 "NEGNZ" }
+    { 48 "CMPS" } { 49 "CMPSX" } { 50 "ADDX" }
+    { 51 "SUBX" } { 52 "ADDS" } { 53 "SUBS" }
+    { 54 "ADDSX" } { 55 "SUBSX" } { 56 "CMPSUB" }
+    { 57 "DJNZ" } { 58 "TJNZ" } { 59 "TJZ" }
+    { 60 "WAITPEQ" } { 61 "WAITPNE" } { 62 "WAITCNT" }
+    { 63 "WAITVID" }
+  } ;
 
+
+: cog-sub-test ( code -- $/? )
+    [ flag-r ] [ opcode-exstract ] bi swap
+    [
+        H{
+            { 0 "RDBYTE" } { 1 "RDWORD" } { 2 "RDLONG" }
+            { 23 "JMPRET" } { 24 "AND" } { 33 "SUB" }
+        } at
+    ]
+    [ 
+        H{
+            { 0 "WRBYTE" } { 1 "WRWORD" } { 2 "WRLONG" }
+            { 23 "JMP" } { 24 "TEST" } { 33 "CMP" }
+        } at  
+    ] if
+;
+
+: cog-subcode ( code -- $/? )
+    break
+    dup 0 = 
+    [ drop "NOP" ]
+    [ 
+        [ cog-sub-test ] keep swap
+        [ drop "ERROR" ] unless
+    ] if
+  ;
+
+! find out if the current address has a label
+: cog-mnuemonic-string ( isn -- $/? )
+    dup                     ! isn isn
+    hashmneu>> at         ! isn string
+    dup                     ! isn strung string
+    [
+        swap drop           ! string
+    ]
+    [
+        drop                ! isn        
+        cog-subcode       ! string
+    ] if  ;
 
 
 ! create a cog and state is inactive
@@ -722,7 +828,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   cog-mem-setup >>memory  ! initialise memory componnet
   <alu> >>alu         ! alu is a seperate class
   [ cog-reset ] keep  ! cog is in reset state
-  <cogdasm> >>mneu
+  cog-mnuemonic >>hashmneu
   COG_HUB_GO >>wstate ! need to know if the cog is waiting for hub
   V{ } clone >>bp     ! break points
   0 <orx> >>gateone      ! or all the out amd some special function
