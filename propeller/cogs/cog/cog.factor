@@ -703,58 +703,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-address-value$ ( address cog -- string )
     cog-address-value >hex-pad8 ;
 
-! Display disasembled code
-: cog-list ( address cog --  str/f )
-  dup cog? not      ! address cog ? make sure we are looking at cog
-  [ drop drop f ]   ! drop everyting and indicate fail
-  [
-    break
-    [ cog-number$ swap cog-address$ append ] 2keep       ! string address cog
-    [ cog-address-value$ append ] keep                  ! string cog
-    [ " " append ] dip                                  ! string cog
-    [ cog-source-string append ] keep                   ! string cog
-    [ " " append ] dip                                  ! string cog
-    [ cog-dest-string append ] keep                     ! string cog
-    [ " " append ] dip                                  ! string cog
-    drop
-    ! mneu>> opcode-string append
-  ] if ;
-
-: cog-list-pc ( cog -- str/f )
-    break
-  [ pcold>> ] keep cog-list ;
-
-! or connects to and
-: cog-orand ( cog -- cog )
-    [ [ gateone>> ] [ gatetwo>> ] bi andx-dependency ] keep ; 
-
-: cog-andor ( cog -- cog )
-    [ gatetwo>> ] keep
-    [ gatethree>> add-dependency ] keep
-;
-
-
-: cog-gate-activate ( cog -- cog )
-    [ gateone>> activate-model ] keep
-    [ gatetwo>> activate-model ] keep
-    [ gatethree>> activate-model ] keep
-    [ gatefour>> activate-model ] keep ;
-
-! this will make all dependency point to memory 
-! so the memory will update to dependency changes
-: cog-activate ( cog -- )
-  memory>>
-  [
-    memory-activate
-  ] each ;
-
-: cog-default-labels ( -- hash )
-  H{
-    { 496 "PAR" }  { 497 "CNT" }  { 498 "INA" }  { 499 "INB" }
-    { 500 "OUTA" } { 501 "OUTB" } { 502 "DIRA" } { 503 "DIRB" }
-    { 504 "CTRA" } { 505 "CTRB" } { 506 "FRQA" } { 507 "FRQB" }
-    { 508 "PHSA" } { 509 "PHSB" } { 510 "VCFG" } { 511 "VSCL" }
-  } ;
 
 : cog-mnuemonic ( -- hash )
   H{
@@ -808,19 +756,79 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     ] if
   ;
 
-! find out if the current address has a label
-: cog-mnuemonic-string ( isn -- $/? )
-    dup                     ! isn isn
-    hashmneu>> at         ! isn string
-    dup                     ! isn strung string
-    [
-        swap drop           ! string
-    ]
-    [
-        drop                ! isn        
-        cog-subcode       ! string
-    ] if  ;
+: cog-opcode ( cog -- op )
+    isn>> 31 26 bit-range ;
 
+! find out if the current address has a label
+: cog-mnuemonic-string ( cog -- $/? )
+    [ cog-opcode ] keep      ! code cog
+    [ hashmneu>> ] keep ! code hash cog
+    [ at ] dip          ! ? cog
+    [ 
+        dup
+        [
+
+        ]
+        [
+            drop                ! isn        
+            cog-subcode       ! string
+        ] if
+    ] dip drop
+;
+
+
+
+! Display disasembled code
+: cog-list ( address cog --  str/f )
+  dup cog? not      ! address cog ? make sure we are looking at cog
+  [ drop drop f ]   ! drop everyting and indicate fail
+  [
+    [ cog-number$ swap cog-address$ append ] 2keep       ! string address cog
+    [ cog-address-value$ append ] keep                  ! string cog
+    [ " " append ] dip                                  ! string cog
+    [ cog-source-string append ] keep                   ! string cog
+    [ " " append ] dip                                  ! string cog
+    [ cog-dest-string append ] keep                     ! string cog
+    [ " " append ] dip                                  ! string cog
+    [ break cog-mnuemonic-string append ] keep                ! sting cog 
+    drop
+  ] if ;
+
+: cog-list-pc ( cog -- str/f )
+    break
+  [ pcold>> ] keep cog-list ;
+
+! or connects to and
+: cog-orand ( cog -- cog )
+    [ [ gateone>> ] [ gatetwo>> ] bi andx-dependency ] keep ; 
+
+: cog-andor ( cog -- cog )
+    [ gatetwo>> ] keep
+    [ gatethree>> add-dependency ] keep
+;
+
+
+: cog-gate-activate ( cog -- cog )
+    [ gateone>> activate-model ] keep
+    [ gatetwo>> activate-model ] keep
+    [ gatethree>> activate-model ] keep
+    [ gatefour>> activate-model ] keep ;
+
+! this will make all dependency point to memory 
+! so the memory will update to dependency changes
+: cog-activate ( cog -- )
+  memory>>
+  [
+    memory-activate
+  ] each ;
+
+: cog-default-labels ( -- hash )
+  H{
+    { 496 "PAR" }  { 497 "CNT" }  { 498 "INA" }  { 499 "INB" }
+    { 500 "OUTA" } { 501 "OUTB" } { 502 "DIRA" } { 503 "DIRB" }
+    { 504 "CTRA" } { 505 "CTRB" } { 506 "FRQA" } { 507 "FRQB" }
+    { 508 "PHSA" } { 509 "PHSB" } { 510 "VCFG" } { 511 "VSCL" }
+  } ;
 
 ! create a cog and state is inactive
 : new-cog ( n cog -- cog' )
