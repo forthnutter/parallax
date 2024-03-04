@@ -19,7 +19,8 @@ USING: accessors arrays assocs kernel sequences models vectors
        ! io.binary
        grouping bit-arrays bit-vectors
        parallax.propeller.cogs.alu tools.continuations
-       parallax.propeller.cogs.cogdisasm ascii
+       ! parallax.propeller.cogs.cogdisasm
+       ascii
 ;
 
 IN: parallax.propeller.cogs.cog
@@ -98,6 +99,15 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 ! 32 bit hex string of value "0xHHHHHHHH" upper case
 : >hex-pad8 ( value -- string )
     >hex 8 CHAR: 0 pad-head >upper "0x" prepend ;
+
+! 12 bit hex string    
+: >hex-pad3 ( d -- $ )
+  >hex 3 CHAR: 0 pad-head >upper ;
+
+! 8 bit hex string
+: >hex-pad2 ( d -- $ )
+  >hex 2 CHAR: 0 pad-head >upper ;
+
 
 : cog-memory ( address cog -- memory )
    memory>> nth ;
@@ -703,6 +713,66 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-address-value$ ( address cog -- string )
     cog-address-value >hex-pad8 ;
 
+: cog-isn ( cog -- isn )
+    isn>> ;
+
+! get the current opcode from ISN
+: cog-opcode ( cog -- op )
+    cog-isn 31 26 bit-range ;
+
+: flags-exstract ( code -- flags )
+  25 22 bit-range ;
+
+: cond-exstract ( code -- cond )
+  21 18 bit-range ;
+
+
+! test for nop condition
+: cond-exstract$ ( code -- $/f )
+  cond-exstract
+  H{
+    { 0 "NEVER" } { 1 "IF_NC_AND_NZ" } { 2 "IF_NC_AND_Z" }
+    { 3 "IF_NC" } { 4 "IF_C_AND_NZ" } { 5 "IF_NZ" }
+    { 6 "IF_C_NE_Z" } { 7 "IF_NC_OR_NZ" } { 8 "IF_C_AND_Z" }
+    { 9 "IF_C_EQ_Z" } { 10 "IF_Z" } { 11 "IF_NC_OR_Z" }
+    { 12 "IF_C" } { 13 "IF_C_OR_NZ" } { 14 "IF_C_OR_Z" }
+    { 15 "ALLWAYS" }
+  } at ;
+
+: flag-imd ( code -- ? )
+  22 bit? ;
+
+! flags display
+: flag-imd$ ( code -- $ )
+  flag-imd [ "<#>" ] [ " " ] if ;
+
+: flag-r ( cog -- ? )
+  cog-isn 23 bit? ;
+
+: flag-r-string ( flags --  $ )
+  flag-r [ "WR" ] [ " " ] if ;
+
+: flag-c ( code -- ? )
+  cog-isn 24 bit? ;
+
+: flag-c-string ( cog -- $ )
+  flag-c [ "WC" ] [ " " ] if ;
+
+: flag-z ( cog -- ? )
+  cog-isn 25 bit? ;
+
+: flag-z-string ( cog -- $ )
+  flag-z [ "WZ" ] [ " " ] if ;
+
+: cog-flags-string ( cog -- $ )
+  [ "flags{ " ] dip
+  [ flag-z-string " " append ] keep [ append ] dip
+  [ flag-c-string " " append ] keep [ append ] dip
+  [ flag-r-string " " append ] keep [ append ] dip
+  flag-imd$ " " append append "}" append ;
+
+
+
 
 : cog-mnuemonic ( -- hash )
   H{
@@ -730,8 +800,10 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   } ;
 
 
-: cog-sub-test ( code -- $/? )
-    [ flag-r ] [ opcode-exstract ] bi swap
+
+
+: code-sub-test ( code -- $/? )
+    [ flag-r ] [ cog-opcode ] bi swap
     [
         H{
             { 0 "RDBYTE" } { 1 "RDWORD" } { 2 "RDLONG" }
@@ -746,34 +818,36 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     ] if
 ;
 
-: cog-subcode ( code -- $/? )
-    break
-    dup 0 = 
-    [ drop "NOP" ]
-    [ 
-        [ cog-sub-test ] keep swap
+: cog-subcode ( cog -- $/? )
+    cog-opcode  ! code
+    dup         ! code code
+    0 =         ! code ?
+    [
+        drop    ! 
+        "NOP"   ! string
+    ]
+    [
+        ! code
+        [ code-sub-test ] keep  ! string code
+        swap                    ! code string
         [ drop "ERROR" ] unless
     ] if
   ;
 
-: cog-opcode ( cog -- op )
-    isn>> 31 26 bit-range ;
+
 
 ! find out if the current address has a label
 : cog-mnuemonic-string ( cog -- $/? )
     [ cog-opcode ] keep      ! code cog
     [ hashmneu>> ] keep ! code hash cog
     [ at ] dip          ! ? cog
-    [ 
-        dup
-        [
-
-        ]
-        [
-            drop                ! isn        
-            cog-subcode       ! string
-        ] if
-    ] dip drop
+    swap                ! cog ?
+    [
+        break
+        [ cog-subcode ] keep       ! string cog
+        swap                        ! cog string
+    ] unless*
+    [ drop ] dip
 ;
 
 
@@ -790,7 +864,9 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ " " append ] dip                                  ! string cog
     [ cog-dest-string append ] keep                     ! string cog
     [ " " append ] dip                                  ! string cog
-    [ break cog-mnuemonic-string append ] keep                ! sting cog 
+    [ break cog-flags-string append ] keep                    ! string cog
+
+    [ cog-mnuemonic-string append ] keep                ! sting cog 
     drop
   ] if ;
 
