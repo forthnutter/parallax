@@ -652,22 +652,22 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 
 ! return string value z
-: z-string ( ? -- str )
-  [ "Z" ] [ "z" ] if ;
+! : z-string ( ? -- str )
+!  [ "Z" ] [ "z" ] if ;
 
 ! return string vale c
-: c-string ( ? -- str )
-  [ "C" ] [ "c" ] if ;
+! : c-string ( ? -- str )
+!  [ "C" ] [ "c" ] if ;
 
 ! build up a string that indicate
 ! cogs flag codition
-: cog-condition ( cog -- str/f )
-  dup cog? not
-  [ drop f ]
-  [
-    [ z>> z-string ] [ c>> c-string ] bi ! get the two cog status
-    [ " " append ] dip append 
-  ] if ;
+! : cog-flag-condition ( cog -- str/f )
+!  dup cog? not
+!  [ drop f ]
+!  [
+!    [ z>> z-string ] [ c>> c-string ] bi ! get the two cog status
+!    [ " " append ] dip append 
+!  ] if ;
 
 
 
@@ -720,30 +720,18 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-opcode ( cog -- op )
     cog-isn 31 26 bit-range ;
 
-: flags-exstract ( code -- flags )
-  25 22 bit-range ;
+! : flags-exstract ( code -- flags )
+!  25 22 bit-range ;
 
-: cond-exstract ( code -- cond )
-  21 18 bit-range ;
+! : cond-exstract ( code -- cond )
+!  21 18 bit-range ;
 
 
-! test for nop condition
-: cond-exstract$ ( code -- $/f )
-  cond-exstract
-  H{
-    { 0 "NEVER" } { 1 "IF_NC_AND_NZ" } { 2 "IF_NC_AND_Z" }
-    { 3 "IF_NC" } { 4 "IF_C_AND_NZ" } { 5 "IF_NZ" }
-    { 6 "IF_C_NE_Z" } { 7 "IF_NC_OR_NZ" } { 8 "IF_C_AND_Z" }
-    { 9 "IF_C_EQ_Z" } { 10 "IF_Z" } { 11 "IF_NC_OR_Z" }
-    { 12 "IF_C" } { 13 "IF_C_OR_NZ" } { 14 "IF_C_OR_Z" }
-    { 15 "ALLWAYS" }
-  } at ;
-
-: flag-imd ( code -- ? )
-  22 bit? ;
+: flag-imd ( cog -- ? )
+  cog-isn 22 bit? ;
 
 ! flags display
-: flag-imd$ ( code -- $ )
+: flag-imd-string ( cog -- $ )
   flag-imd [ "<#>" ] [ " " ] if ;
 
 : flag-r ( cog -- ? )
@@ -769,8 +757,25 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   [ flag-z-string " " append ] keep [ append ] dip
   [ flag-c-string " " append ] keep [ append ] dip
   [ flag-r-string " " append ] keep [ append ] dip
-  flag-imd$ " " append append "}" append ;
+  flag-imd-string " " append append "} " append ;
 
+
+! get the condition of the instruction 
+: cog-conditions ( cog -- cond )
+  cog-isn 21 18 bit-range ;
+
+
+! test for nop condition
+: cog-condition-string ( cog -- $/f )
+  cog-conditions
+  H{
+    { 0 "NEVER" } { 1 "IF_NC_AND_NZ" } { 2 "IF_NC_AND_Z" }
+    { 3 "IF_NC" } { 4 "IF_C_AND_NZ" } { 5 "IF_NZ" }
+    { 6 "IF_C_NE_Z" } { 7 "IF_NC_OR_NZ" } { 8 "IF_C_AND_Z" }
+    { 9 "IF_C_EQ_Z" } { 10 "IF_Z" } { 11 "IF_NC_OR_Z" }
+    { 12 "IF_C" } { 13 "IF_C_OR_NZ" } { 14 "IF_C_OR_Z" }
+    { 15 "ALLWAYS" }
+  } at ;
 
 
 
@@ -864,7 +869,9 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ " " append ] dip                                  ! string cog
     [ cog-dest-string append ] keep                     ! string cog
     [ " " append ] dip                                  ! string cog
-    [ break cog-flags-string append ] keep                    ! string cog
+    [ break cog-condition-string append ] keep                ! string cog
+    [ " " append ] dip                                  ! string cog
+    [ cog-flags-string append ] keep                    ! string cog
 
     [ cog-mnuemonic-string append ] keep                ! sting cog 
     drop

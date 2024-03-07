@@ -21,6 +21,9 @@ TUPLE: parallax propeller at24 ;
     [ propeller>> propeller-pc-alist ] keep
 ;
 
+: x ( parallax -- parallax )
+    [ propeller>> propeller-pc-alist ] keep ;
+
 : <parallax> ( --  parallax )
     parallax new
     0 <24c256> >>at24
