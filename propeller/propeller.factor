@@ -1,10 +1,13 @@
 ! Copyright (C) 2020 forthnutter.
 !
 
-USING: math math.bitwise make kernel literals parallax.propeller.assembler
-  parallax.propeller.assembler.cog
-  compiler.codegen.labels namespaces accessors sequences arrays hashtables
-  assocs ;
+USING: math math.bitwise make kernel literals
+    parallax.propeller.assembler
+    parallax.propeller.assembler.cog
+    parallax.propeller.hub
+  compiler.codegen.labels
+    models namespaces accessors sequences arrays hashtables
+  assocs tools.continuations ;
 
 IN: parallax.propeller
 
@@ -21,11 +24,13 @@ REGISTER: txcode 0x1E8
 
 CONSTANT: BUFFER_LENGTH 64
 
+TUPLE: propeller hub ;
+
 
 : start ( cog -- cog' )
 
   [
-    init-relocation
+!    init-relocation
     PAR t1 IF_ALWAYS flags{ WR } MOV            ! get structure address
     4 2 shift t1 IF_ALWAYS flags{ <#> WR } ADD  ! skip past head and tails
 
@@ -54,9 +59,9 @@ CONSTANT: BUFFER_LENGTH 64
     txmask OUTA IF_Z_NE_C flags{ WR } OR
     txmask DIRA IF_Z flags{ WR } OR
     break
-    "transmit" define-label
+    ! "transmit" define-label
     ! "transmit" get txcode IF_ALWAYS flags{ <#> WR } MOV ! init ping-pong multitask
-    txcode "transmit" get pmova
+    ! txcode "transmit" get pmova
 
 
     "transmit" resolve-label
@@ -68,10 +73,26 @@ CONSTANT: BUFFER_LENGTH 64
       break
       "end" define-label
       PAR t1 IF_ALWAYS flags{ WR } MOV
-      t1 "end" get pmova
+!      t1 "end" get pmova
 
     ] with-scope
+    { 1 } ,
   ] { } make cog-code ;
 
 : pmain ( -- )
   <cog> stest start drop ;
+
+! need to add moduel to output
+: propeller-add-output ( model propeller --  )
+    hub>> hub-add-output ;
+
+! kind of a wrapper
+: propeller-step ( propeller -- )
+    hub>> hub-step drop ;
+
+: propeller-pc-alist ( propeller -- )
+    hub>> hub-pc-alist drop ;
+
+: <propeller> ( -- propeller )
+    propeller new
+    <hub> >>hub ;

@@ -7,8 +7,22 @@ IN: parallax.propeller.cogs.cog.dir
 
 TUPLE: dir < model ;
 
+: dir-read ( dir -- data )
+   value>> ;
+
+: dir-write ( data dir -- )
+   set-model ;
+
+M: dir model-changed
+   break
+   [ value>> ] dip ! get memory value
+   dir-write         ! send it out we may have others
+;
+
+: dir-add-connection ( object dir -- )
+   add-connection ;
+
+
 : <dir> ( value -- dira )
    dir new-model ;
 
-M: dir model-changed
-   break drop drop ;

@@ -7,25 +7,36 @@ IN: parallax.propeller.cogs.cog.memory
 TUPLE: memory < model ;
 
 
-
-GENERIC: read ( memory -- d )
-GENERIC: write ( d memory -- )
-
-
-
+GENERIC: read ( memory -- data )
 
 M: memory read
    value>> ;
 
-M: memory write
+: memory-read ( memory -- data )
+   value>> ;
+
+: memory-write ( d memory -- )
    set-model ;
 
 M: memory model-changed
   drop drop ;
 
-: add-memory ( object memory -- )
+: add-memory-read ( object memory -- )
    add-connection
 ;
 
+: add-memory-write ( object memory -- )
+   add-connection ;
+
+: memory-add-dependency ( object memory -- )
+   add-dependency ;
+
+: memory-activate ( memory -- )
+   activate-model ;
+
+: memory-deactivate ( memory -- )
+   deactivate-model ;
+
+   
 : <memory> ( value -- memory )
   memory new-model ;

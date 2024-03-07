@@ -11,9 +11,13 @@ IN: parallax.propeller.assembler.cog
 
 TUPLE: cog ip dp memory labels ;
 
+TUPLE: cog-label start array ;
+
 CONSTANT: COG-CELL 4    ! cell size 4 bytes
 CONSTANT: COG-SIZE 512  ! cog memory size
 CONSTANT: COG-ADDRESS-BITS 9 ! cog addressing limit 9 bits
+
+
 
 GENERIC: write ( data address cog -- )
 GENERIC: read ( address cog -- data )
@@ -35,6 +39,11 @@ SYNTAX: REGISTER:
     registers get set-at ;
 
 >>
+
+! startup label generator
+: <cog-label> ( address -- cog-label )
+  cog-label new
+  swap >>start ;
 
 
 ! Register Special Function Register
@@ -59,6 +68,7 @@ REGISTER: VSCL 0x1FF  ! Video Scale
 ! read IP add 1
 M: cog IP+> ( cog -- ip )
   [ ip>> ] [ dup ip>> 1 + >>ip drop ] bi ;
+
 ! need something to write to cog memory
 M: cog write
   [ COG-ADDRESS-BITS bits ] dip      ! make sure we limit address to 9 bits
