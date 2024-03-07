@@ -251,10 +251,10 @@ CONSTANT: IF_ALWAYS    0b1111    ! default condition
   insn-boundry
   { { 0b010100 26 } 22 18 9 0 } insn , ;
 
-GENERIC: pmova ( dst src -- )
+! GENERIC: pmova ( dst src -- )
 
-M: label pmova
-  1 label-fixup swap IF_ALWAYS flags{ <#> WR } MOV ;
+! M: label pmova
+!  1 label-fixup swap IF_ALWAYS flags{ <#> WR } MOV ;
 
 ! Set discrete bits of a value to the state of C
 : MUXC ( sv av con zcri -- )

@@ -1,7 +1,9 @@
 ! disasembler for Parallax Propeller P8X32A
 
 USING: accessors arrays kernel math sequences byte-arrays io
-    math.parser math.ranges unicode.case namespaces parser lexer
+    math.parser
+    ! math.ranges
+    ranges unicode.case namespaces parser lexer
     tools.continuations peg fry assocs combinators sequences.deep make
     words quotations math.bitwise models ascii
     parallax.propeller.cogs.cog hashtables ;
@@ -31,6 +33,7 @@ TUPLE: cogdasm labels ;
 
 ! source destination condition flags opcode
 : source-exstract$ ( code cogdisasm -- source )
+    break
   [ [ source-exstract ] dip label-exstract ] 2keep drop swap dup
   [ swap drop ] [ drop source-exstract >hex-pad3 "0x" prepend ] if ;
 
@@ -96,24 +99,31 @@ TUPLE: cogdasm labels ;
   31 26 bit-range ;
 
 
+: opcode-sub-test ( code -- $/? )
+    [ flag-r ] [ opcode-exstract ] bi swap
+    [
+        H{
+            { 0 "RDBYTE" } { 1 "RDWORD" } { 2 "RDLONG" }
+            { 23 "JMPRET" } { 24 "AND" } { 33 "SUB" }
+        } at
+    ]
+    [ 
+        H{
+            { 0 "WRBYTE" } { 1 "WRWORD" } { 2 "WRLONG" }
+            { 23 "JMP" } { 24 "TEST" } { 33 "CMP" }
+        } at  
+    ] if
+;
+
 : opcode-subcode ( code -- $/? )
-  [ flag-r ] keep swap
-  [
-    opcode-exstract
-    H{
-      { 0 "RDBYTE" } { 1 "RDWORD" } { 2 "RDLONG" }
-      { 23 "JMPRET" } { 24 "AND" } { 33 "SUB" }
-    } at
-    dup [ ] [ drop "ERROR" ] if
-  ]
-  [
-    opcode-exstract
-    H{
-      { 0 "WRBYTE" } { 1 "WRWORD" } { 2 "WRLONG" }
-      { 23 "JMP" } { 24 "TEST" } { 33 "CMP" }
-    } at
-    dup [ ] [ drop "ERROR" ] if
-  ] if ;
+    break
+    dup 0 = 
+    [ drop "NOP" ]
+    [ 
+        [ opcode-sub-test ] keep swap
+        [ drop "ERROR" ] unless
+    ] if
+  ;
 
 : opcode-exstract$ ( code -- $/? )
   [ opcode-exstract ] keep swap
@@ -145,17 +155,26 @@ TUPLE: cogdasm labels ;
 
 
 
-: opcode-string ( code cogdisasm -- $ )
+: opcode-string ( code cogdasm -- $ )
   [ source-exstract$ " " append ] 2keep
   [ dest-exstract$ " " append ] 2keep drop [ append ] dip
   [ cond-exstract$ " " append ] keep [ append ] dip
   [ flag$ " " append ] keep [ append ] dip
   opcode-exstract$ append ;
 
-: dasm-add ( label address  cogdisasm -- )
-  labels>> ?set-at drop ;
+: dasm-add ( address label cogdasm -- cogdasm' )
+  [ labels>> ?set-at drop ] keep ;
+
+: default-labels ( -- labels )
+  H{
+    { 496 "PAR" }  { 497 "CNT" }  { 498 "INA" }  { 499 "INB" }
+    { 500 "OUTA" } { 501 "OUTB" } { 502 "DIRA" } { 503 "DIRB" }
+    { 504 "CTRA" } { 505 "CTRB" } { 506 "FRQA" } { 507 "FRQB" }
+    { 508 "PHSA" } { 509 "PHSB" } { 510 "VCFG" } { 511 "VSCL" }
+  } ;
+
 
 
 : <cogdasm> ( -- cogdasm )
   cogdasm new
-  H{ } clone >>labels ;
+  default-labels >>labels ;

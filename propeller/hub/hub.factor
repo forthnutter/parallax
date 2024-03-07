@@ -2,7 +2,9 @@
 !
 
 USING: accessors math math.bitwise make kernel literals byte-arrays binfile
-  vectors sequences tools.continuations parallax.propeller.cogs arrays
+  vectors sequences tools.continuations
+  parallax.propeller.cogs parallax.propeller.inx
+  arrays namespaces
   intel.hex bit-arrays bit-vectors io
  ;
 IN: parallax.propeller.hub
@@ -17,7 +19,7 @@ TUPLE: hub cogs bus ram rom enable lock config ;
 
 
 ! sigle cycle cog
-: hub-cog-step ( hub -- hub )
+: hub-step ( hub -- hub )
   [ cogs>> cogs-step-cycle ] keep ;
 
 ! single step cog
@@ -52,10 +54,41 @@ TUPLE: hub cogs bus ram rom enable lock config ;
     [ print ] each
   ] keep ;
 
+
+! list all cogs PC instruction
+: hub-pc-list ( hub -- hub )
+  [
+    cogs>> cogs-list-pc
+    [ print ] each
+  ] keep ;
+
+! list all active cogs PC instruction
+: hub-pc-alist ( hub -- hub )
+  [
+    cogs>> cogs-alist-pc
+    [ print ] each
+  ] keep ;
+
+! let get the INA and display it
+: hub-ina ( hub -- hub )
+  [
+    cogs>> cogs-ina-read
+    [ print ] each
+  ] keep ;
+
+
+: hub-add-output ( model hub -- )
+    cogs>> cogs-add-output ;
+
+
+! initalise the HUB 
 : <hub> ( -- hub )
   hub new
+  ! spin vm and loader Plus math tables and character fonts
+  ! needs to be loaded into ROM to be loaded into cog memory
   "work/parallax/propeller/hub/StartupROM.bin" <binfile> >>rom
-  RAMSIZE <byte-array> >>ram
+  RAMSIZE <byte-array> >>ram  ! ram needed for user programs
   <cogs> >>cogs ! cogs is seperate class
-  [ hub-cog-boot ] keep
+  [ hub-cog-boot ] keep   ! boot cog 0 to start loader
+  hub-step  ! do a cog cycle to init cog state
  ;
