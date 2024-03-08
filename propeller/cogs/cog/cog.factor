@@ -869,7 +869,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ " " append ] dip                                  ! string cog
     [ cog-dest-string append ] keep                     ! string cog
     [ " " append ] dip                                  ! string cog
-    [ break cog-condition-string append ] keep                ! string cog
+    [ cog-condition-string append ] keep                ! string cog
     [ " " append ] dip                                  ! string cog
     [ cog-flags-string append ] keep                    ! string cog
 
@@ -878,7 +878,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   ] if ;
 
 : cog-list-pc ( cog -- str/f )
-    break
   [ pcold>> ] keep cog-list ;
 
 ! or connects to and
