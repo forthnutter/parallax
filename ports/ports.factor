@@ -7,35 +7,24 @@ USING: accessors arrays kernel models parallax.at24c256
 IN: parallax.ports
 
 
-TUPLE: port < model number ;
+TUPLE: port in out dir ;
+
+! write to in port
+: port-in-write ( n port --  )
+    in>> ?set-model ;
+
+! or value to in port
+: port-in-or ( n port -- )
+    in>>        ! n model
+    [ model-value ] keep    ! n value model
+    [ bit-or ] keep         ! or model
+    ?set-model
+;
 
 
-
-: <port> ( n -- port )
-    f port new-model
-    swap >>number ;
-
-
-TUPLE: ports array ;
-
-! get the model for pin number n
-: ports-getport ( n port -- model )
-    array>> ?nth ;
-
-! add an observer to pin model
-: ports-observer ( n observer ports -- )
-    [ swap ] dip ! observer n ports
-    ports-getport     ! obsever ports
-    add-connection ;
-
-: ports-init ( array -- array' )
-    [
-        [ drop ] dip        ! get rid of element
-        <port>
-    ] map-index
-    [ 29 swap nth 0 <24c256> swap add-connection ] keep ;
-
-! create the number of bit ports
-: <ports> ( n -- ports )
-    ports new
-    swap f <array> ports-init >>array ;
+: <port> (  -- port )
+    port new
+    0 <model> >>in
+    0 <model> >>out
+    0 <model> >>dir
+;
