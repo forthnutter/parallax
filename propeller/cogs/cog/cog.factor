@@ -736,38 +736,45 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 ! : cond-exstract ( code -- cond )
 !  21 18 bit-range ;
 
-
+! imediate flag
 : flag-imd ( cog -- ? )
-  cog-isn 22 bit? ;
+    22 bit? ;
 
 ! flags display
-: flag-imd-string ( cog -- $ )
-  flag-imd [ "<#>" ] [ " " ] if ;
+: flag-imd-string ( isn -- $ )
+    flag-imd [ "<#>" ] [ " " ] if ;
 
-: flag-r ( cog -- ? )
-  cog-isn 23 bit? ;
+! read or write flag
+: flag-r ( isn -- ? )
+    23 bit? ;
 
-: flag-r-string ( flags --  $ )
-  flag-r [ "WR" ] [ " " ] if ;
+! string r flag
+: flag-r-string ( isn --  $ )
+    flag-r [ "WR" ] [ " " ] if ;
 
-: flag-c ( code -- ? )
-  cog-isn 24 bit? ;
+! carry flag
+: flag-c ( isn -- ? )
+    24 bit? ;
 
-: flag-c-string ( cog -- $ )
-  flag-c [ "WC" ] [ " " ] if ;
+! string of carry
+: flag-c-string ( isn -- $ )
+    flag-c [ "WC" ] [ " " ] if ;
 
-: flag-z ( cog -- ? )
-  cog-isn 25 bit? ;
+! z flag
+: flag-z ( isn -- ? )
+    25 bit? ;
 
-: flag-z-string ( cog -- $ )
-  flag-z [ "WZ" ] [ " " ] if ;
+: flag-z-string ( isn -- $ )
+    flag-z [ "WZ" ] [ " " ] if ;
+
 
 : cog-flags-string ( cog -- $ )
-  [ "flags{ " ] dip
-  [ flag-z-string " " append ] keep [ append ] dip
-  [ flag-c-string " " append ] keep [ append ] dip
-  [ flag-r-string " " append ] keep [ append ] dip
-  flag-imd-string " " append append "} " append ;
+    cog-isn
+    [ "flags{ " ] dip
+    [ flag-z-string " " append ] keep [ append ] dip
+    [ flag-c-string " " append ] keep [ append ] dip
+    [ flag-r-string " " append ] keep [ append ] dip
+    flag-imd-string " " append append "} " append ;
 
 
 ! get the condition of the instruction 
@@ -932,6 +939,14 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     ] if    ! string
 ;
 
+: flags-string ( isn -- $ )
+  [ "flags{ " ] dip
+  [ flag-z-string " " append ] keep [ append ] dip
+  [ flag-c-string " " append ] keep [ append ] dip
+  [ flag-r-string " " append ] keep [ append ] dip
+  flag-imd-string " " append append "} " append ;
+
+
 ! Display disasembled code
 : cog-list ( address cog --  str/f )
   dup cog? not      ! address cog ? make sure we are looking at cog
@@ -944,8 +959,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ source-string " " append append ] 2keep           ! string cog
     [ destination-string " " append append ] 2keep      ! string cog
     [ swap drop cog-flag-condition " " append append ] 2keep
-    [ drop condition-string append ] 2keep                ! string cog
-    [ " " append ] dip                                  ! string cog
+    [ drop condition-string " " append append ] 2keep                ! string cog
     [ cog-flags-string append ] keep                    ! string cog
 
     [ cog-mnuemonic-string append ] keep                ! sting cog 
