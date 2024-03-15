@@ -939,3 +939,10 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : <cog> ( n -- cog )
   cog new-cog ! create the cog class
 ;
+
+! create a cog with centralised port
+: <cog-port> ( port n -- cog )
+    <cog>       ! port cog
+    swap        ! cog port
+    >>port      ! cog
+;

@@ -8,7 +8,9 @@ USING: accessors arrays ascii combinators
        parallax.propeller.inx
        parallax.propeller.outx
        parallax.propeller.orx
-      sequences tools.continuations vectors ;
+       parallax.ports
+      sequences tools.continuations vectors 
+;
 
 
 IN: parallax.propeller.cogs
@@ -25,7 +27,8 @@ CONSTANT: DDRB_ADDRESS 503
 TUPLE: logoutx < model vec ;
 
 TUPLE: cogs cog-array num-longs ina inb outa outb ddra ddrb 
-        logx ;
+    porta portb logx
+;
 
 
 : <logoutx> ( -- logoutx )
@@ -38,6 +41,15 @@ M: logoutx model-changed
 
 ! create an instance of 8 cogs
 : cogs-array ( -- array )
+  COGNUMBEROF f <array>
+  [
+    swap drop
+    <cog>
+  ] map-index ;
+
+! create an instance of 8 cogs with ports
+: cogs-array-port ( cogs -- array )
+    break
   COGNUMBEROF f <array>
   [
     swap drop
@@ -265,13 +277,16 @@ M: logoutx model-changed
 
 : <cogs> ( -- cogs )
   break
-  cogs new
-  0 <inx> >>ina     ! INA is a global input
-  0 <inx> >>inb     ! same for INB
+  cogs new                      ! cog
+  0 <inx> >>ina                 ! cog - INA is a global input
+  0 <inx> >>inb                 ! cog - same for INB
   9 <outx> >>outa   ! global out
   0 <ddrx> >>ddra   ! global ddr
+  <port> >>porta    ! ina outa dira
+  <port> >>portb    ! inb outb dirb
   <logoutx> >>logx  ! keep a record of out changes
   cogs-array >>cog-array
+
   4 >>num-longs ! this is the defult number of data longs to display
   [ cogs-set-dependency ] keep
   [ cogs-link-out ] keep

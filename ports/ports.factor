@@ -1,13 +1,17 @@
 ! Pin control starts here
 
 
-USING: accessors arrays kernel models parallax.at24c256
-        sequences ;
+USING: accessors arrays
+    kernel
+    math models
+    parallax.at24c256
+    sequences 
+    tools.continuations ;
 
 IN: parallax.ports
 
 
-TUPLE: port in out dir ;
+TUPLE: port < model in out dir ;
 
 ! write to in port
 : port-in-write ( n port --  )
@@ -15,15 +19,32 @@ TUPLE: port in out dir ;
 
 ! or value to in port
 : port-in-or ( n port -- )
-    in>>        ! n model
+    break
+    in>>                    ! n model
     [ model-value ] keep    ! n value model
-    [ bit-or ] keep         ! or model
+    [ bitor ] keep         ! or model
     ?set-model
 ;
 
+! and value to in port
+: port-in-and ( n port -- )
+    break
+    in>>            ! n model
+    [ model-value ] keep    ! n value model
+    [ bitand ] keep        ! and model
+    ?set-model
+;
 
+! Read the in value
+: port-in-read ( port -- in )
+    in>> model-value    ! in
+;
+
+
+! initilise port object
 : <port> (  -- port )
-    port new
+    break
+    0 port new-model
     0 <model> >>in
     0 <model> >>out
     0 <model> >>dir
