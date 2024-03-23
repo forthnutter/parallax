@@ -92,7 +92,7 @@ CONSTANT: SPR_SIZE    16
 
 TUPLE: cog n pc pcold alu z c memory state isn fisn
     source dest result bp wstate gateone gatetwo
-    gatethree gatefour labels hashmneu ;
+    gatethree gatefour labels hashmneu porta portb ;
 
 
 
@@ -933,7 +933,10 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 ;
 
 
-
+! cog needs to know the global port structure A and B
+: cog-port ( pa pb cog -- )
+    [ >>portb ] keep
+    >>porta ;
 
 ! create a cog and state is inactive
 : <cog> ( n -- cog )
