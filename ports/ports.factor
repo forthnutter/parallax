@@ -22,7 +22,7 @@ TUPLE: port < model in out dir ;
     break
     in>>                    ! n model
     [ model-value ] keep    ! n value model
-    [ bitor ] keep         ! or model
+    [ bitor ] dip            ! or model
     ?set-model
 ;
 
@@ -31,7 +31,7 @@ TUPLE: port < model in out dir ;
     break
     in>>            ! n model
     [ model-value ] keep    ! n value model
-    [ bitand ] keep        ! and model
+    [ bitand ] dip          ! and model
     ?set-model
 ;
 
@@ -40,6 +40,12 @@ TUPLE: port < model in out dir ;
     in>> model-value    ! in
 ;
 
+: port-add-connection ( observer port -- )
+    add-connection ;
+
+
+: port-add-dependency ( dep port -- )
+    add-dependency ;
 
 ! initilise port object
 : <port> (  -- port )

@@ -48,13 +48,13 @@ M: logoutx model-changed
   ] map-index ;
 
 ! create an instance of 8 cogs with ports
-: cogs-array-port ( cogs -- array )
+: cogs-array-port ( cogs -- )
     break
-  COGNUMBEROF f <array>
-  [
-    swap drop
-    <cog>
-  ] map-index ;
+    cog-array>>
+    [
+        swap drop
+        
+    ] each ;
 
 ! go through all cogs and
 ! do a complete step to the next instrcution
