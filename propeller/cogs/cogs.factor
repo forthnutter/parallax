@@ -26,7 +26,7 @@ CONSTANT: DDRB_ADDRESS 503
 
 TUPLE: logoutx < model vec ;
 
-TUPLE: cogs cog-array num-longs ina inb outa outb ddra ddrb 
+TUPLE: cogs cog-array num-longs inb outa outb ddra ddrb 
     porta portb logx
 ;
 
@@ -278,10 +278,6 @@ M: logoutx model-changed
 : <cogs> ( -- cogs )
   break
   cogs new                      ! cog
-  0 <inx> >>ina                 ! cog - INA is a global input
-  0 <inx> >>inb                 ! cog - same for INB
-  9 <outx> >>outa   ! global out
-  0 <ddrx> >>ddra   ! global ddr
   <port> >>porta    ! ina outa dira
   <port> >>portb    ! inb outb dirb
   <logoutx> >>logx  ! keep a record of out changes

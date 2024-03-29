@@ -3,6 +3,7 @@
 
 USING: accessors arrays
     kernel
+    parallax.propeller.inx
     math models
     parallax.at24c256
     sequences 
@@ -11,7 +12,12 @@ USING: accessors arrays
 IN: parallax.ports
 
 
-TUPLE: port < model in out dir ;
+TUPLE: port in out dir vg cnta cntb ;
+
+
+
+
+
 
 ! write to in port
 : port-in-write ( n port --  )
@@ -47,11 +53,16 @@ TUPLE: port < model in out dir ;
 : port-add-dependency ( dep port -- )
     add-dependency ;
 
+! add observer to port
+: port-in-add-connection ( observer port --  )
+    in>> port-add-connection ;
+
+
 ! initilise port object
 : <port> (  -- port )
     break
-    0 port new-model
-    0 <model> >>in
+    port new
+    -1 <inx> >>in
     0 <model> >>out
     0 <model> >>dir
 ;
