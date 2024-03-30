@@ -3,9 +3,11 @@
 
 USING: accessors arrays
     kernel
-    parallax.propeller.inx
+  
     math models
     parallax.at24c256
+    parallax.propeller.inx
+    parallax.propeller.outx
     sequences 
     tools.continuations ;
 
@@ -49,20 +51,19 @@ TUPLE: port in out dir vg cnta cntb ;
 : port-add-connection ( observer port -- )
     add-connection ;
 
-
-: port-add-dependency ( dep port -- )
-    add-dependency ;
-
 ! add observer to port
 : port-in-add-connection ( observer port --  )
     in>> port-add-connection ;
 
+! add observer to out port
+: port-out-add-connection ( observer port -- )
+    out>> port-add-connection ;
+
 
 ! initilise port object
 : <port> (  -- port )
-    break
     port new
     -1 <inx> >>in
-    0 <model> >>out
+    0 <outx> >>out
     0 <model> >>dir
 ;

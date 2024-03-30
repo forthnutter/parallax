@@ -26,7 +26,7 @@ CONSTANT: DDRB_ADDRESS 503
 
 TUPLE: logoutx < model vec ;
 
-TUPLE: cogs cog-array num-longs inb outa outb ddra ddrb 
+TUPLE: cogs cog-array num-longs outa outb ddra ddrb 
     porta portb logx
 ;
 
@@ -72,17 +72,18 @@ M: logoutx model-changed
   ] each ;
 
 ! Add to each cog the object dependency
-: cogs-add-dependency ( object address cogs -- )
-  cog-array>>
-  [
-    [ 2dup ] dip
-    cog-mem-dependency
-  ] each 2drop ;
+! : cogs-add-dependency ( object address cogs -- )
+!  cog-array>>
+!  [
+!   [ 2dup ] dip
+!    cog-mem-dependency
+!  ] each 2drop
+! ;
 
-: cogs-set-dependency ( cogs -- )
-  [ [ ina>> INA_ADDRESS ] keep cogs-add-dependency ]
-  [ [ inb>> INB_ADDRESS ] keep cogs-add-dependency ]
-  bi ;
+! : cogs-set-dependency ( cogs -- )
+!  [ [ ina>> INA_ADDRESS ] keep cogs-add-dependency ]
+!  [ [ inb>> INB_ADDRESS ] keep cogs-add-dependency ]
+!  bi ;
 
 
 ! cog display memory
@@ -124,11 +125,11 @@ M: logoutx model-changed
 
 
 ! read INA value and return string
-: cogs-ina-read ( cogs -- $array )
-  1 <vector> swap   ! cogs first
-  ina>> in-read >hex 8 CHAR: 0 pad-head >upper
-  "$" prepend swap 
-  [ push ] keep ;
+! : cogs-ina-read ( cogs -- $array )
+!  1 <vector> swap   ! cogs first
+!  ina>> in-read >hex 8 CHAR: 0 pad-head >upper
+!  "$" prepend swap 
+!  [ push ] keep ;
 
 ! make cog 0 out or with cog 1 out
 : cogs-01-out ( cogs -- )
@@ -272,8 +273,17 @@ M: logoutx model-changed
     cog-activate
   ] each ;
 
-: cogs-add-output ( model cogs -- )
-    outa>> add-connection ;
+: cogs-out-add-connection ( obsever cogs -- )
+    porta>> port-out-add-connection ;
+
+: cogs-add-port-connection ( cogs -- )
+    [ porta>> in>> ] keep
+    cog-array>>
+    [
+        [ dup ] dip
+        [ INA_ADDRESS ] dip cog-memory-connection
+    ] each drop
+;
 
 : <cogs> ( -- cogs )
   break
@@ -284,9 +294,10 @@ M: logoutx model-changed
   cogs-array >>cog-array
 
   4 >>num-longs ! this is the defult number of data longs to display
-  [ cogs-set-dependency ] keep
-  [ cogs-link-out ] keep
-  [ cogs-link-ddr ] keep
-  [ cogs-link-activate ] keep
-  [ cogs-activate ] keep
+  [ cogs-add-port-connection ] keep
+!  [ cogs-set-dependency ] keep
+!  [ cogs-link-out ] keep
+!  [ cogs-link-ddr ] keep
+!  [ cogs-link-activate ] keep
+!  [ cogs-activate ] keep
 ;
