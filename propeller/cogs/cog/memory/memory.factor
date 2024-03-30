@@ -10,10 +10,10 @@ TUPLE: memory < model ;
 GENERIC: read ( memory -- data )
 
 M: memory read
-   value>> ;
+   model-value ;
 
 : memory-read ( memory -- data )
-   value>> ;
+   model-value ;
 
 : memory-write ( d memory -- )
    set-model ;
@@ -21,7 +21,7 @@ M: memory read
 M: memory model-changed
   drop drop ;
 
-: add-memory-read ( object memory -- )
+: memory-add-read-connection ( object memory -- )
    add-connection
 ;
 
@@ -37,6 +37,6 @@ M: memory model-changed
 : memory-deactivate ( memory -- )
    deactivate-model ;
 
-   
+! create a memory model
 : <memory> ( value -- memory )
   memory new-model ;

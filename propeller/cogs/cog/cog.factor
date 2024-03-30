@@ -144,12 +144,12 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 ! may require memory deactivation and then activation
 ! : memory-set-dependency ( object address memory -- )
 !  nth memory-add-dependency ;
-: cog-mem-dependency ( dep address cog -- )
-  memory>> nth memory-add-dependency ;
+! : cog-mem-dependency ( dep address cog -- )
+!  memory>> nth memory-add-dependency ;
 
-
-: cog-mem-connection ( object address cog -- )
-  memory>> nth add-connection ;
+! Lets put memory as an observer 
+: cog-memory-connection ( object address cog -- )
+  cog-memory swap add-connection ;
 
 ! Build the cog memory
 : cog-mem-setup ( -- vector )
@@ -204,6 +204,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 !   [ [ cog-ctr-set 504 ] keep cog-mem-dependency ] keep
 !    [ [ cog-vcfg-set 510 ] keep cog-mem-dependency ] keep
 ;
+
 
  
 : cog-reset ( cog -- )
@@ -921,14 +922,14 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   cog-mnuemonic >>hashmneu
   COG_HUB_GO >>wstate ! need to know if the cog is waiting for hub
   V{ } clone >>bp     ! break points
-  0 <orx> >>gateone      ! or all the out amd some special function
-  0 <andx> >>gatetwo     !
-  0 <orx> >>gatethree    ! or out to next cog
-  0 <orx> >>gatefour
-  cog-orand
-  cog-andor
-  cog-set-dependencies
-  cog-default-labels >>labels
+!  0 <orx> >>gateone      ! or all the out amd some special function
+!  0 <andx> >>gatetwo     !
+!  0 <orx> >>gatethree    ! or out to next cog
+!  0 <orx> >>gatefour
+!  cog-orand
+!  cog-andor
+!  cog-set-dependencies
+!  cog-default-labels >>labels
   ! cog-gate-activate
 ;
 

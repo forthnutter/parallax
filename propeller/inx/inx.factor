@@ -16,7 +16,7 @@ GENERIC: in-write ( d inx -- )
 
 ! Just read the value
 M: inx in-read
-   value>> ;
+   model-value ;
 
 ! lets write
 M: inx in-write

@@ -70,15 +70,15 @@ TUPLE: hub cogs bus ram rom enable lock config ;
   ] keep ;
 
 ! let get the INA and display it
-: hub-ina ( hub -- hub )
-  [
-    cogs>> cogs-ina-read
-    [ print ] each
-  ] keep ;
+! : hub-ina ( hub -- hub )
+!  [
+!    cogs>> cogs-ina-read
+!    [ print ] each
+!  ] keep ;
 
 
 : hub-add-output ( model hub -- )
-    cogs>> cogs-add-output ;
+    cogs>> cogs-out-add-connection ;
 
 
 ! initalise the HUB 
