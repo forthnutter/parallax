@@ -28,7 +28,6 @@ M: inx model-changed
    in-write ;  ! this will change obsevers
 
 
-
 ! Sets the n th bit of inx to one
 : inx-set-bit ( inx n -- )
    [ dup value>> ] dip set-bit
