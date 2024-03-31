@@ -151,6 +151,10 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-memory-connection ( object address cog -- )
   cog-memory swap add-connection ;
 
+! Lets put port into memory 
+: cog-connection-memory ( object address cog -- )
+  cog-memory add-connection ;
+
 ! Build the cog memory
 : cog-mem-setup ( -- vector )
   MEMORY_SIZE f <array>
@@ -653,22 +657,22 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 
 ! return string value z
-! : z-string ( ? -- str )
-!  [ "Z" ] [ "z" ] if ;
+: z-string ( ? -- str )
+  [ "Z" ] [ "z" ] if ;
 
 ! return string vale c
-! : c-string ( ? -- str )
-!  [ "C" ] [ "c" ] if ;
+: c-string ( ? -- str )
+  [ "C" ] [ "c" ] if ;
 
 ! build up a string that indicate
 ! cogs flag codition
-! : cog-flag-condition ( cog -- str/f )
-!  dup cog? not
-!  [ drop f ]
-!  [
-!    [ z>> z-string ] [ c>> c-string ] bi ! get the two cog status
-!    [ " " append ] dip append 
-!  ] if ;
+: cog-flag-condition ( cog -- str/f )
+  dup cog? not
+  [ drop f ]
+  [
+    [ z>> z-string ] [ c>> c-string ] bi ! get the two cog status
+    [ " " append ] dip append 
+  ] if ;
 
 
 
@@ -870,6 +874,8 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ " " append ] dip                                  ! string cog
     [ cog-dest-string append ] keep                     ! string cog
     [ " " append ] dip                                  ! string cog
+    [ cog-flag-condition append ] keep
+    [ " " append ] dip?
     [ cog-condition-string append ] keep                ! string cog
     [ " " append ] dip                                  ! string cog
     [ cog-flags-string append ] keep                    ! string cog
@@ -929,7 +935,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 !  cog-orand
 !  cog-andor
 !  cog-set-dependencies
-!  cog-default-labels >>labels
+  cog-default-labels >>labels
   ! cog-gate-activate
 ;
 

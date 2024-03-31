@@ -276,14 +276,36 @@ M: logoutx model-changed
 : cogs-out-add-connection ( obsever cogs -- )
     porta>> port-out-add-connection ;
 
-: cogs-add-port-connection ( cogs -- )
-    [ porta>> in>> ] keep
+
+: cogs-add-portout-memory ( cogs -- )
+    [ porta>> out>> ] keep
     cog-array>>
     [
         [ dup ] dip
-        [ INA_ADDRESS ] dip cog-memory-connection
+        [ OUTA_ADDRESS ] dip cog-connection-memory
     ] each drop
 ;
+
+
+! add memory from each cog into port INA and INB
+: cogs-add-memory-portin ( cogs -- )
+    dup                     ! cogs cogs
+    [ porta>> in>> ] keep   ! cogs inx cogs
+    cog-array>>             ! cogs inx array
+    [
+                            ! inx cog
+        [ dup ] dip         ! inx inx cog
+        [ INA_ADDRESS ] dip cog-memory-connection   ! inx inx address cog -- inx
+    ] each  [ -1 ] dip set-model ! cogs
+    [ portb>> in>> ] keep   ! inx cogs
+    cog-array>>             ! inx array
+    [
+                            ! inx cog
+        [ dup ] dip         ! inx inx cog
+        [ INB_ADDRESS ] dip cog-memory-connection   ! inx inx address cog -- inx
+    ] each [ -1 ] dip set-model     ! inx --
+;
+
 
 : <cogs> ( -- cogs )
   break
@@ -294,8 +316,8 @@ M: logoutx model-changed
   cogs-array >>cog-array
 
   4 >>num-longs ! this is the defult number of data longs to display
-  [ cogs-add-port-connection ] keep
-!  [ cogs-set-dependency ] keep
+  [ cogs-add-memory-portin ] keep
+  [ cogs-add-portout-memory ] keep
 !  [ cogs-link-out ] keep
 !  [ cogs-link-ddr ] keep
 !  [ cogs-link-activate ] keep
