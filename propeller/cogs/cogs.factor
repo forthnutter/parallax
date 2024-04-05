@@ -52,7 +52,7 @@ M: logoutx model-changed
     break
     cog-array>>
     [
-        swap drop
+        drop
         
     ] each ;
 
