@@ -371,7 +371,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   alu>> alu-update drop ;
 
 : cog-djnz ( cog -- )
-    break
   [ dest>> 1 ] keep
   [ alu>> alu-sub ] keep swap
   alu-z not
@@ -875,7 +874,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ cog-dest-string append ] keep                     ! string cog
     [ " " append ] dip                                  ! string cog
     [ cog-flag-condition append ] keep
-    [ " " append ] dip?
+    [ " " append ] dip
     [ cog-condition-string append ] keep                ! string cog
     [ " " append ] dip                                  ! string cog
     [ cog-flags-string append ] keep                    ! string cog
@@ -941,9 +940,9 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 
 ! cog needs to know the global port structure A and B
-: cog-port ( pa pb cog -- )
-    [ >>portb ] keep
-    >>porta ;
+! : cog-port ( pa pb cog -- )
+!    [ >>portb ] keep
+!    >>porta ;
 
 ! create a cog and state is inactive
 : <cog> ( n -- cog )
