@@ -93,6 +93,9 @@ TUPLE: propeller hub ;
 : propeller-pc-alist ( propeller -- )
     hub>> hub-pc-alist drop ;
 
+: propeller-run-address ( address cogn propeller -- )
+    hub>> hub-run-address ;
+
 : <propeller> ( -- propeller )
     propeller new
     <hub> >>hub ;
