@@ -30,6 +30,10 @@ TUPLE: hub cogs bus ram rom enable lock config ;
 : hub-clock-step ( hub -- )
   drop ;
 
+
+: hub-run-address ( address cogn hub -- )
+    cogs>> cogs-cog-run-address ;
+
 : hub-cog-boot ( hub -- )
   [ rom>> BOOTLOC tail ] keep
   cogs>> cogs-boot ;

@@ -71,6 +71,17 @@ M: logoutx model-changed
     cog-execute
   ] each ;
 
+
+
+: cogs-get-cog ( cogn cogs -- cog )
+    cog-array>>     ! cogn array 
+    nth             ! cog
+;
+
+! do execute cog till it reaches address
+: cogs-cog-run-address ( address cogn cogs -- )
+    cogs-get-cog cog-execute-address ;
+
 ! Add to each cog the object dependency
 ! : cogs-add-dependency ( object address cogs -- )
 !  cog-array>>
@@ -267,11 +278,11 @@ M: logoutx model-changed
 
 
 ! go through all cogs and activate all memory dependecies
-: cogs-activate ( cogs -- )
-  cog-array>>
-  [
-    cog-activate
-  ] each ;
+! : cogs-activate ( cogs -- )
+!  cog-array>>
+!  [
+!    cog-activate
+!  ] each ;
 
 : cogs-out-add-connection ( obsever cogs -- )
     porta>> port-out-add-connection ;

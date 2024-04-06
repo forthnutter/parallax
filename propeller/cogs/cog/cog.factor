@@ -910,6 +910,13 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     memory-activate
   ] each ;
 
+! Need to execute the cog to an address
+: cog-execute-address ( address cog -- )
+    break
+    [ [ pcold>> = ] 2keep rot ]
+    [ cog-execute-cycle ] while drop drop ;
+
+
 : cog-default-labels ( -- hash )
   H{
     { 496 "PAR" }  { 497 "CNT" }  { 498 "INA" }  { 499 "INB" }
