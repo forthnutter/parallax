@@ -8,16 +8,14 @@ USING: accessors arrays
     parallax.at24c256
     parallax.propeller.inx
     parallax.propeller.outx
+    parallax.propeller.ddrx
     sequences 
     tools.continuations ;
 
 IN: parallax.ports
 
 
-TUPLE: port in out dir vg cnta cntb ;
-
-
-
+TUPLE: port in out ddr ;
 
 
 
@@ -65,5 +63,5 @@ TUPLE: port in out dir vg cnta cntb ;
     port new
     -1 <inx> >>in
     0 <outx> >>out
-    0 <model> >>dir
+    0 <ddrx> >>ddr
 ;

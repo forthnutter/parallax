@@ -96,9 +96,9 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 
 
-! 32 bit hex string of value "0xHHHHHHHH" upper case
+! 32 bit hex string of value "HHHHHHHH" upper case
 : >hex-pad8 ( value -- string )
-    >hex 8 CHAR: 0 pad-head >upper "0x" prepend ;
+    >hex 8 CHAR: 0 pad-head >upper ;
 
 ! 12 bit hex string    
 : >hex-pad3 ( d -- $ )
@@ -914,7 +914,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-execute-address ( address cog -- )
     break
     [ [ pcold>> = ] 2keep rot ]
-    [ cog-execute-cycle ] while drop drop ;
+    [ [ cog-execute-cycle ] keep ] until drop drop ;
 
 
 : cog-default-labels ( -- hash )
@@ -934,22 +934,9 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   cog-mnuemonic >>hashmneu
   COG_HUB_GO >>wstate ! need to know if the cog is waiting for hub
   V{ } clone >>bp     ! break points
-!  0 <orx> >>gateone      ! or all the out amd some special function
-!  0 <andx> >>gatetwo     !
-!  0 <orx> >>gatethree    ! or out to next cog
-!  0 <orx> >>gatefour
-!  cog-orand
-!  cog-andor
-!  cog-set-dependencies
+
   cog-default-labels >>labels
-  ! cog-gate-activate
 ;
-
-
-! cog needs to know the global port structure A and B
-! : cog-port ( pa pb cog -- )
-!    [ >>portb ] keep
-!    >>porta ;
 
 ! create a cog and state is inactive
 : <cog> ( n -- cog )
