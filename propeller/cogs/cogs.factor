@@ -7,7 +7,6 @@ USING: accessors arrays ascii combinators
        parallax.propeller.ddrx
        parallax.propeller.inx
        parallax.propeller.outx
-       parallax.propeller.orx
        parallax.ports
       sequences tools.continuations vectors 
 ;
@@ -289,12 +288,35 @@ M: logoutx model-changed
 
 
 : cogs-add-portout-memory ( cogs -- )
-    [ porta>> out>> ] keep
-    cog-array>>
+    dup                     ! cogs cogs
+    [ porta>> out>> ] keep  ! cogs ourx cogs
+    cog-array>>             ! cogs outx array
     [
-        [ dup ] dip
-        [ OUTA_ADDRESS ] dip cog-connection-memory
-    ] each drop
+        [ dup ] dip         ! outx outx cog
+        [ OUTA_ADDRESS ] dip cog-connection-memory ! outx outx address cog -- oux
+    ] each [ 0 ] dip set-model ! cogs
+    [ portb>> out>> ] keep      ! outx cogs
+    [
+        [ dup ] dip         ! outx outx cog
+        [ OUTB_ADDRESS ] dip cog-connection-memory ! outx outx address cog -- outx
+    ] each [ 0 ] dip set-model  ! 
+;
+
+
+! set up the ddr models
+: cogs-add-ddr-memory ( cogs -- )
+    dup                     ! cogs cogs
+    [ porta>> ddr>> ] keep  ! cogs ddrx cogs
+    cog-array>>             ! cogs ddrx array
+    [
+        [ dup ] dip         ! ddrx ddrx cog
+        [ DDRA_ADDRESS ] dip cog-connection-memory ! ddrx ddrx address cog -- ddrx
+    ] each [ 0 ] dip set-model ! cogs
+    [ portb>> out>> ] keep      ! ddrx cogs
+    [
+        [ dup ] dip         ! ddrx ddrx cog
+        [ OUTB_ADDRESS ] dip cog-connection-memory ! ddrx ddrx address cog -- ddrx
+    ] each [ 0 ] dip set-model  ! 
 ;
 
 
@@ -314,8 +336,9 @@ M: logoutx model-changed
                             ! inx cog
         [ dup ] dip         ! inx inx cog
         [ INB_ADDRESS ] dip cog-memory-connection   ! inx inx address cog -- inx
-    ] each [ -1 ] dip set-model     ! inx --
+    ] each [ -1 ] dip set-model     ! 
 ;
+
 
 
 : <cogs> ( -- cogs )
@@ -329,8 +352,5 @@ M: logoutx model-changed
   4 >>num-longs ! this is the defult number of data longs to display
   [ cogs-add-memory-portin ] keep
   [ cogs-add-portout-memory ] keep
-!  [ cogs-link-out ] keep
-!  [ cogs-link-ddr ] keep
-!  [ cogs-link-activate ] keep
-!  [ cogs-activate ] keep
+
 ;
