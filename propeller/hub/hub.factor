@@ -82,7 +82,7 @@ TUPLE: hub cogs bus ram rom enable lock config ;
 
 
 : hub-add-output ( model hub -- )
-    cogs>> cogs-out-add-connection ;
+    cogs>> cogs-outa-connection ;
 
 
 ! initalise the HUB 

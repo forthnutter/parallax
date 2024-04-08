@@ -7,7 +7,6 @@ USING: accessors arrays ascii combinators
        parallax.propeller.ddrx
        parallax.propeller.inx
        parallax.propeller.outx
-       parallax.ports
       sequences tools.continuations vectors 
 ;
 
@@ -25,8 +24,8 @@ CONSTANT: DDRB_ADDRESS 503
 
 TUPLE: logoutx < model vec ;
 
-TUPLE: cogs cog-array num-longs outa outb ddra ddrb 
-    porta portb logx
+TUPLE: cogs cog-array num-longs ina inb outa outb ddra ddrb 
+    logx
 ;
 
 
@@ -81,19 +80,6 @@ M: logoutx model-changed
 : cogs-cog-run-address ( address cogn cogs -- )
     cogs-get-cog cog-execute-address ;
 
-! Add to each cog the object dependency
-! : cogs-add-dependency ( object address cogs -- )
-!  cog-array>>
-!  [
-!   [ 2dup ] dip
-!    cog-mem-dependency
-!  ] each 2drop
-! ;
-
-! : cogs-set-dependency ( cogs -- )
-!  [ [ ina>> INA_ADDRESS ] keep cogs-add-dependency ]
-!  [ [ inb>> INB_ADDRESS ] keep cogs-add-dependency ]
-!  bi ;
 
 
 ! cog display memory
@@ -134,223 +120,90 @@ M: logoutx model-changed
   cog-array>> first [ cog-copy ] keep cog-active ;
 
 
-! read INA value and return string
-! : cogs-ina-read ( cogs -- $array )
-!  1 <vector> swap   ! cogs first
-!  ina>> in-read >hex 8 CHAR: 0 pad-head >upper
-!  "$" prepend swap 
-!  [ push ] keep ;
-
-! make cog 0 out or with cog 1 out
-: cogs-01-out ( cogs -- )
-    [ [ 0 ] dip cog-array>> nth gatethree>> ]
-    [ [ 1 ] dip cog-array>> nth gatethree>> ]
-    bi add-dependency ;
-
-! make cog 1 out or with cog 2 out
-: cogs-12-out ( cogs -- )
-    [ [ 1 ] dip cog-array>> nth gatethree>> ]
-    [ [ 2 ] dip cog-array>> nth gatethree>> ]
-    bi add-dependency ;
-
-! make cog 2 out or with cog 3 out
-: cogs-23-out ( cogs -- )
-    [ [ 2 ] dip cog-array>> nth gatethree>> ]
-    [ [ 3 ] dip cog-array>> nth gatethree>> ]
-    bi add-dependency ;
-
-! make cog 3 out or with cog 4 out
-: cogs-34-out ( cogs -- )
-    [ [ 3 ] dip cog-array>> nth gatethree>> ]
-    [ [ 4 ] dip cog-array>> nth gatethree>> ]
-    bi add-dependency ;
-
-! make cog 4 out or with cog 5 out
-: cogs-45-out ( cogs -- )
-    [ [ 4 ] dip cog-array>> nth gatethree>> ]
-    [ [ 5 ] dip cog-array>> nth gatethree>> ]
-    bi add-dependency ;
-
-! make cog 5 out or with cog 6 out
-: cogs-56-out ( cogs -- )
-    [ [ 5 ] dip cog-array>> nth gatethree>> ]
-    [ [ 6 ] dip cog-array>> nth gatethree>> ]
-    bi add-dependency ;
-
-! make cog 6 out or with cog 7 out
-: cogs-67-out ( cogs -- )
-    [ [ 6 ] dip cog-array>> nth gatethree>> ]
-    [ [ 7 ] dip cog-array>> nth gatethree>> ]
-    bi add-dependency ;
-
-! make cog 7 out or with out
-: cogs-7A-out ( cogs -- )
-    [ [ 7 ] dip cog-array>> nth gatethree>> ]
-    [ outa>> ]
-    bi add-dependency ;
-
-! make cog 0 ddr or with cog 1 ddr
-: cogs-01-ddr ( cogs -- )
-    [ [ 0 ] dip cog-array>> nth gatefour>> ]
-    [ [ 1 ] dip cog-array>> nth gatefour>> ]
-    bi add-dependency ;
-
-! make cog 1 ddr or with cog 2 ddr
-: cogs-12-ddr ( cogs -- )
-    [ [ 1 ] dip cog-array>> nth gatefour>> ]
-    [ [ 2 ] dip cog-array>> nth gatefour>> ]
-    bi add-dependency ;
-
-! make cog 2 ddr or with cog 3 ddr
-: cogs-23-ddr ( cogs -- )
-    [ [ 2 ] dip cog-array>> nth gatefour>> ]
-    [ [ 3 ] dip cog-array>> nth gatefour>> ]
-    bi add-dependency ;
-
-! make cog 3 ddr or with cog 4 ddr
-: cogs-34-ddr ( cogs -- )
-    [ [ 3 ] dip cog-array>> nth gatefour>> ]
-    [ [ 4 ] dip cog-array>> nth gatefour>> ]
-    bi add-dependency ;
-
-! make cog 4 ddr or with cog 5 ddr
-: cogs-45-ddr ( cogs -- )
-    [ [ 4 ] dip cog-array>> nth gatefour>> ]
-    [ [ 5 ] dip cog-array>> nth gatefour>> ]
-    bi add-dependency ;
-
-! make cog 5 ddr or with cog 6 ddr
-: cogs-56-ddr ( cogs -- )
-    [ [ 5 ] dip cog-array>> nth gatefour>> ]
-    [ [ 6 ] dip cog-array>> nth gatefour>> ]
-    bi add-dependency ;
-
-! make cog 6 ddr or with cog 7 ddr
-: cogs-67-ddr ( cogs -- )
-    [ [ 6 ] dip cog-array>> nth gatefour>> ]
-    [ [ 7 ] dip cog-array>> nth gatefour>> ]
-    bi add-dependency ;
-
-! make cog 7 ddr or with ddr
-: cogs-7A-ddr ( cogs -- )
-    [ [ 7 ] dip cog-array>> nth gatefour>> ]
-    [ ddra>> ]
-    bi add-dependency ;
-
-: cogs-out-watch ( cogs -- )
-    [ outa>> ]
-    [ logx>> ]
-    bi add-dependency ;
-
-
-
-! this links the all the cog out to the next cog out
-: cogs-link-out ( cogs -- )
-    {
-        [ cogs-01-out ]
-        [ cogs-12-out ]
-        [ cogs-23-out ]
-        [ cogs-34-out ]
-        [ cogs-45-out ]
-        [ cogs-56-out ]
-        [ cogs-67-out ]
-        [ cogs-7A-out ]
-        [ cogs-out-watch ]
-    } cleave ;
-
-! link the cods ddr to the next cog ddr
-: cogs-link-ddr ( cogs -- )
-    {
-        [ cogs-01-ddr ]
-        [ cogs-12-ddr ]
-        [ cogs-23-ddr ]
-        [ cogs-34-ddr ]
-        [ cogs-45-ddr ]
-        [ cogs-56-ddr ]
-        [ cogs-67-ddr ]
-        [ cogs-7A-ddr ]
-    } cleave ;
-
-: cogs-link-activate ( cogs -- )
-    [ logx>> activate-model ]
-    [ ddra>> activate-model ] bi ;
-
-
-! go through all cogs and activate all memory dependecies
-! : cogs-activate ( cogs -- )
-!  cog-array>>
-!  [
-!    cog-activate
-!  ] each ;
-
-: cogs-out-add-connection ( obsever cogs -- )
-    porta>> port-out-add-connection ;
-
-
-: cogs-add-portout-memory ( cogs -- )
-    dup                     ! cogs cogs
-    [ porta>> out>> ] keep  ! cogs ourx cogs
+: cogs-add-outa-memory ( cogs -- )
+    [ outb>> ] keep  ! cogs ourx cogs
     cog-array>>             ! cogs outx array
     [
         [ dup ] dip         ! outx outx cog
         [ OUTA_ADDRESS ] dip cog-connection-memory ! outx outx address cog -- oux
-    ] each [ 0 ] dip set-model ! cogs
-    [ portb>> out>> ] keep      ! outx cogs
+    ] each drop
+;
+ 
+ : cogs-add-outb-memory ( cogs -- )
+    [ outb>> ] keep      ! outx cogs
+    cog-array>>
     [
         [ dup ] dip         ! outx outx cog
         [ OUTB_ADDRESS ] dip cog-connection-memory ! outx outx address cog -- outx
-    ] each [ 0 ] dip set-model  ! 
+    ] each drop 
 ;
 
 
 ! set up the ddr models
-: cogs-add-ddr-memory ( cogs -- )
-    dup                     ! cogs cogs
-    [ porta>> ddr>> ] keep  ! cogs ddrx cogs
+: cogs-add-ddra-memory ( cogs -- )
+    [ ddra>> ] keep  ! cogs ddrx cogs
     cog-array>>             ! cogs ddrx array
     [
         [ dup ] dip         ! ddrx ddrx cog
         [ DDRA_ADDRESS ] dip cog-connection-memory ! ddrx ddrx address cog -- ddrx
-    ] each [ 0 ] dip set-model ! cogs
-    [ portb>> out>> ] keep      ! ddrx cogs
+    ] each drop
+;
+
+: cogs-add-ddrb-memory ( cogs -- )
+    [ ddrb>> ] keep      ! ddrx cogs
+    cog-array>>
     [
         [ dup ] dip         ! ddrx ddrx cog
-        [ OUTB_ADDRESS ] dip cog-connection-memory ! ddrx ddrx address cog -- ddrx
-    ] each [ 0 ] dip set-model  ! 
+        [ DDRB_ADDRESS ] dip cog-connection-memory ! ddrx ddrx address cog -- ddrx
+    ] each drop 
 ;
 
 
 ! add memory from each cog into port INA and INB
-: cogs-add-memory-portin ( cogs -- )
-    dup                     ! cogs cogs
-    [ porta>> in>> ] keep   ! cogs inx cogs
+: cogs-add-memory-ina ( cogs -- )
+    [ ina>> ] keep   ! cogs inx cogs
     cog-array>>             ! cogs inx array
     [
                             ! inx cog
         [ dup ] dip         ! inx inx cog
         [ INA_ADDRESS ] dip cog-memory-connection   ! inx inx address cog -- inx
-    ] each  [ -1 ] dip set-model ! cogs
-    [ portb>> in>> ] keep   ! inx cogs
+    ] each [ model-value ] keep set-model
+;
+
+: cogs-add-memory-inb ( cogs -- )
+    [ inb>> ] keep   ! inx cogs
     cog-array>>             ! inx array
     [
                             ! inx cog
         [ dup ] dip         ! inx inx cog
         [ INB_ADDRESS ] dip cog-memory-connection   ! inx inx address cog -- inx
-    ] each [ -1 ] dip set-model     ! 
+    ] each [ model-value ] keep set-model
 ;
 
+! need to 
 
+! tell outa we have an object to observe what you are doing
+: cogs-outa-connection ( observer cogs -- )
+    outa>> outx-add-connection ;
 
 : <cogs> ( -- cogs )
-  break
-  cogs new                      ! cog
-  <port> >>porta    ! ina outa dira
-  <port> >>portb    ! inb outb dirb
-  <logoutx> >>logx  ! keep a record of out changes
-  cogs-array >>cog-array
+    break
+    cogs new                      ! cog
+    -1 <inx> >>ina
+    -1 <inx> >>inb
+    0 <outx> >>outa
+    0 <outx> >>outb
+    0 <ddrx> >>ddra
+    0 <ddrx> >>ddrb
+    <logoutx> >>logx  ! keep a record of out changes
+    cogs-array >>cog-array
 
-  4 >>num-longs ! this is the defult number of data longs to display
-  [ cogs-add-memory-portin ] keep
-  [ cogs-add-portout-memory ] keep
+    4 >>num-longs ! this is the defult number of data longs to display
+    [ cogs-add-memory-ina ] keep
+    [ cogs-add-memory-inb ] keep
+    [ cogs-add-outa-memory ] keep
+    [ cogs-add-outb-memory ] keep
+    [ cogs-add-ddra-memory ] keep
+    [ cogs-add-ddrb-memory ] keep
 
 ;
