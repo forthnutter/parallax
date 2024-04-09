@@ -17,6 +17,7 @@ TUPLE: outx < model cogn ;
    set-model ;
 
 M: outx model-changed
+    break
    [ value>> ] dip ! get memory value
    outx-write         ! send it out we may have others
 ;

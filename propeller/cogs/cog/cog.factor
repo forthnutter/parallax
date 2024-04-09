@@ -198,16 +198,15 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     bi dupd add-dependency ;
 
 
-
 ! set up cog dependency for all special functions
-: cog-set-dependencies ( cog -- cog )
-    [ [ [ 500 ] dip cog-get-memory ] [ cog-out-set ] bi add-dependency ] keep
-    [ [ [ 502 ] dip cog-get-memory ] [ cog-ddr-set ] bi add-dependency ] keep
+! : cog-set-dependencies ( cog -- cog )
+!    [ [ [ 500 ] dip cog-get-memory ] [ cog-out-set ] bi add-dependency ] keep
+!    [ [ [ 502 ] dip cog-get-memory ] [ cog-ddr-set ] bi add-dependency ] keep
 !    [ [ cog-ddr-set 502 ] keep cog-mem-dependency ] keep
 !   [ [ cog-ctr-set 503 ] keep cog-mem-dependency ] keep
 !   [ [ cog-ctr-set 504 ] keep cog-mem-dependency ] keep
 !    [ [ cog-vcfg-set 510 ] keep cog-mem-dependency ] keep
-;
+! ;
 
 
  
@@ -943,9 +942,3 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   cog new-cog ! create the cog class
 ;
 
-! create a cog with centralised port
-: <cog-port> ( port n -- cog )
-    <cog>       ! port cog
-    swap        ! cog port
-    >>port      ! cog
-;
