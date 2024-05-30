@@ -98,6 +98,17 @@ M: logoutx model-changed
     drop [ cog-list ] 2keep [ 1 + ] dip rot
   ] map 2nip ;
 
+
+! display cogs disasembler from address
+: cogs-alist ( address cogs -- $array )
+    [ COGNUMBEROF <vector> ] 2dip   ! make an array for return
+    cog-array>>                     ! get the array of cogs
+    [
+        [ cog-active? ] keep swap
+        [ [ cog-list swap [ push ] keep ] 2keep drop ]
+        [ drop ] if
+    ] each drop ;
+
 ! get the pc address of each cog string the mnuemonic into list
 : cogs-list-pc ( cogs -- $array )
   COGNUMBEROF <vector>      ! the array to send back
