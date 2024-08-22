@@ -259,8 +259,11 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-address-value ( address cog -- value )
   cog-read ;
 
+: isn-source-address ( isn -- address )
+    8 0 bit-range ;
+
 : cog-source-address ( cog -- address )
-  isn>> 8 0 bit-range ;
+  isn>> isn-source-address ;
 
 
 : cog-source-value ( cog -- value )

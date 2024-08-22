@@ -2,7 +2,7 @@
 ! See http://factorcode.org/license.txt for BSD license.
 
 USING: accessors arrays ascii
-        kernel 
+        kernel io 
         math math.parser
         parallax.propeller
         parallax.propeller.hub
@@ -27,8 +27,12 @@ TUPLE: parallax propeller at24 ;
 : r ( address cogn parallax -- parallax )
     [ propeller>> propeller-run-address ] keep ;
 
-: l ( address parallax -- parallax )
-    [ propeller>> propeller-alist ] keep ;
+: l ( parallax address -- parallax )
+    swap
+    [
+        propeller>> propeller-alist
+        [ print ] each
+    ] keep ;
 
 : <parallax> ( --  parallax )
     parallax new

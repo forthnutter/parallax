@@ -60,11 +60,8 @@ TUPLE: hub cogs bus ram rom enable lock config ;
 
 
 ! display active cog disasembley
-: hub-cog-alist ( address hub -- hub )
-    [
-        cogs>> cogs-alist
-        [ print ] each
-    ] keep ;
+: hub-cog-alist ( address hub -- slist )
+    cogs>> cogs-alist ;
 
 
 ! list all cogs PC instruction
