@@ -93,7 +93,7 @@ TUPLE: propeller hub ;
 : propeller-pc-alist ( propeller -- )
     hub>> hub-pc-alist drop ;
 
-: propeller-alist ( address propeller -- )
+: propeller-alist ( address propeller -- slist )
     hub>> hub-cog-alist ;
 
 : propeller-run-address ( address cogn propeller -- )
