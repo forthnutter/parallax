@@ -100,7 +100,7 @@ M: logoutx model-changed
 
 
 ! display cogs disasembler from address
-: cogs-alist ( address cogs -- $array )
+: cogs-alist ( address cogs -- vector )
     [ COGNUMBEROF <vector> ] 2dip   ! make an array for return
     cog-array>>                     ! get the array of cogs
     [

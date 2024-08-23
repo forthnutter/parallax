@@ -863,15 +863,41 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 
 
+
+! generate a string of source this includes labels
+: source-string ( n cog -- string/? )
+    [ isn-source-address ] dip ! address cog
+    [ cog-label-string ] 2keep ! label address cog 
+    rot ! address cog label
+    dup ! address cog label label
+    [
+        ! address cog label
+        [
+            drop    ! address
+            >hex-pad3 "0x" prepend ! hex-string
+            " " append
+        ] dip   ! hex label
+        append 
+    ]
+    [
+        ! address cog f
+        drop    ! address cog
+        drop    ! address
+        >hex-pad3 "0x" prepend ! hex-string
+    ] if    ! string
+;
+
 ! Display disasembled code
 : cog-list ( address cog --  str/f )
   dup cog? not      ! address cog ? make sure we are looking at cog
   [ drop drop f ]   ! drop everyting and indicate fail
   [
+    break
     [ cog-number$ swap cog-address$ append ] 2keep       ! string address cog
-    [ cog-address-value$ append ] keep                  ! string cog
-    [ " " append ] dip                                  ! string cog
-    [ cog-source-string append ] keep                   ! string cog
+    [ cog-address-value$ append ] 2keep                  ! string address cog
+    [ " " append ] 2dip                                  ! string address cog
+    [ cog-address-value ] keep                          ! string value cog
+    [ source-string append ] 2keep                       ! string cog
     [ " " append ] dip                                  ! string cog
     [ cog-dest-string append ] keep                     ! string cog
     [ " " append ] dip                                  ! string cog
