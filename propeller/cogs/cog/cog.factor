@@ -262,6 +262,10 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : isn-source-address ( isn -- address )
     8 0 bit-range ;
 
+! get isn destination address
+: isn-dest-address ( isn -- address )
+    17 9 bit-range ;
+
 : cog-source-address ( cog -- address )
   isn>> isn-source-address ;
 
@@ -874,10 +878,51 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
         ! address cog label
         [
             drop    ! address
-            >hex-pad3 "0x" prepend ! hex-string
-            " " append
+            drop
+            !  >hex-pad3 "0x" prepend ! hex-string
+            ! " " append
         ] dip   ! hex label
-        append 
+        ! append 
+    ]
+    [
+        ! address cog f
+        drop    ! address cog
+        drop    ! address
+        >hex-pad3 "0x" prepend ! hex-string
+    ] if    ! string
+;
+
+! get the condition of the instruction 
+: isn-conditions ( isn -- cond )
+  21 18 bit-range ;
+
+
+! test for nop condition
+: condition-string ( isn -- string/f )
+  isn-conditions
+  H{
+    { 0 "NEVER" } { 1 "IF_NC_AND_NZ" } { 2 "IF_NC_AND_Z" }
+    { 3 "IF_NC" } { 4 "IF_C_AND_NZ" } { 5 "IF_NZ" }
+    { 6 "IF_C_NE_Z" } { 7 "IF_NC_OR_NZ" } { 8 "IF_C_AND_Z" }
+    { 9 "IF_C_EQ_Z" } { 10 "IF_Z" } { 11 "IF_NC_OR_Z" }
+    { 12 "IF_C" } { 13 "IF_C_OR_NZ" } { 14 "IF_C_OR_Z" }
+    { 15 "ALLWAYS" }
+  } at ;
+
+
+
+! gererate a string of destination including labels
+: destination-string ( n cog -- string/? )
+    [ isn-dest-address ] dip    ! address cog
+    [ cog-label-string ] 2keep  ! label address cog 
+    rot ! address cog label
+    dup ! address cog label label
+    [
+        ! address cog label
+        [
+            drop    ! adddress
+            drop
+        ] dip
     ]
     [
         ! address cog f
@@ -894,16 +939,12 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   [
     break
     [ cog-number$ swap cog-address$ append ] 2keep       ! string address cog
-    [ cog-address-value$ append ] 2keep                  ! string address cog
-    [ " " append ] 2dip                                  ! string address cog
+    [ cog-address-value$ "0x" prepend " " append append ] 2keep  ! string address cog
     [ cog-address-value ] keep                          ! string value cog
-    [ source-string append ] 2keep                       ! string cog
-    [ " " append ] dip                                  ! string cog
-    [ cog-dest-string append ] keep                     ! string cog
-    [ " " append ] dip                                  ! string cog
-    [ cog-flag-condition append ] keep
-    [ " " append ] dip
-    [ cog-condition-string append ] keep                ! string cog
+    [ source-string " " append append ] 2keep           ! string cog
+    [ destination-string " " append append ] 2keep      ! string cog
+    [ swap drop cog-flag-condition " " append append ] 2keep
+    [ drop condition-string append ] 2keep                ! string cog
     [ " " append ] dip                                  ! string cog
     [ cog-flags-string append ] keep                    ! string cog
 
