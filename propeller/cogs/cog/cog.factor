@@ -727,8 +727,8 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     isn>> ;
 
 ! get the current opcode from ISN
-: cog-opcode ( cog -- op )
-    cog-isn 31 26 bit-range ;
+: opcode ( isn -- op )
+    31 26 bit-range ;
 
 ! : flags-exstract ( code -- flags )
 !  25 22 bit-range ;
@@ -825,7 +825,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 
 : code-sub-test ( code -- $/? )
-    [ flag-r ] [ cog-opcode ] bi swap
+    [ flag-r ] [ cog-isn opcode ] bi swap
     [
         H{
             { 0 "RDBYTE" } { 1 "RDWORD" } { 2 "RDLONG" }
@@ -841,7 +841,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 ;
 
 : cog-subcode ( cog -- $/? )
-    cog-opcode  ! code
+    cog-isn opcode  ! code
     dup         ! code code
     0 =         ! code ?
     [
@@ -860,7 +860,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 ! find out if the current address has a label
 : cog-mnuemonic-string ( cog -- $/? )
-    [ cog-opcode ] keep      ! code cog
+    [ cog-isn opcode ] keep      ! code cog
     [ hashmneu>> ] keep ! code hash cog
     [ at ] dip          ! ? cog
     swap                ! cog ?
@@ -946,6 +946,20 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   [ flag-r-string " " append ] keep [ append ] dip
   flag-imd-string " " append append "} " append ;
 
+! find out if the current address has a label
+: mnuemonic-string ( isn cog -- $/? )
+    [ opcode ] dip      ! opcode cog
+    [ hashmneu>> at ] keep ! code hash cog
+!    [ at ] dip          ! ? cog
+    swap                ! cog ?
+    [
+        break
+        [ cog-subcode ] keep       ! string cog
+        swap                        ! cog string
+    ] unless*
+    [ drop ] dip
+;
+
 
 ! Display disasembled code
 : cog-list ( address cog --  str/f )
@@ -960,10 +974,9 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ destination-string " " append append ] 2keep      ! string cog
     [ swap drop cog-flag-condition " " append append ] 2keep
     [ drop condition-string " " append append ] 2keep                ! string cog
-    [ cog-flags-string append ] keep                    ! string cog
-
-    [ cog-mnuemonic-string append ] keep                ! sting cog 
-    drop
+    [ drop flags-string append ] 2keep                    ! string cog
+    [ mnuemonic-string append ] 2keep                ! sting cog 
+    drop drop
   ] if ;
 
 : cog-list-pc ( cog -- str/f )
