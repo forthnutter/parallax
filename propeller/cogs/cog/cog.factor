@@ -966,7 +966,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   dup cog? not      ! address cog ? make sure we are looking at cog
   [ drop drop f ]   ! drop everyting and indicate fail
   [
-    break
     [ cog-number$ swap cog-address$ append ] 2keep       ! string address cog
     [ cog-address-value$ "0x" prepend " " append append ] 2keep  ! string address cog
     [ cog-address-value ] keep                          ! string value cog
