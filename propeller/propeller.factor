@@ -99,6 +99,9 @@ TUPLE: propeller hub ;
 : propeller-run-address ( address cogn propeller -- )
     hub>> hub-run-address ;
 
+: propeller-dump-cog ( address cogn propeller -- vector )
+    hub>> hub-dump-cog ;
+
 : <propeller> ( -- propeller )
     propeller new
     <hub> >>hub ;

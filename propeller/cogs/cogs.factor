@@ -197,6 +197,12 @@ M: logoutx model-changed
 : cogs-outa-connection ( observer cogs -- )
     outa>> outx-add-connection ;
 
+
+: cogs-dump ( address cogn cogs -- vector )
+    [ 1 ] 3dip 
+    [ swap ] dip 
+    cogs-mdl ;
+
 : <cogs> ( -- cogs )
     break
     cogs new                      ! cog

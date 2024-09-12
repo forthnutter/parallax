@@ -89,6 +89,8 @@ TUPLE: hub cogs bus ram rom enable lock config ;
 : hub-add-output ( model hub -- )
     cogs>> cogs-outa-connection ;
 
+: hub-dump-cog ( address cogn hub -- vector )
+    cogs>> cogs-dump ;
 
 ! initalise the HUB 
 : <hub> ( -- hub )

@@ -34,6 +34,13 @@ TUPLE: parallax propeller at24 ;
         [ print ] each
     ] keep ;
 
+: d ( parallax address cogn -- parallax )
+    [
+        [ propeller>> ] 2dip [ swap ] dip  ! address pro cogn 
+        swap propeller-dump-cog
+        [ print ] each
+    ] 3keep 2drop ;
+
 : <parallax> ( --  parallax )
     parallax new
     0 <24c256> >>at24
