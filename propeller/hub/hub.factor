@@ -92,6 +92,9 @@ TUPLE: hub cogs bus ram rom enable lock config ;
 : hub-dump-cog ( address cogn hub -- vector )
     cogs>> cogs-dump ;
 
+: hub-ina-hex ( cogn hub -- vector )
+    cogs>> cogs-ina-hex ;
+
 ! initalise the HUB 
 : <hub> ( -- hub )
   hub new
