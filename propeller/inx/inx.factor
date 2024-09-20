@@ -6,9 +6,12 @@ USING: accessors kernel models sequences
 
 IN: parallax.propeller.inx
 
+
+CONTANT: INXNUMBITS  32
+
 ! inx can be INA and INB 
 ! and lets combine model object
-TUPLE: inx < model ;
+TUPLE: inx < model bits ;
 
 ! basic read of INX
 GENERIC: in-read ( inx -- d )
@@ -41,6 +44,12 @@ M: inx model-changed
 ! return inx into binary string
 : inx>bin ( inx -- str )
    in-read >bin 32 CHAR: 0 pad-head ;
+
+: <inx-bits> ( n -- vb )
+    <array>
+    [
+        <model>
+    ] map ;
 
 : <inx> ( value -- inp )
    inx new-model ;
