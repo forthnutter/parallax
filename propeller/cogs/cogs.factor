@@ -203,6 +203,10 @@ M: logoutx model-changed
     [ swap ] dip 
     cogs-mdl ;
 
+: cogs-ina-hex ( cogn cogs -- vector )
+
+;
+
 : <cogs> ( -- cogs )
     break
     cogs new                      ! cog
