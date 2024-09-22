@@ -3,7 +3,7 @@
 !
 USING: accessors arrays assocs kernel sequences models vectors
         namespaces endian
-       parallax.propeller.cogs.cog.memory
+!       parallax.propeller.cogs.cog.memory
        parallax.propeller.cogs.cog.par
        parallax.propeller.cogs.cog.cnt
        parallax.propeller.cogs.cog.frq
@@ -123,7 +123,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     { 509 [ 0 <phs> ] }   ! $01fd Counter B phase
 
     { 511 [ 0 <vscl> ] }  ! $01ff Video Scale
-    [ drop 0 <memory> ]   ! default general memory function
+    [ drop 0 <model> ]   ! default general memory function
   } case ;
 
 : cog-setup ( -- vector )
@@ -137,7 +137,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-deactivate ( cog -- )
   memory>>
   [
-    memory-deactivate
+    deactivate-model
   ] each ;
 
 ! routine to inject a object into dependecy
@@ -159,7 +159,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-mem-setup ( -- vector )
   MEMORY_SIZE f <array>
   [
-    drop 0 <memory> 
+    drop 0 <model> 
   ] map >vector
 ;
 
@@ -232,7 +232,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 
 : cog-read ( address cog -- d )
-  cog-memory read ;
+  cog-memory model-value 32 bits ;
 
 : cog-read-array ( n address cog -- array )
   [ f <array> ] 2dip rot
@@ -243,7 +243,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 : cog-write ( value address cog -- )
   ! break
-  cog-memory memory-write ;
+  cog-memory set-model ;
 
 ! make cog active
 : cog-active ( cog -- )
@@ -657,7 +657,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   [ le>  ] map
   INST_SIZE head cog-unscramble swap
   memory>>
-  [ memory-write ] 2each
+  [ set-model ] 2each
 ;
 
 
@@ -1002,7 +1002,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-activate ( cog -- )
   memory>>
   [
-    memory-activate
+    activate-model
   ] each ;
 
 ! Need to execute the cog to an address

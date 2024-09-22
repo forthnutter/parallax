@@ -2,12 +2,12 @@
 ! See http://factorcode.org/license.txt for BSD license.
 !
 USING: accessors kernel models sequences
-   math.bitwise math.parser tools.continuations ;
+   math.bitwise math.parser tools.continuations arrays ;
 
 IN: parallax.propeller.inx
 
 
-CONTANT: INXNUMBITS  32
+CONSTANT: INXNUMBITS  32
 
 ! inx can be INA and INB 
 ! and lets combine model object
@@ -29,6 +29,10 @@ M: inx in-write
 M: inx model-changed
    break
    in-write ;  ! this will change obsevers
+
+! add an observer to the inx
+: inx-add-connection ( observer inx -- )
+    add-connection ;
 
 
 ! Sets the n th bit of inx to one
