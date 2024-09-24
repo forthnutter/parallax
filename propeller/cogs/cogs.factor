@@ -14,8 +14,8 @@ USING: accessors arrays ascii combinators
 IN: parallax.propeller.cogs
 
 CONSTANT: COGNUMBEROF 8
-CONSTANT: INA_ADDRESS 498
-CONSTANT: INB_ADDRESS 499
+
+
 CONSTANT: OUTA_ADDRESS 500
 CONSTANT: OUTB_ADDRESS 501
 CONSTANT: DDRA_ADDRESS 502
@@ -170,26 +170,27 @@ M: logoutx model-changed
 ;
 
 
-! add memory from each cog into port INA and INB
-: cogs-add-memory-ina ( cogs -- )
-    [ ina>> ] keep   ! cogs inx cogs
-    cog-array>>             ! cogs inx array
-    [
-                            ! inx cog
-        [ dup ] dip         ! inx inx cog
-        [ INA_ADDRESS ] dip cog-memory-connection   ! inx inx address cog -- inx
-    ] each [ model-value ] keep set-model
-;
 
-: cogs-add-memory-inb ( cogs -- )
-    [ inb>> ] keep   ! inx cogs
-    cog-array>>             ! inx array
+! get cog ina memory and make it an observer of global INA
+: cogs-ina-connect ( cogs -- )
+    [ cog-array>> ] keep swap ! cogs array
     [
-                            ! inx cog
-        [ dup ] dip         ! inx inx cog
-        [ INB_ADDRESS ] dip cog-memory-connection   ! inx inx address cog -- inx
-    ] each [ model-value ] keep set-model
-;
+        ! cogs cog
+        [ [ ina>> ] keep swap ] dip ! cogs inx cog
+        cog-ina-model swap  ! cogs model inx
+        inx-add-connection  ! cogs
+    ] each drop ;
+
+! get cog inb memory and make it an observer of global INB
+: cogs-inb-connect ( cogs -- )
+    [ cog-array>> ] keep swap   ! cogs array
+    [
+        ! cogs cog
+        [ [ inb>> ] keep swap ] dip ! cogs inx cog
+        cog-inb-model swap  ! cogs model inx
+        inx-add-connection  ! cogs
+    ] each drop ;
+
 
 ! need to 
 
@@ -220,8 +221,8 @@ M: logoutx model-changed
     cogs-array >>cog-array
 
     4 >>num-longs ! this is the defult number of data longs to display
-    [ cogs-add-memory-ina ] keep
-    [ cogs-add-memory-inb ] keep
+    [ cogs-ina-connect ] keep
+    [ cogs-inb-connect ] keep
     [ cogs-add-outa-memory ] keep
     [ cogs-add-outb-memory ] keep
     [ cogs-add-ddra-memory ] keep

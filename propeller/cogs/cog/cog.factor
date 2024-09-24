@@ -88,6 +88,9 @@ CONSTANT: MEMORY_SIZE 512
 CONSTANT: INST_SIZE   496
 CONSTANT: SPR_SIZE    16
 
+CONSTANT: INA_ADDRESS 498
+CONSTANT: INB_ADDRESS 499
+
 ! tuple to hold cog stuff
 
 TUPLE: cog n pc pcold alu z c memory state isn fisn
@@ -109,8 +112,17 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   >hex 2 CHAR: 0 pad-head >upper ;
 
 
-: cog-memory ( address cog -- memory )
-   memory>> nth ;
+: cog-memory ( address cog -- model )
+    [ 9 bits ] dip      ! we only focus on 9 bit
+    memory>> nth ;      ! get the model
+
+! get the cogs ina model
+: cog-ina-model ( cog -- model )
+    [ INA_ADDRESS ] dip cog-memory ;
+
+! get the cogs ina model
+: cog-inb-model ( cog -- model )
+    [ INB_ADDRESS ] dip cog-memory ;
 
 : cog-memory-select ( address -- mem/sfr )
   {
