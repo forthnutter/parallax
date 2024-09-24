@@ -6,7 +6,6 @@ USING: accessors arrays ascii combinators
       math math.parser models
        parallax.propeller.ddrx
        parallax.propeller.inx
-       parallax.propeller.outx
       sequences tools.continuations vectors 
 ;
 
@@ -16,15 +15,14 @@ IN: parallax.propeller.cogs
 CONSTANT: COGNUMBEROF 8
 
 
-CONSTANT: OUTA_ADDRESS 500
-CONSTANT: OUTB_ADDRESS 501
+
 CONSTANT: DDRA_ADDRESS 502
 CONSTANT: DDRB_ADDRESS 503
 
 
 TUPLE: logoutx < model vec ;
 
-TUPLE: cogs cog-array num-longs ina inb outa outb ddra ddrb 
+TUPLE: cogs cog-array num-longs ina inb ddra ddrb 
     logx
 ;
 
@@ -192,11 +190,7 @@ M: logoutx model-changed
     ] each drop ;
 
 
-! need to 
 
-! tell outa we have an object to observe what you are doing
-: cogs-outa-connection ( observer cogs -- )
-    outa>> outx-add-connection ;
 
 
 : cogs-dump ( address cogn cogs -- vector )
@@ -213,8 +207,6 @@ M: logoutx model-changed
     cogs new                      ! cog
     -1 <inx> >>ina
     -1 <inx> >>inb
-    0 <outx> >>outa
-    0 <outx> >>outb
     0 <ddrx> >>ddra
     0 <ddrx> >>ddrb
     <logoutx> >>logx  ! keep a record of out changes
@@ -223,8 +215,6 @@ M: logoutx model-changed
     4 >>num-longs ! this is the defult number of data longs to display
     [ cogs-ina-connect ] keep
     [ cogs-inb-connect ] keep
-    [ cogs-add-outa-memory ] keep
-    [ cogs-add-outb-memory ] keep
     [ cogs-add-ddra-memory ] keep
     [ cogs-add-ddrb-memory ] keep
 

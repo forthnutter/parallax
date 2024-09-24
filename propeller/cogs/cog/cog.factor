@@ -90,12 +90,14 @@ CONSTANT: SPR_SIZE    16
 
 CONSTANT: INA_ADDRESS 498
 CONSTANT: INB_ADDRESS 499
+CONSTANT: OUTA_ADDRESS 500
+CONSTANT: OUTB_ADDRESS 501
 
 ! tuple to hold cog stuff
 
 TUPLE: cog n pc pcold alu z c memory state isn fisn
     source dest result bp wstate gateone gatetwo
-    gatethree gatefour labels hashmneu porta portb ;
+    gatethree gatefour labels hashmneu porta portb orio andio ;
 
 
 
@@ -112,17 +114,34 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   >hex 2 CHAR: 0 pad-head >upper ;
 
 
-: cog-memory ( address cog -- model )
+: read-memory-model ( address cog -- model )
     [ 9 bits ] dip      ! we only focus on 9 bit
     memory>> nth ;      ! get the model
 
 ! get the cogs ina model
 : cog-ina-model ( cog -- model )
-    [ INA_ADDRESS ] dip cog-memory ;
+    [ INA_ADDRESS ] dip read-memory-model ;
 
 ! get the cogs ina model
 : cog-inb-model ( cog -- model )
-    [ INB_ADDRESS ] dip cog-memory ;
+    [ INB_ADDRESS ] dip read-memory-model ;
+
+! get the cog outa model
+: outa-model ( cog -- model )
+    [ OUTA_ADDRESS ] dip read-memory-model ;
+
+! add an observer for outa
+: outa-add-connection ( observer cog -- )
+    outa-model add-connection ;
+
+! get the cog outb model
+: outb-model ( cog -- model )
+    [ OUTB_ADDRESS ] dip read-memory-model ;
+
+! add an observer to outb
+: outb-add-connection ( observer cog -- )
+    outb-model add-connection ;
+
 
 : cog-memory-select ( address -- mem/sfr )
   {
@@ -159,13 +178,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 ! : cog-mem-dependency ( dep address cog -- )
 !  memory>> nth memory-add-dependency ;
 
-! Lets put memory as an observer 
-: cog-memory-connection ( object address cog -- )
-  cog-memory swap add-connection ;
 
-! Lets put port into memory 
-: cog-connection-memory ( object address cog -- )
-  cog-memory add-connection ;
 
 ! Build the cog memory
 : cog-mem-setup ( -- vector )
@@ -243,19 +256,19 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   [ pc<< ] [ pcold<< ] 2bi ;
 
 
-: cog-read ( address cog -- d )
-  cog-memory model-value 32 bits ;
+: read-memory-value ( address cog -- d )
+    read-memory-model model-value 32 bits ;
 
 : cog-read-array ( n address cog -- array )
   [ f <array> ] 2dip rot
   [
     drop
-    [ cog-read ] 2keep [ 1 + ] dip rot
+    [ read-memory-value ] 2keep [ 1 + ] dip rot
   ] map [ drop drop ] dip ;
 
-: cog-write ( value address cog -- )
+: write-memory-value ( value address cog -- )
   ! break
-  cog-memory set-model ;
+    read-memory-model set-model ;
 
 ! make cog active
 : cog-active ( cog -- )
@@ -267,9 +280,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 ! return the status if the immediate flag
 : cog-isn-i ( cog -- ? )
   isn>> 22 bit? ;
-
-: cog-address-value ( address cog -- value )
-  cog-read ;
 
 : isn-source-address ( isn -- address )
     8 0 bit-range ;
@@ -283,7 +293,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 
 : cog-source-value ( cog -- value )
-  [ cog-source-address ] keep cog-read ;
+  [ cog-source-address ] keep read-memory-value ;
 
 : cog-fetch-source ( cog -- source )
   [ cog-isn-i ] keep swap
@@ -296,11 +306,11 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   isn>> 17 9 bit-range ;
 
 : cog-dest-value ( cog -- value )
-  [ cog-dest-address ] keep cog-read ;
+  [ cog-dest-address ] keep read-memory-value ;
 
 
 : cog-fetch-dest ( cog -- value )
-  [ cog-dest-address ] keep cog-read ;
+  [ cog-dest-address ] keep read-memory-value ;
 
 ! find out if the current address has a label
 : cog-label-string ( address cog -- $/? )
@@ -495,7 +505,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   } case ;
 
 : cog-fetch ( cog -- inst )
-  [ pc>> ] keep [ cog-read ] keep PC+ ;
+  [ pc>> ] keep [ read-memory-value ] keep PC+ ;
 
 ! get status of update z
 : cog-isn-z ( cog -- ? )
@@ -524,7 +534,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   [
     [ alu>> alu-result ] keep
     [ cog-dest-address ] keep
-    [ cog-write ] keep
+    [ write-memory-value ] keep
   ] when drop ;
 
 
@@ -733,7 +743,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 ! string of value from address
 : cog-address-value$ ( address cog -- string )
-    cog-address-value >hex-pad8 ;
+    read-memory-value >hex-pad8 ;
 
 : cog-isn ( cog -- isn )
     isn>> ;
@@ -980,7 +990,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   [
     [ cog-number$ swap cog-address$ append ] 2keep       ! string address cog
     [ cog-address-value$ "0x" prepend " " append append ] 2keep  ! string address cog
-    [ cog-address-value ] keep                          ! string value cog
+    [ read-memory-value ] keep                          ! string value cog
     [ source-string " " append append ] 2keep           ! string cog
     [ destination-string " " append append ] 2keep      ! string cog
     [ swap drop cog-flag-condition " " append append ] 2keep
@@ -1009,13 +1019,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ gatethree>> activate-model ] keep
     [ gatefour>> activate-model ] keep ;
 
-! this will make all dependency point to memory 
-! so the memory will update to dependency changes
-: cog-activate ( cog -- )
-  memory>>
-  [
-    activate-model
-  ] each ;
+
 
 ! Need to execute the cog to an address
 : cog-execute-address ( address cog -- )
@@ -1034,15 +1038,17 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 ! create a cog and state is inactive
 : new-cog ( n cog -- cog' )
-  new swap >>n        ! allocate memory save the number of cog
-  cog-mem-setup >>memory  ! initialise memory componnet
-  <alu> >>alu         ! alu is a seperate class
-  [ cog-reset ] keep  ! cog is in reset state
-  cog-mnuemonic >>hashmneu
-  COG_HUB_GO >>wstate ! need to know if the cog is waiting for hub
-  V{ } clone >>bp     ! break points
-
-  cog-default-labels >>labels
+    new swap >>n        ! allocate memory save the number of cog
+    cog-mem-setup >>memory  ! initialise memory componnet
+    <alu> >>alu               ! alu is a seperate class
+    0 <orx> >>orio          ! OR the Outputs
+    [ cog-reset ] keep  ! cog is in reset state
+    cog-mnuemonic >>hashmneu
+    COG_HUB_GO >>wstate ! need to know if the cog is waiting for hub
+    V{ } clone >>bp     ! break points
+    cog-default-labels >>labels
+    [ [ orio>> ] keep outa-add-connection ] keep
+    [ [ orio>> ] keep outb-add-connection ] keep
 ;
 
 ! create a cog and state is inactive

@@ -35,7 +35,10 @@ M: orx model-changed
     set-model
     ;  ! this will change obsevers
 
+! add an observer to the orx
+: orx-add-connection ( observer orx -- )
+    add-connection ;
 
 ! init this object 
-: <orx> ( value -- orx )
+: <orx> ( value -- model )
    orx new-model ;
