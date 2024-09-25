@@ -3,7 +3,7 @@
 !
 USING: accessors arrays kernel sequences models vectors tools.continuations ;
 
-IN: parallax.propeller.vcfgx
+IN: parallax.propeller.cogs.cog.vcfgx
 
 TUPLE: vcfgx < model ;
 
@@ -12,8 +12,6 @@ TUPLE: vcfgx < model ;
 M: vcfgx model-changed
    break drop drop ;
 
-: vcfgx-dependency ( dep vcfgx -- )
-    add-dependency ;
 
 : <vcfgx> ( value -- par )
    vcfgx new-model ;

@@ -83,8 +83,8 @@ TUPLE: propeller hub ;
   <cog> stest start drop ;
 
 ! need to add module to output
-: propeller-add-output ( model propeller --  )
-    hub>> hub-add-output ;
+! : propeller-add-output ( model propeller --  )
+!    hub>> hub-add-output ;
 
 ! kind of a wrapper
 : propeller-step ( propeller -- )

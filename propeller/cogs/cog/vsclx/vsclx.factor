@@ -3,12 +3,11 @@
 !
 USING: accessors arrays kernel sequences models vectors tools.continuations ;
 
-IN: parallax.propeller.cogs.cog.vcfg
+IN: parallax.propeller.cogs.cog.vsclx
 
-TUPLE: vcfg < model ;
+TUPLE: vsclx < model ;
 
-: <vcfg> ( value -- par )
-   vcfg new-model ;
 
-M: vcfg model-changed
-   break drop drop ;
+
+: <vsclx> ( value -- vscl )
+   vsclx new-model ;

@@ -129,45 +129,6 @@ M: logoutx model-changed
   cog-array>> first [ cog-copy ] keep cog-active ;
 
 
-: cogs-add-outa-memory ( cogs -- )
-    [ outb>> ] keep  ! cogs ourx cogs
-    cog-array>>             ! cogs outx array
-    [
-        [ dup ] dip         ! outx outx cog
-        [ OUTA_ADDRESS ] dip cog-connection-memory ! outx outx address cog -- oux
-    ] each drop
-;
- 
- : cogs-add-outb-memory ( cogs -- )
-    [ outb>> ] keep      ! outx cogs
-    cog-array>>
-    [
-        [ dup ] dip         ! outx outx cog
-        [ OUTB_ADDRESS ] dip cog-connection-memory ! outx outx address cog -- outx
-    ] each drop 
-;
-
-
-! set up the ddr models
-: cogs-add-ddra-memory ( cogs -- )
-    [ ddra>> ] keep  ! cogs ddrx cogs
-    cog-array>>             ! cogs ddrx array
-    [
-        [ dup ] dip         ! ddrx ddrx cog
-        [ DDRA_ADDRESS ] dip cog-connection-memory ! ddrx ddrx address cog -- ddrx
-    ] each drop
-;
-
-: cogs-add-ddrb-memory ( cogs -- )
-    [ ddrb>> ] keep      ! ddrx cogs
-    cog-array>>
-    [
-        [ dup ] dip         ! ddrx ddrx cog
-        [ DDRB_ADDRESS ] dip cog-connection-memory ! ddrx ddrx address cog -- ddrx
-    ] each drop 
-;
-
-
 
 ! get cog ina memory and make it an observer of global INA
 : cogs-ina-connect ( cogs -- )
@@ -215,7 +176,6 @@ M: logoutx model-changed
     4 >>num-longs ! this is the defult number of data longs to display
     [ cogs-ina-connect ] keep
     [ cogs-inb-connect ] keep
-    [ cogs-add-ddra-memory ] keep
-    [ cogs-add-ddrb-memory ] keep
+
 
 ;

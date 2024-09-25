@@ -2,19 +2,18 @@
 ! See http://factorcode.org/license.txt for BSD license.
 !
 USING: accessors arrays assocs kernel sequences models vectors
-        namespaces endian
-!       parallax.propeller.cogs.cog.memory
+       namespaces endian
        parallax.propeller.cogs.cog.par
        parallax.propeller.cogs.cog.cnt
        parallax.propeller.cogs.cog.frq
        parallax.propeller.cogs.cog.phs
-       parallax.propeller.cogs.cog.vscl
+       parallax.propeller.cogs.cog.vcfgx
+       parallax.propeller.cogs.cog.vsclx
        parallax.propeller.orx
-       parallax.propeller.outx
        parallax.propeller.andx
        parallax.propeller.ddrx
-       parallax.propeller.ctrx
-       parallax.propeller.vcfgx
+    
+
        math math.bitwise math.parser alien.syntax combinators
        ! io.binary
        grouping bit-arrays bit-vectors
@@ -92,6 +91,8 @@ CONSTANT: INA_ADDRESS 498
 CONSTANT: INB_ADDRESS 499
 CONSTANT: OUTA_ADDRESS 500
 CONSTANT: OUTB_ADDRESS 501
+CONSTANT: VCFG_ADDRESS 510
+CONSTANT: VSCL_ADDRESS 511
 
 ! tuple to hold cog stuff
 
@@ -142,27 +143,21 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : outb-add-connection ( observer cog -- )
     outb-model add-connection ;
 
+! get the cog vscl model from memory
+: vscl-model ( cog -- model )
+    [ VSCL_ADDRESS ] dip read-memory-model ;
 
-: cog-memory-select ( address -- mem/sfr )
-  {
-    { 496 [ 0 <par> ] }   ! $01f0 boot parameter
-    { 497 [ 0 <cnt> ] }   ! $01f1 system counter
+! add an observer to vscl cog memory
+: vscl-add-connection ( observer cog -- )
+    vscl-model add-connection ;
 
-    { 506 [ 0 <frq> ] }   ! $01fa Counter A Frequency
-    { 507 [ 0 <frq> ] }   ! $01fb Counter B Frequency
-    { 508 [ 0 <phs> ] }   ! $01fc Counter A phase
-    { 509 [ 0 <phs> ] }   ! $01fd Counter B phase
+! get the cog vcfg model from memory
+: vcfg-model ( cog -- model )
+    [ VCFG_ADDRESS ] dip read-memory-model ;
 
-    { 511 [ 0 <vscl> ] }  ! $01ff Video Scale
-    [ drop 0 <model> ]   ! default general memory function
-  } case ;
-
-: cog-setup ( -- vector )
-   MEMORY_SIZE f <array>
-   [
-      [ drop ] dip cog-memory-select
-   ] map-index >vector ;
-
+! add an observer to vcfg cog memory
+: vcfg-add-connection ( observer cog -- )
+    vcfg-model add-connection ;
 
 
 : cog-deactivate ( cog -- )
@@ -170,14 +165,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   [
     deactivate-model
   ] each ;
-
-! routine to inject a object into dependecy
-! may require memory deactivation and then activation
-! : memory-set-dependency ( object address memory -- )
-!  nth memory-add-dependency ;
-! : cog-mem-dependency ( dep address cog -- )
-!  memory>> nth memory-add-dependency ;
-
 
 
 ! Build the cog memory
@@ -191,47 +178,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 ! lets get the memory model from memory array
 : cog-get-memory ( address cog -- memory )
     memory>> nth ;
-
-
-! create and 
-! create an Out and then add orx model
-: cog-out-set ( cog -- outx )
-    [ n>> <outx> ]
-    [ gateone>> ]
-    bi dupd add-dependency ;
-
-
-: cog-ctr-set ( cog -- ctrx )
-    [ drop 0 <ctrx> ]
-    [ gateone>> ]
-    bi dupd add-dependency ;
-
-
-: cog-ddr-set ( cog -- ddrx )
-    [
-        [ drop 0 <ddrx> ]
-        [ gatetwo>> ]
-        bi dupd add-dependency
-    ] keep
-    gatefour>> dupd add-dependency
-;
-
-
-: cog-vcfg-set ( cog -- vcfgx )
-    [ drop 0 <vcfgx> ]
-    [ gateone>> ]
-    bi dupd add-dependency ;
-
-
-! set up cog dependency for all special functions
-! : cog-set-dependencies ( cog -- cog )
-!    [ [ [ 500 ] dip cog-get-memory ] [ cog-out-set ] bi add-dependency ] keep
-!    [ [ [ 502 ] dip cog-get-memory ] [ cog-ddr-set ] bi add-dependency ] keep
-!    [ [ cog-ddr-set 502 ] keep cog-mem-dependency ] keep
-!   [ [ cog-ctr-set 503 ] keep cog-mem-dependency ] keep
-!   [ [ cog-ctr-set 504 ] keep cog-mem-dependency ] keep
-!    [ [ cog-vcfg-set 510 ] keep cog-mem-dependency ] keep
-! ;
 
 
  
@@ -1049,6 +995,8 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     cog-default-labels >>labels
     [ [ orio>> ] keep outa-add-connection ] keep
     [ [ orio>> ] keep outb-add-connection ] keep
+    [ [ 0 <vcfgx> ] dip vcfg-add-connection ] keep 
+    [ [ 0 <vsclx> ] dip vscl-add-connection ] keep
 ;
 
 ! create a cog and state is inactive
