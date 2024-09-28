@@ -4,7 +4,6 @@
 USING: accessors arrays ascii combinators
      kernel parallax.propeller.cogs.cog
       math math.parser models
-       parallax.propeller.ddrx
        parallax.propeller.inx
       sequences tools.continuations vectors 
 ;
@@ -22,7 +21,7 @@ CONSTANT: DDRB_ADDRESS 503
 
 TUPLE: logoutx < model vec ;
 
-TUPLE: cogs cog-array num-longs ina inb ddra ddrb 
+TUPLE: cogs cog-array num-longs ina inb
     logx
 ;
 
@@ -168,8 +167,6 @@ M: logoutx model-changed
     cogs new                      ! cog
     -1 <inx> >>ina
     -1 <inx> >>inb
-    0 <ddrx> >>ddra
-    0 <ddrx> >>ddrb
     <logoutx> >>logx  ! keep a record of out changes
     cogs-array >>cog-array
 

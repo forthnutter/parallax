@@ -5,7 +5,7 @@
 USING: accessors arrays kernel sequences math models
    vectors tools.continuations ;
 
-IN: parallax.propeller.andx
+IN: parallax.propeller.cogs.cog.andx
 
 ! andx is used as a dependancey
 ! for the io section of each cog

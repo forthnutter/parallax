@@ -3,7 +3,7 @@
 !
 USING: accessors arrays kernel sequences models vectors tools.continuations ;
 
-IN: parallax.propeller.ctrx
+IN: parallax.propeller.cogs.cog.ctrx
 
 TUPLE: ctrx < model ;
 

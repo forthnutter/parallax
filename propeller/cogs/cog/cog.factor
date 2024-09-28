@@ -1,18 +1,19 @@
 ! Copyright (C) 2011 Joseph L Moschini.
 ! See http://factorcode.org/license.txt for BSD license.
 !
-USING: accessors arrays assocs kernel sequences models vectors
-       namespaces endian
-       parallax.propeller.cogs.cog.par
-       parallax.propeller.cogs.cog.cnt
-       parallax.propeller.cogs.cog.frq
-       parallax.propeller.cogs.cog.phs
-       parallax.propeller.cogs.cog.vcfgx
-       parallax.propeller.cogs.cog.vsclx
-       parallax.propeller.orx
-       parallax.propeller.andx
-       parallax.propeller.ddrx
-    
+USING:  accessors arrays assocs kernel sequences models vectors
+        namespaces endian
+        parallax.propeller.cogs.cog.par
+        parallax.propeller.cogs.cog.cnt
+        parallax.propeller.cogs.cog.frqx
+        parallax.propeller.cogs.cog.phsx
+        parallax.propeller.cogs.cog.vcfgx
+        parallax.propeller.cogs.cog.vsclx
+        parallax.propeller.cogs.cog.ctrx
+        parallax.propeller.cogs.cog.andx
+        parallax.propeller.orx
+
+ 
 
        math math.bitwise math.parser alien.syntax combinators
        ! io.binary
@@ -91,6 +92,14 @@ CONSTANT: INA_ADDRESS 498
 CONSTANT: INB_ADDRESS 499
 CONSTANT: OUTA_ADDRESS 500
 CONSTANT: OUTB_ADDRESS 501
+CONSTANT: DDRA_ADDRESS 502
+CONSTANT: DDRB_ADDRESS 503
+CONSTANT: CTRA_ADDRESS 504
+CONSTANT: CTRB_ADDRESS 505
+CONSTANT: FRQA_ADDRESS 506
+CONSTANT: FRQB_ADDRESS 507
+CONSTANT: PHSA_ADDRESS 508
+CONSTANT: PHSB_ADDRESS 509
 CONSTANT: VCFG_ADDRESS 510
 CONSTANT: VSCL_ADDRESS 511
 
@@ -159,6 +168,54 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : vcfg-add-connection ( observer cog -- )
     vcfg-model add-connection ;
 
+! get the cog ctra model from memory
+: ctra-model ( cog -- model )
+    [ CTRA_ADDRESS ] dip read-memory-model ;
+
+! add an observer to ctra cog memory
+: ctra-add-connection ( observer cog -- )
+    ctra-model add-connection ;
+
+! get the cog ctrb model from memory
+: ctrb-model ( cog -- model )
+    [ CTRB_ADDRESS ] dip read-memory-model ;
+
+! add an observer to ctrb cog memory
+: ctrb-add-connection ( observer cog -- )
+    ctrb-model add-connection ;
+
+
+! get the cog frqa model from memory
+: frqa-model ( cog -- model )
+    [ FRQA_ADDRESS ] dip read-memory-model ;
+
+! add an observer to frqa cog memory
+: frqa-add-connection ( observer cog -- )
+    frqa-model add-connection ;
+
+! get the cog frqb model from memory
+: frqb-model ( cog -- model )
+    [ FRQB_ADDRESS ] dip read-memory-model ;
+
+! add an observer to frqb cog memory
+: frqb-add-connection ( observer cog -- )
+    frqb-model add-connection ;
+
+! get the cog phsa model from memory
+: phsa-model ( cog -- model )
+    [ PHSA_ADDRESS ] dip read-memory-model ;
+
+! add an observer to phsa cog memory
+: phsa-add-connection ( observer cog -- )
+    phsa-model add-connection ;
+
+! get the cog phsb model from memory
+: phsb-model ( cog -- model )
+    [ PHSB_ADDRESS ] dip read-memory-model ;
+
+! add an observer to phsb cog memory
+: phsb-add-connection ( observer cog -- )
+    phsb-model add-connection ;
 
 : cog-deactivate ( cog -- )
   memory>>
@@ -949,9 +1006,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-list-pc ( cog -- str/f )
   [ pcold>> ] keep cog-list ;
 
-! or connects to and
-: cog-orand ( cog -- cog )
-    [ [ gateone>> ] [ gatetwo>> ] bi andx-dependency ] keep ; 
 
 : cog-andor ( cog -- cog )
     [ gatetwo>> ] keep
@@ -988,6 +1042,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     cog-mem-setup >>memory  ! initialise memory componnet
     <alu> >>alu               ! alu is a seperate class
     0 <orx> >>orio          ! OR the Outputs
+    0 <andx> >>andio        ! mainly ors the ddr with orio
     [ cog-reset ] keep  ! cog is in reset state
     cog-mnuemonic >>hashmneu
     COG_HUB_GO >>wstate ! need to know if the cog is waiting for hub
@@ -997,6 +1052,13 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ [ orio>> ] keep outb-add-connection ] keep
     [ [ 0 <vcfgx> ] dip vcfg-add-connection ] keep 
     [ [ 0 <vsclx> ] dip vscl-add-connection ] keep
+    [ [ 0 <ctrx> ] dip ctra-add-connection ] keep
+    [ [ 0 <ctrx> ] dip ctrb-add-connection ] keep
+    [ [ 0 <frqx> ] dip frqa-add-connection ] keep
+    [ [ 0 <frqx> ] dip frqb-add-connection ] keep
+    [ [ 0 <phsx> ] dip phsa-add-connection ] keep
+    [ [ 0 <phsx> ] dip phsb-add-connection ] keep
+    [ [ andio>> ] [ orio>> ] bi add-connection ] keep 
 ;
 
 ! create a cog and state is inactive

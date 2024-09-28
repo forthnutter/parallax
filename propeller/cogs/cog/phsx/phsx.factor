@@ -3,12 +3,10 @@
 !
 USING: accessors arrays kernel sequences models vectors tools.continuations ;
 
-IN: parallax.propeller.cogs.cog.phs
+IN: parallax.propeller.cogs.cog.phsx
 
-TUPLE: phs < model ;
+TUPLE: phsx < model ;
 
-: <phs> ( value -- par )
-   phs new-model ;
+: <phsx> ( value -- phsx )
+   phsx new-model ;
 
-M: phs model-changed
-   break drop drop ;

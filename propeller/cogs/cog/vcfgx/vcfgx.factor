@@ -9,9 +9,8 @@ TUPLE: vcfgx < model ;
 
 
 
-M: vcfgx model-changed
-   break drop drop ;
 
 
+! vcfg is basically a model
 : <vcfgx> ( value -- par )
    vcfgx new-model ;
