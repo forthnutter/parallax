@@ -150,8 +150,18 @@ M: logoutx model-changed
     ] each drop ;
 
 
+: get-orout-model ( n cogs -- model )
+    cog-array>> nth orout>> ;
 
-
+: out-link ( cogs -- )
+    [ [ 1 swap get-orout-model ] [ 0 swap get-orout-model ] bi add-connection ] keep
+    [ [ 2 swap get-orout-model ] [ 1 swap get-orout-model ] bi add-connection ] keep
+    [ [ 3 swap get-orout-model ] [ 2 swap get-orout-model ] bi add-connection ] keep
+    [ [ 4 swap get-orout-model ] [ 3 swap get-orout-model ] bi add-connection ] keep
+    [ [ 5 swap get-orout-model ] [ 4 swap get-orout-model ] bi add-connection ] keep
+    [ [ 6 swap get-orout-model ] [ 5 swap get-orout-model ] bi add-connection ] keep
+    [ [ 7 swap get-orout-model ] [ 6 swap get-orout-model ] bi add-connection ] keep
+;
 
 : cogs-dump ( address cogn cogs -- vector )
     [ 1 ] 3dip 
@@ -169,10 +179,10 @@ M: logoutx model-changed
     -1 <inx> >>inb
     <logoutx> >>logx  ! keep a record of out changes
     cogs-array >>cog-array
-
     4 >>num-longs ! this is the defult number of data longs to display
     [ cogs-ina-connect ] keep
     [ cogs-inb-connect ] keep
+    [ out-link ] keep
 
 
 ;

@@ -88,26 +88,28 @@ CONSTANT: MEMORY_SIZE 512
 CONSTANT: INST_SIZE   496
 CONSTANT: SPR_SIZE    16
 
-CONSTANT: INA_ADDRESS 498
-CONSTANT: INB_ADDRESS 499
-CONSTANT: OUTA_ADDRESS 500
-CONSTANT: OUTB_ADDRESS 501
-CONSTANT: DDRA_ADDRESS 502
-CONSTANT: DDRB_ADDRESS 503
-CONSTANT: CTRA_ADDRESS 504
-CONSTANT: CTRB_ADDRESS 505
-CONSTANT: FRQA_ADDRESS 506
-CONSTANT: FRQB_ADDRESS 507
-CONSTANT: PHSA_ADDRESS 508
-CONSTANT: PHSB_ADDRESS 509
-CONSTANT: VCFG_ADDRESS 510
-CONSTANT: VSCL_ADDRESS 511
+CONSTANT: PAR_ADDRESS 496   ! 0x1f0
+CONSTANT: CNT_ADDRESS 497   ! 0x1f1
+CONSTANT: INA_ADDRESS 498   ! 0x1f2
+CONSTANT: INB_ADDRESS 499   ! 0x1f3
+CONSTANT: OUTA_ADDRESS 500  ! 0x1f4
+CONSTANT: OUTB_ADDRESS 501  ! 0x1f5
+CONSTANT: DDRA_ADDRESS 502  ! 0x1f6
+CONSTANT: DDRB_ADDRESS 503  ! 0x1f7
+CONSTANT: CTRA_ADDRESS 504  ! 0x1f8
+CONSTANT: CTRB_ADDRESS 505  ! 0x1f9
+CONSTANT: FRQA_ADDRESS 506  ! 0x1fa
+CONSTANT: FRQB_ADDRESS 507  ! 0x1fb
+CONSTANT: PHSA_ADDRESS 508  ! 0x1fc
+CONSTANT: PHSB_ADDRESS 509  ! 0x1fd
+CONSTANT: VCFG_ADDRESS 510  ! 0x1fe
+CONSTANT: VSCL_ADDRESS 511  ! 0x1ff
 
 ! tuple to hold cog stuff
 
 TUPLE: cog n pc pcold alu z c memory state isn fisn
     source dest result bp wstate gateone gatetwo
-    gatethree gatefour labels hashmneu porta portb orio andio ;
+    gatethree gatefour labels hashmneu porta portb orio andio orout ;
 
 
 
@@ -151,6 +153,23 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 ! add an observer to outb
 : outb-add-connection ( observer cog -- )
     outb-model add-connection ;
+
+! get the cog ddra model
+: ddra-model ( cog -- model )
+    [ DDRA_ADDRESS ] dip read-memory-model ;
+
+! add an observer for ddra
+: ddra-add-connection ( observer cog -- )
+    ddra-model add-connection ;
+
+! get the cog ddrb model
+: ddrb-model ( cog -- model )
+    [ DDRB_ADDRESS ] dip read-memory-model ;
+
+! add an observer to ddrb
+: ddrb-add-connection ( observer cog -- )
+    ddrb-model add-connection ;
+
 
 ! get the cog vscl model from memory
 : vscl-model ( cog -- model )
@@ -1036,20 +1055,26 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     { 508 "PHSA" } { 509 "PHSB" } { 510 "VCFG" } { 511 "VSCL" }
   } ;
 
+
+
+
 ! create a cog and state is inactive
 : new-cog ( n cog -- cog' )
     new swap >>n        ! allocate memory save the number of cog
     cog-mem-setup >>memory  ! initialise memory componnet
     <alu> >>alu               ! alu is a seperate class
     0 <orx> >>orio          ! OR the Outputs
+    0 <orx> >>orout         ! this is used to or the previous cog out with this one
     0 <andx> >>andio        ! mainly ors the ddr with orio
     [ cog-reset ] keep  ! cog is in reset state
     cog-mnuemonic >>hashmneu
     COG_HUB_GO >>wstate ! need to know if the cog is waiting for hub
     V{ } clone >>bp     ! break points
     cog-default-labels >>labels
-    [ [ orio>> ] keep outa-add-connection ] keep
-    [ [ orio>> ] keep outb-add-connection ] keep
+    [ [ orio>> ] keep outa-add-connection ] keep    ! make orio observer of outa memory
+    [ [ orio>> ] keep outb-add-connection ] keep    ! make orio observer of outb memory
+    [ [ andio>> ] keep ddra-add-connection ] keep   ! make andio the obsever of ddra memory
+    [ [ andio>> ] keep ddrb-add-connection ] keep   ! make andio the obsever of ddrb memory
     [ [ 0 <vcfgx> ] dip vcfg-add-connection ] keep 
     [ [ 0 <vsclx> ] dip vscl-add-connection ] keep
     [ [ 0 <ctrx> ] dip ctra-add-connection ] keep
@@ -1058,11 +1083,12 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ [ 0 <frqx> ] dip frqb-add-connection ] keep
     [ [ 0 <phsx> ] dip phsa-add-connection ] keep
     [ [ 0 <phsx> ] dip phsb-add-connection ] keep
-    [ [ andio>> ] [ orio>> ] bi add-connection ] keep 
+    [ [ andio>> ] [ orio>> ] bi add-connection ] keep   ! andio is the obsever of orio
+    [ [ orout>> ] [ andio>> ] bi add-connection ] keep ! orout is the obsever of andio
 ;
 
 ! create a cog and state is inactive
 : <cog> ( n -- cog )
-  cog new-cog ! create the cog class
+    cog new-cog ! create the cog class
 ;
 
