@@ -102,7 +102,7 @@ TUPLE: propeller hub ;
 : propeller-dump-cog ( address cogn propeller -- vector )
     hub>> hub-dump-cog ;
 
-: propeller-ina-hex ( propeller cogn -- vector )
+: propeller-ina-hex ( propeller -- vector )
     hub>> hub-ina-hex ;
     
 

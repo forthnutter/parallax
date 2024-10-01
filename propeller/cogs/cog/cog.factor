@@ -109,7 +109,7 @@ CONSTANT: VSCL_ADDRESS 511  ! 0x1ff
 
 TUPLE: cog n pc pcold alu z c memory state isn fisn
     source dest result bp wstate gateone gatetwo
-    gatethree gatefour labels hashmneu porta portb orio andio orout ;
+    gatethree gatefour labels hashmneu porta portb orio andio orout orddr ;
 
 
 
@@ -236,11 +236,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : phsb-add-connection ( observer cog -- )
     phsb-model add-connection ;
 
-: cog-deactivate ( cog -- )
-  memory>>
-  [
-    deactivate-model
-  ] each ;
 
 
 ! Build the cog memory
@@ -307,11 +302,17 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     8 0 bit-range ;
 
 ! get isn destination address
-: isn-dest-address ( isn -- address )
+: isn-destination-address ( isn -- address )
     17 9 bit-range ;
 
 : cog-source-address ( cog -- address )
   isn>> isn-source-address ;
+
+: source-value ( isn cog -- value )
+    [ isn-source-address ] dip read-memory-value ;
+
+: destination-value ( isn cog -- address )
+    [ isn-destination-address ] dip read-memory-value ;
 
 
 : cog-source-value ( cog -- value )
@@ -325,7 +326,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 ! get isn destination address
 : cog-dest-address ( cog -- address )
-  isn>> 17 9 bit-range ;
+  isn>> isn-destination-address ;
 
 : cog-dest-value ( cog -- value )
   [ cog-dest-address ] keep read-memory-value ;
@@ -964,7 +965,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 ! gererate a string of destination including labels
 : destination-string ( n cog -- string/? )
-    [ isn-dest-address ] dip    ! address cog
+    [ isn-destination-address ] dip    ! address cog
     [ cog-label-string ] 2keep  ! label address cog 
     rot ! address cog label
     dup ! address cog label label
@@ -1026,20 +1027,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   [ pcold>> ] keep cog-list ;
 
 
-: cog-andor ( cog -- cog )
-    [ gatetwo>> ] keep
-    [ gatethree>> add-dependency ] keep
-;
-
-
-: cog-gate-activate ( cog -- cog )
-    [ gateone>> activate-model ] keep
-    [ gatetwo>> activate-model ] keep
-    [ gatethree>> activate-model ] keep
-    [ gatefour>> activate-model ] keep ;
-
-
-
 ! Need to execute the cog to an address
 : cog-execute-address ( address cog -- )
     break
@@ -1055,8 +1042,16 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     { 508 "PHSA" } { 509 "PHSB" } { 510 "VCFG" } { 511 "VSCL" }
   } ;
 
+! get the value from source and destination of the current isn
+: get-src-dst ( address cog -- hex )
+    read-memory-value
+    [ isn-source-address >hex-pad8 ] [ isn-destination-address >hex-pad8 ] bi append
+
+;
 
 
+: pc-src-dst ( cog -- str/f )
+    [ pcold>> ] keep get-src-dst ;
 
 ! create a cog and state is inactive
 : new-cog ( n cog -- cog' )
@@ -1066,6 +1061,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     0 <orx> >>orio          ! OR the Outputs
     0 <orx> >>orout         ! this is used to or the previous cog out with this one
     0 <andx> >>andio        ! mainly ors the ddr with orio
+    0 <orx> >>orddr         ! or all previous cog ddr with this ddr
     [ cog-reset ] keep  ! cog is in reset state
     cog-mnuemonic >>hashmneu
     COG_HUB_GO >>wstate ! need to know if the cog is waiting for hub
@@ -1075,6 +1071,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ [ orio>> ] keep outb-add-connection ] keep    ! make orio observer of outb memory
     [ [ andio>> ] keep ddra-add-connection ] keep   ! make andio the obsever of ddra memory
     [ [ andio>> ] keep ddrb-add-connection ] keep   ! make andio the obsever of ddrb memory
+    [ [ orddr>> ] keep ddrb-add-connection ] keep   ! make orddr the obsever of ddr memory
     [ [ 0 <vcfgx> ] dip vcfg-add-connection ] keep 
     [ [ 0 <vsclx> ] dip vscl-add-connection ] keep
     [ [ 0 <ctrx> ] dip ctra-add-connection ] keep

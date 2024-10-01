@@ -50,7 +50,7 @@ M: inx model-changed
    in-read >bin 32 CHAR: 0 pad-head ;
 
 : <inx-bits> ( n -- vb )
-    <array>
+    f <array>
     [
         <model>
     ] map ;

@@ -3,7 +3,7 @@
 
 USING: accessors arrays ascii combinators
      kernel parallax.propeller.cogs.cog
-      math math.parser models
+      math math.bitwise math.parser models
        parallax.propeller.inx
       sequences tools.continuations vectors 
 ;
@@ -124,6 +124,15 @@ M: logoutx model-changed
     [ drop ] if
   ] each ; 
 
+
+: cogs-src-dst ( cogs -- $array )
+    COGNUMBEROF <vector>
+    swap cog-array>>
+    [
+        [ cog-active? ] keep swap
+        [ get-src-dst swap [ push ] keep ] [ drop ] if
+    ] each ;
+
 : cogs-boot ( array cogs -- )
   cog-array>> first [ cog-copy ] keep cog-active ;
 
@@ -153,7 +162,11 @@ M: logoutx model-changed
 : get-orout-model ( n cogs -- model )
     cog-array>> nth orout>> ;
 
-: out-link ( cogs -- )
+: get-orddr-model ( n cogs -- model )
+    cog-array>> nth orddr>> ;
+
+
+: out-link ( cogs -- cogs )
     [ [ 1 swap get-orout-model ] [ 0 swap get-orout-model ] bi add-connection ] keep
     [ [ 2 swap get-orout-model ] [ 1 swap get-orout-model ] bi add-connection ] keep
     [ [ 3 swap get-orout-model ] [ 2 swap get-orout-model ] bi add-connection ] keep
@@ -163,15 +176,27 @@ M: logoutx model-changed
     [ [ 7 swap get-orout-model ] [ 6 swap get-orout-model ] bi add-connection ] keep
 ;
 
+: ddr-link ( cogs -- cogs )
+    [ [ 1 swap get-orddr-model ] [ 0 swap get-orddr-model ] bi add-connection ] keep
+    [ [ 2 swap get-orddr-model ] [ 1 swap get-orddr-model ] bi add-connection ] keep
+    [ [ 3 swap get-orddr-model ] [ 2 swap get-orddr-model ] bi add-connection ] keep
+    [ [ 4 swap get-orddr-model ] [ 3 swap get-orddr-model ] bi add-connection ] keep
+    [ [ 5 swap get-orddr-model ] [ 4 swap get-orddr-model ] bi add-connection ] keep
+    [ [ 6 swap get-orddr-model ] [ 5 swap get-orddr-model ] bi add-connection ] keep
+    [ [ 7 swap get-orddr-model ] [ 6 swap get-orddr-model ] bi add-connection ] keep           
+;
+
 : cogs-dump ( address cogn cogs -- vector )
     [ 1 ] 3dip 
     [ swap ] dip 
     cogs-mdl ;
 
-: cogs-ina-hex ( cogn cogs -- vector )
+! get the hex string of ina
+: ina-hex ( cogs -- hex )
+    ina>> in-read 32 bits >hex "0x" prepend ;
 
-;
 
+! builds up the array of cogs
 : <cogs> ( -- cogs )
     break
     cogs new                      ! cog
@@ -182,7 +207,6 @@ M: logoutx model-changed
     4 >>num-longs ! this is the defult number of data longs to display
     [ cogs-ina-connect ] keep
     [ cogs-inb-connect ] keep
-    [ out-link ] keep
-
+    out-link ddr-link
 
 ;
