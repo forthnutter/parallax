@@ -45,7 +45,8 @@ TUPLE: parallax propeller at24 ;
 : ina ( parallax -- parallax )
     [ propeller>> propeller-ina-hex print ] keep ;
 
-
+: sd ( parallax -- parallax )
+    [ propeller>> propeller-src-dst [ print ] each ] keep ;
 
 : <parallax> ( --  parallax )
     parallax new

@@ -95,6 +95,10 @@ TUPLE: hub cogs bus ram rom enable lock config ;
 : hub-ina-hex ( hub -- vector )
     cogs>> ina-hex ;
 
+: hub-src-dst ( hub -- vector )
+    cogs>> cogs-src-dst ;
+
+
 ! initalise the HUB 
 : <hub> ( -- hub )
   hub new

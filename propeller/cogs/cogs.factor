@@ -130,7 +130,7 @@ M: logoutx model-changed
     swap cog-array>>
     [
         [ cog-active? ] keep swap
-        [ get-src-dst swap [ push ] keep ] [ drop ] if
+        [ pc-src-dst swap [ push ] keep ] [ drop ] if
     ] each ;
 
 : cogs-boot ( array cogs -- )

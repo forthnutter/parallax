@@ -104,7 +104,9 @@ TUPLE: propeller hub ;
 
 : propeller-ina-hex ( propeller -- vector )
     hub>> hub-ina-hex ;
-    
+
+: propeller-src-dst ( propeller -- vector )
+    hub>> hub-src-dst ;
 
 : <propeller> ( -- propeller )
     propeller new

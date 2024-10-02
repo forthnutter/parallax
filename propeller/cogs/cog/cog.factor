@@ -1044,9 +1044,15 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 ! get the value from source and destination of the current isn
 : get-src-dst ( address cog -- hex )
-    read-memory-value
-    [ isn-source-address >hex-pad8 ] [ isn-destination-address >hex-pad8 ] bi append
-
+    [ read-memory-value ] keep ! value cog
+    [ drop isn-source-address >hex-pad3 ] 2keep ! hex value cog
+    [ " " append ] 2dip ! hex value cog
+    [ source-value >hex-pad8 append ] 2keep ! "xxx xxxxxxxx" value cog
+    [ "  " append ] 2dip ! "xxx xxxxxxxx  " value cog
+    [ drop isn-destination-address >hex-pad3 ] 2keep ! "xxx xxxxxxxx  xxx" value cog
+    [ append ] 2dip
+    [ " " append ] 2dip ! "xxx xxxxxxxx  xxx " value cog
+    destination-value >hex-pad8 append 
 ;
 
 
