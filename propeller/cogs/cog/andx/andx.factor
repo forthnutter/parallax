@@ -10,7 +10,7 @@ IN: parallax.propeller.cogs.cog.andx
 ! andx is used as a dependancey
 ! for the io section of each cog
 ! it is here to OR in comming data to the current value
-TUPLE: andx < model ;
+TUPLE: andx < model previous ;
 
 ! generics for read and write
 GENERIC: and-read ( andx -- d )
@@ -28,10 +28,12 @@ M: andx and-write
 
 ! a change is applied by external routine
 M: andx model-changed
-    [ drop ] dip
-    [ -1 ] dip
-    [ dependencies>> ] keep
-    [ [ value>> bitand ] each ] dip
+    break
+    [
+        [ model-value ] dip
+        [ model-value ] keep
+        [ bitand ] dip
+    ]
     set-model ;  ! this will change obsevers
 
 ! function add a model to orx input to or
@@ -43,4 +45,6 @@ M: andx model-changed
 
 ! init this object 
 : <andx> ( value -- andx )
-   andx new-model ;
+    dup
+    andx new-model
+    [ previous<< ] keep ;

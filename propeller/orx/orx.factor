@@ -28,12 +28,11 @@ M: orx or-write
 
 ! a change is applied by external routine
 M: orx model-changed
-    [ drop ] dip
-    [ 0 ] dip
-    [ dependencies>> ] keep
-    [ [ value>> bitor ] each ] dip
-    set-model
-    ;  ! this will change obsevers
+    break
+    [ model-value ] dip
+    [ model-value ] keep
+    [ bitor ] dip
+    set-model ;
 
 ! add an observer to the orx
 : orx-add-connection ( observer orx -- )
