@@ -109,7 +109,9 @@ CONSTANT: VSCL_ADDRESS 511  ! 0x1ff
 
 TUPLE: cog n pc pcold alu z c memory state isn fisn
     source dest result bp wstate gateone gatetwo
-    gatethree gatefour labels hashmneu porta portb orio andio orout orddr ;
+    gatethree gatefour labels hashmneu ! porta portb
+    oraio orbio andaio andbio oraout orbout
+    orddra orddrb ;
 
 
 
@@ -1064,20 +1066,24 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     new swap >>n        ! allocate memory save the number of cog
     cog-mem-setup >>memory  ! initialise memory componnet
     <alu> >>alu               ! alu is a seperate class
-    0 <orx> >>orio          ! OR the Outputs
-    0 <orx> >>orout         ! this is used to or the previous cog out with this one
-    0 <andx> >>andio        ! mainly ors the ddr with orio
-    0 <orx> >>orddr         ! or all previous cog ddr with this ddr
+    0 <orx> >>oraio          ! OR the Outputs
+    0 <orx> >>orbio
+    0 <orx> >>oraout         ! this is used to or the previous cog out with this one
+    0 <andx> >>andaio        ! mainly ors the ddr with orio
+    0 <andx> >>andbio
+    0 <orx> >>orddra         ! or all previous cog ddr with this ddr
+    0 <orx> >>orddrb
     [ cog-reset ] keep  ! cog is in reset state
     cog-mnuemonic >>hashmneu
     COG_HUB_GO >>wstate ! need to know if the cog is waiting for hub
     V{ } clone >>bp     ! break points
     cog-default-labels >>labels
-    [ [ orio>> ] keep outa-add-connection ] keep    ! make orio observer of outa memory
-    [ [ orio>> ] keep outb-add-connection ] keep    ! make orio observer of outb memory
-    [ [ andio>> ] keep ddra-add-connection ] keep   ! make andio the obsever of ddra memory
-    [ [ andio>> ] keep ddrb-add-connection ] keep   ! make andio the obsever of ddrb memory
-    [ [ orddr>> ] keep ddrb-add-connection ] keep   ! make orddr the obsever of ddr memory
+    [ [ oraio>> ] keep outa-add-connection ] keep    ! make orio observer of outa memory
+    [ [ orbio>> ] keep outb-add-connection ] keep    ! make orio observer of outb memory
+    [ [ andaio>> andx-anda ] keep ddra-add-connection ] keep   ! make andio the obsever of ddra memory
+    [ [ andbio>> andx-anda ] keep ddrb-add-connection ] keep   ! make andio the obsever of ddrb memory
+    [ [ orddra>> ] keep ddra-add-connection ] keep   ! make orddr the obsever of ddr memory
+    [ [ orddrb>> ] keep ddrb-add-connection ] keep
     [ [ 0 <vcfgx> ] dip vcfg-add-connection ] keep 
     [ [ 0 <vsclx> ] dip vscl-add-connection ] keep
     [ [ 0 <ctrx> ] dip ctra-add-connection ] keep
@@ -1086,8 +1092,9 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ [ 0 <frqx> ] dip frqb-add-connection ] keep
     [ [ 0 <phsx> ] dip phsa-add-connection ] keep
     [ [ 0 <phsx> ] dip phsb-add-connection ] keep
-    [ [ andio>> ] [ orio>> ] bi add-connection ] keep   ! andio is the obsever of orio
-    [ [ orout>> ] [ andio>> ] bi add-connection ] keep ! orout is the obsever of andio
+    [ [ andaio>> ] [ oraio>> ] bi add-connection ] keep   ! andio is the obsever of orio
+    [ [ andbio>> ] [ orbio>> ] bi add-connection ] keep
+    [ [ oraout>> ] [ andaio>> ] bi add-connection ] keep ! orout is the obsever of andio
 ;
 
 ! create a cog and state is inactive

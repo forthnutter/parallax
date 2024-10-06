@@ -10,21 +10,8 @@ IN: parallax.propeller.orx
 ! orx is used as a dependancey
 ! for the io section of each cog
 ! it is here to OR in comming data to the current value
-TUPLE: orx < model ;
+TUPLE: orx < model previous ;
 
-! generics for read and write
-GENERIC: or-read ( orx -- d )
-GENERIC: or-write ( d orx -- )
-
-
-! Just read the value
-M: orx or-read
-   value>> ;
-
-! lets write
-M: orx or-write
-    [ or-read bitor ] keep
-   set-model ;
 
 ! a change is applied by external routine
 M: orx model-changed
@@ -40,4 +27,6 @@ M: orx model-changed
 
 ! init this object 
 : <orx> ( value -- model )
-   orx new-model ;
+    dup
+    orx new-model 
+    [ previous<< ] keep ;

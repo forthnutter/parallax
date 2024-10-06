@@ -160,10 +160,10 @@ M: logoutx model-changed
 
 
 : get-orout-model ( n cogs -- model )
-    cog-array>> nth orout>> ;
+    cog-array>> nth oraout>> ;
 
 : get-orddr-model ( n cogs -- model )
-    cog-array>> nth orddr>> ;
+    cog-array>> nth orddra>> ;
 
 
 : out-link ( cogs -- cogs )
