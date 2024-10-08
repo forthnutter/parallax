@@ -10,16 +10,16 @@ IN: parallax.propeller.cogs.cog.andx
 ! andx is used as a dependancey
 ! for the io section of each cog
 ! it is here to OR in comming data to the current value
-TUPLE: andx < model anda andb ;
+TUPLE: andx < model ip-vector anda andb ;
 
 
-TUPLE: andix < model ;
+TUPLE: and-input < model ;
 
 
-: <andix> ( value -- andix )
-    andix new-model ;
+: <and-input> ( value -- andix )
+    and-input new-model ;
 
-M: andix model-changed
+M: and-input model-changed
     break
     [ model-value ] dip 
     ?set-model ;
@@ -28,7 +28,11 @@ M: andix model-changed
 M: andx model-changed
     break
     [ drop ] dip
-    [ [ anda>> model-value ] [ andb>> model-value ] bi ] keep
+    [ ip-vector>> ] keep swap
+    [ ?second ] keep swap
+    [
+
+    ]
     [ bitand ] dip
     set-model
 ;
@@ -39,12 +43,20 @@ M: andx model-changed
 : andx-andb ( andx -- andb )
     andb>> ;
 
+: andx-add-input ( model andx -- )
+    [ swap add-connection ] 2keep           ! make andx an observer of the model
+    ip-vector>> push ;
+
+: andx-input ( andx -- andx-input )
+    0 <and-input> swap [ dup ] dip andx-add-input ;
+
 
 ! init this object 
 : <andx> ( value -- andx )
-    break
+    ! break
     andx new-model
-    0 <andix> >>anda
+    V{ } clone >>ip-vector
+    0 <and-input> >>anda
     [ [ anda>> ] keep swap add-connection ] keep
-    0 <andix> >>andb 
+    0 <and-input> >>andb 
     [ [ andb>> ] keep swap add-connection ] keep ;
