@@ -2,7 +2,7 @@
 ! See http://factorcode.org/license.txt for BSD license.
 
 
-USING: accessors arrays kernel sequences math models
+USING: accessors arrays combinators kernel sequences math models
    vectors tools.continuations ;
 
 IN: parallax.propeller.cogs.cog.andx
@@ -22,19 +22,25 @@ TUPLE: and-input < model ;
 M: and-input model-changed
     break
     [ model-value ] dip 
-    ?set-model ;
+    set-model ;
 
 ! a change is applied by external routine
 M: andx model-changed
     break
-    [ drop ] dip
-    [ ip-vector>> ] keep swap
-    [ ?second ] keep swap
-    [
-
-    ]
-    [ bitand ] dip
-    set-model
+    [ ip-vector>> length ] keep swap     ! find if we have nothing
+    {
+      { [ 0 = ] [ [ model-value ] dip set-model ] }
+      [  ]
+      ! { [  1 = ] [  ] }
+        ! [
+        !    [ ip-vector>> -1 swap ] keep swap [ swap ] dip
+        !    [
+        !        model-value       
+        !        bitand
+        !    ] each
+        ! ]
+    } cond 
+    ! set-model
 ;
 
 : andx-anda ( andx -- anda )
