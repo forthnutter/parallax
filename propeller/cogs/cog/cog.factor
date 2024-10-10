@@ -1080,8 +1080,8 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     cog-default-labels >>labels
     [ [ oraio>> ] keep outa-add-connection ] keep    ! make orio observer of outa memory
     [ [ orbio>> ] keep outb-add-connection ] keep    ! make orio observer of outb memory
-    [ [ andaio>> andx-input ] keep ddra-add-connection ] keep   ! make andio the obsever of ddra memory
-    [ [ andbio>> andx-input ] keep ddrb-add-connection ] keep   ! make andio the obsever of ddrb memory
+    [ [ andaio>> ] keep ddra-add-connection ] keep   ! make andio the obsever of ddra memory
+    [ [ andbio>>  ] keep ddrb-add-connection ] keep   ! make andio the obsever of ddrb memory
     [ [ orddra>> ] keep ddra-add-connection ] keep   ! make orddr the obsever of ddr memory
     [ [ orddrb>> ] keep ddrb-add-connection ] keep
     [ [ 0 <vcfgx> ] dip vcfg-add-connection ] keep 
@@ -1092,8 +1092,8 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ [ 0 <frqx> ] dip frqb-add-connection ] keep
     [ [ 0 <phsx> ] dip phsa-add-connection ] keep
     [ [ 0 <phsx> ] dip phsb-add-connection ] keep
-    [ [ andaio>> andx-input ] [ oraio>> ] bi add-connection ] keep   ! andio is the obsever of orio
-    [ [ andbio>> andx-input ] [ orbio>> ] bi add-connection ] keep
+    [ [ andaio>> ] [ oraio>> ] bi add-connection ] keep   ! andio is the obsever of orio
+    [ [ andbio>> ] [ orbio>> ] bi add-connection ] keep
     [ [ oraout>> ] [ andaio>> ] bi add-connection ] keep ! orout is the obsever of andio
 ;
 
