@@ -148,6 +148,9 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : outa-add-connection ( observer cog -- )
     outa-model add-connection ;
 
+: outa-add-dependency ( dep cog -- )
+    outa-model add-dependency ;
+
 ! get the cog outb model
 : outb-model ( cog -- model )
     [ OUTB_ADDRESS ] dip read-memory-model ;
@@ -1078,7 +1081,9 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     COG_HUB_GO >>wstate ! need to know if the cog is waiting for hub
     V{ } clone >>bp     ! break points
     cog-default-labels >>labels
-    [ [ oraio>> ] keep outa-add-connection ] keep    ! make orio observer of outa memory
+
+    ! [ [ oraio>> ] keep outa-add-connection ] keep    ! make orio observer of outa memory
+    [ [ outa-model ] keep  oraio>> orx-add-dependency ] keep
     [ [ orbio>> ] keep outb-add-connection ] keep    ! make orio observer of outb memory
     [ [ andaio>> ] keep ddra-add-connection ] keep   ! make andio the obsever of ddra memory
     [ [ andbio>>  ] keep ddrb-add-connection ] keep   ! make andio the obsever of ddrb memory
@@ -1092,9 +1097,11 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ [ 0 <frqx> ] dip frqb-add-connection ] keep
     [ [ 0 <phsx> ] dip phsa-add-connection ] keep
     [ [ 0 <phsx> ] dip phsb-add-connection ] keep
-    [ [ andaio>> ] [ oraio>> ] bi add-connection ] keep   ! andio is the obsever of orio
+
     [ [ andbio>> ] [ orbio>> ] bi add-connection ] keep
     [ [ oraout>> ] [ andaio>> ] bi add-connection ] keep ! orout is the obsever of andio
+    [ oraio>> activate-model ] keep
+    [ [ andaio>> ] [ oraio>> ] bi add-connection ] keep   ! andio is the obsever of orio
 ;
 
 ! create a cog and state is inactive

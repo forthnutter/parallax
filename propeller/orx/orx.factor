@@ -12,21 +12,39 @@ IN: parallax.propeller.orx
 ! it is here to OR in comming data to the current value
 TUPLE: orx < model hold input ;
 
+: orx-dependecy ( orx -- )
+    [ dependencies>> length 1 = ] keep swap
+    [
+        [ hold>> ] keep
+        [
+            dependencies>>
+            [
+                model-value bitor
+            ] each
+        ] keep set-model
+    ]
+    [ drop ] if ;
+
 
 ! a change is applied by external routine
 M: orx model-changed
     break
-    [ model-value dup ] dip ! value value obsev 
-    [ hold>> ] keep         ! value value hold obsev
-    [ bitor ] dip           ! value or obsev
-    [ swap ] dip            ! or value observ
-    [ hold<< ] keep         ! or observ
-    set-model ;
+    [ dependencies>> length 0 = ] keep swap
+    [ drop drop ]
+    [
+        [ drop ] dip
+        [ hold>> ] keep
+        [ dependencies>> [ model-value bitor ] each ] keep
+        set-model
+     ] if ;
 
 ! add an observer to the orx
 : orx-add-connection ( observer orx -- )
-    [ input>> push ] 2keep
     add-connection ;
+
+: orx-add-dependency ( dep orx -- )
+    [ input>> push ] 2keep
+    add-dependency ;
 
 ! init this object 
 : <orx> ( value -- model )
