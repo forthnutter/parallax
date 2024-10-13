@@ -10,27 +10,18 @@ IN: parallax.propeller.orx
 ! orx is used as a dependancey
 ! for the io section of each cog
 ! it is here to OR in comming data to the current value
-TUPLE: orx < model hold input ;
-
-: orx-dependecy ( orx -- )
-    [ dependencies>> length 1 = ] keep swap
-    [
-        [ hold>> ] keep
-        [
-            dependencies>>
-            [
-                model-value bitor
-            ] each
-        ] keep set-model
-    ]
-    [ drop ] if ;
-
+TUPLE: orx < model hold ;
 
 ! a change is applied by external routine
 M: orx model-changed
     break
     [ dependencies>> length 0 = ] keep swap
-    [ drop drop ]
+    [
+        [ model-value ] dip
+        [ hold>> ] keep
+        [ bitor ] dip
+        set-model
+    ]
     [
         [ drop ] dip
         [ hold>> ] keep
@@ -43,11 +34,9 @@ M: orx model-changed
     add-connection ;
 
 : orx-add-dependency ( dep orx -- )
-    [ input>> push ] 2keep
     add-dependency ;
 
 ! init this object 
 : <orx> ( value -- model )
     orx new-model 
-    0 >>hold 
-    V{ } clone >>input ;
+    0 >>hold ;

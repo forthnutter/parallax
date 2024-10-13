@@ -7,6 +7,11 @@ IN: parallax.propeller.cogs.cog.frqx
 
 TUPLE: frqx < model ;
 
-: <frqx> ( value -- par )
+
+: frqx-add-dependency ( dep frqx -- )
+    add-dependency ;
+
+
+: <frqx> ( value -- frqx )
    frqx new-model ;
 

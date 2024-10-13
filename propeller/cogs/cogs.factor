@@ -42,15 +42,6 @@ M: logoutx model-changed
     <cog>
   ] map-index ;
 
-! create an instance of 8 cogs with ports
-: cogs-array-port ( cogs -- )
-    break
-    cog-array>>
-    [
-        drop
-        
-    ] each ;
-
 ! go through all cogs and
 ! do a complete step to the next instrcution
 : cogs-step-cycle ( cogs -- )
@@ -163,27 +154,29 @@ M: logoutx model-changed
     cog-array>> nth oraout>> ;
 
 : get-orddr-model ( n cogs -- model )
-    cog-array>> nth orddra>> ;
+    cog-array>> nth oraddr>> ;
 
 
 : out-link ( cogs -- cogs )
-    [ [ 1 swap get-orout-model ] [ 0 swap get-orout-model ] bi add-connection ] keep
-    [ [ 2 swap get-orout-model ] [ 1 swap get-orout-model ] bi add-connection ] keep
-    [ [ 3 swap get-orout-model ] [ 2 swap get-orout-model ] bi add-connection ] keep
-    [ [ 4 swap get-orout-model ] [ 3 swap get-orout-model ] bi add-connection ] keep
-    [ [ 5 swap get-orout-model ] [ 4 swap get-orout-model ] bi add-connection ] keep
-    [ [ 6 swap get-orout-model ] [ 5 swap get-orout-model ] bi add-connection ] keep
-    [ [ 7 swap get-orout-model ] [ 6 swap get-orout-model ] bi add-connection ] keep
+    [ [ 1 swap get-orout-model ] [ 0 swap get-orout-model ] bi add-dependency ] keep
+    [ [ 2 swap get-orout-model ] [ 1 swap get-orout-model ] bi add-dependency ] keep
+    [ [ 3 swap get-orout-model ] [ 2 swap get-orout-model ] bi add-dependency ] keep
+    [ [ 4 swap get-orout-model ] [ 3 swap get-orout-model ] bi add-dependency ] keep
+    [ [ 5 swap get-orout-model ] [ 4 swap get-orout-model ] bi add-dependency ] keep
+    [ [ 6 swap get-orout-model ] [ 5 swap get-orout-model ] bi add-dependency ] keep
+    [ [ 7 swap get-orout-model ] [ 6 swap get-orout-model ] bi add-dependency ] keep
+    [ 7 swap get-orout-model activate-model ] keep
 ;
 
 : ddr-link ( cogs -- cogs )
-    [ [ 1 swap get-orddr-model ] [ 0 swap get-orddr-model ] bi add-connection ] keep
-    [ [ 2 swap get-orddr-model ] [ 1 swap get-orddr-model ] bi add-connection ] keep
-    [ [ 3 swap get-orddr-model ] [ 2 swap get-orddr-model ] bi add-connection ] keep
-    [ [ 4 swap get-orddr-model ] [ 3 swap get-orddr-model ] bi add-connection ] keep
-    [ [ 5 swap get-orddr-model ] [ 4 swap get-orddr-model ] bi add-connection ] keep
-    [ [ 6 swap get-orddr-model ] [ 5 swap get-orddr-model ] bi add-connection ] keep
-    [ [ 7 swap get-orddr-model ] [ 6 swap get-orddr-model ] bi add-connection ] keep           
+    [ [ 1 swap get-orddr-model ] [ 0 swap get-orddr-model ] bi add-dependency ] keep
+    [ [ 2 swap get-orddr-model ] [ 1 swap get-orddr-model ] bi add-dependency ] keep
+    [ [ 3 swap get-orddr-model ] [ 2 swap get-orddr-model ] bi add-dependency ] keep
+    [ [ 4 swap get-orddr-model ] [ 3 swap get-orddr-model ] bi add-dependency ] keep
+    [ [ 5 swap get-orddr-model ] [ 4 swap get-orddr-model ] bi add-dependency ] keep
+    [ [ 6 swap get-orddr-model ] [ 5 swap get-orddr-model ] bi add-dependency ] keep
+    [ [ 7 swap get-orddr-model ] [ 6 swap get-orddr-model ] bi add-dependency ] keep
+    [ 7 swap get-orddr-model activate-model ] keep
 ;
 
 : cogs-dump ( address cogn cogs -- vector )

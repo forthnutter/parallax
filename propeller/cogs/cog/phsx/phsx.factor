@@ -7,6 +7,10 @@ IN: parallax.propeller.cogs.cog.phsx
 
 TUPLE: phsx < model ;
 
+
+: phsx-add-dependency ( dep phsx -- )
+    add-dependency ;
+
 : <phsx> ( value -- phsx )
    phsx new-model ;
 

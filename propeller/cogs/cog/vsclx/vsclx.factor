@@ -8,6 +8,8 @@ IN: parallax.propeller.cogs.cog.vsclx
 TUPLE: vsclx < model ;
 
 
+: vsclx-add-dependency ( dep vscl -- )
+    add-dependency ;
 
 : <vsclx> ( value -- vscl )
    vsclx new-model ;

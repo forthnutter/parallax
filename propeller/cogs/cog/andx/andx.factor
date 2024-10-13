@@ -18,21 +18,33 @@ TUPLE: andx < model hold ;
 ! a change is applied by external routine
 M: andx model-changed
     break
-    [ model-value dup ] dip ! value Value observ
-    [ hold>> ] keep       ! value value hold observ
-    [ bitand ] dip      ! value result obsev
-    [ swap ] dip        ! result value obsev
-    [ hold<< ] keep     ! result obser
-    set-model
+    [ dependencies>> length 0 = ] keep swap
+    [
+        [ model-value ] dip
+        [ hold>> ] keep
+        [ bitand ] dip
+        set-model
+    ]
+    [
+        [ drop ] dip
+        [ hold>> ] keep
+        [ dependencies>> [ model-value bitand ] each ] keep
+        set-model
+    ] if
 ;
 
 
+! add an observer to the andx
+: andx-add-connection ( observer andx -- )
+    add-connection ;
 
+: andx-add-dependency ( dep andx -- )
+    add-dependency ;
 
 
 ! init this object 
 : <andx> ( value -- andx )
     ! break
     andx new-model
-    0 >>hold
+    -1 >>hold
 ;

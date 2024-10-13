@@ -111,7 +111,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     source dest result bp wstate gateone gatetwo
     gatethree gatefour labels hashmneu ! porta portb
     oraio orbio andaio andbio oraout orbout
-    orddra orddrb ;
+    oraddr orbddr vcfg vscl ctra ctrb frqa frqb phsa phsb ;
 
 
 
@@ -144,10 +144,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : outa-model ( cog -- model )
     [ OUTA_ADDRESS ] dip read-memory-model ;
 
-! add an observer for outa
-: outa-add-connection ( observer cog -- )
-    outa-model add-connection ;
-
 : outa-add-dependency ( dep cog -- )
     outa-model add-dependency ;
 
@@ -155,92 +151,45 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : outb-model ( cog -- model )
     [ OUTB_ADDRESS ] dip read-memory-model ;
 
-! add an observer to outb
-: outb-add-connection ( observer cog -- )
-    outb-model add-connection ;
-
 ! get the cog ddra model
 : ddra-model ( cog -- model )
     [ DDRA_ADDRESS ] dip read-memory-model ;
-
-! add an observer for ddra
-: ddra-add-connection ( observer cog -- )
-    ddra-model add-connection ;
 
 ! get the cog ddrb model
 : ddrb-model ( cog -- model )
     [ DDRB_ADDRESS ] dip read-memory-model ;
 
-! add an observer to ddrb
-: ddrb-add-connection ( observer cog -- )
-    ddrb-model add-connection ;
-
-
 ! get the cog vscl model from memory
 : vscl-model ( cog -- model )
     [ VSCL_ADDRESS ] dip read-memory-model ;
-
-! add an observer to vscl cog memory
-: vscl-add-connection ( observer cog -- )
-    vscl-model add-connection ;
 
 ! get the cog vcfg model from memory
 : vcfg-model ( cog -- model )
     [ VCFG_ADDRESS ] dip read-memory-model ;
 
-! add an observer to vcfg cog memory
-: vcfg-add-connection ( observer cog -- )
-    vcfg-model add-connection ;
-
 ! get the cog ctra model from memory
 : ctra-model ( cog -- model )
     [ CTRA_ADDRESS ] dip read-memory-model ;
-
-! add an observer to ctra cog memory
-: ctra-add-connection ( observer cog -- )
-    ctra-model add-connection ;
 
 ! get the cog ctrb model from memory
 : ctrb-model ( cog -- model )
     [ CTRB_ADDRESS ] dip read-memory-model ;
 
-! add an observer to ctrb cog memory
-: ctrb-add-connection ( observer cog -- )
-    ctrb-model add-connection ;
-
-
 ! get the cog frqa model from memory
 : frqa-model ( cog -- model )
     [ FRQA_ADDRESS ] dip read-memory-model ;
-
-! add an observer to frqa cog memory
-: frqa-add-connection ( observer cog -- )
-    frqa-model add-connection ;
 
 ! get the cog frqb model from memory
 : frqb-model ( cog -- model )
     [ FRQB_ADDRESS ] dip read-memory-model ;
 
-! add an observer to frqb cog memory
-: frqb-add-connection ( observer cog -- )
-    frqb-model add-connection ;
-
 ! get the cog phsa model from memory
 : phsa-model ( cog -- model )
     [ PHSA_ADDRESS ] dip read-memory-model ;
 
-! add an observer to phsa cog memory
-: phsa-add-connection ( observer cog -- )
-    phsa-model add-connection ;
-
 ! get the cog phsb model from memory
 : phsb-model ( cog -- model )
     [ PHSB_ADDRESS ] dip read-memory-model ;
-
-! add an observer to phsb cog memory
-: phsb-add-connection ( observer cog -- )
-    phsb-model add-connection ;
-
 
 
 ! Build the cog memory
@@ -1072,36 +1021,57 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     0 <orx> >>oraio          ! OR the Outputs
     0 <orx> >>orbio
     0 <orx> >>oraout         ! this is used to or the previous cog out with this one
+    0 <orx> >>orbout
     0 <andx> >>andaio        ! mainly ors the ddr with orio
     0 <andx> >>andbio
-    0 <orx> >>orddra         ! or all previous cog ddr with this ddr
-    0 <orx> >>orddrb
+    0 <orx> >>oraddr         ! or all previous cog ddr with this ddr
+    0 <orx> >>orbddr
+    0 <vcfgx> >>vcfg
+    0 <vsclx> >>vscl
+    0 <ctrx> >>ctra
+    0 <ctrx> >>ctrb
+    0 <frqx> >>frqa
+    0 <frqx> >>frqb
+    0 <phsx> >>phsa
+    0 <phsx> >>phsb
+
     [ cog-reset ] keep  ! cog is in reset state
     cog-mnuemonic >>hashmneu
     COG_HUB_GO >>wstate ! need to know if the cog is waiting for hub
     V{ } clone >>bp     ! break points
     cog-default-labels >>labels
 
-    ! [ [ oraio>> ] keep outa-add-connection ] keep    ! make orio observer of outa memory
-    [ [ outa-model ] keep  oraio>> orx-add-dependency ] keep
-    [ [ orbio>> ] keep outb-add-connection ] keep    ! make orio observer of outb memory
-    [ [ andaio>> ] keep ddra-add-connection ] keep   ! make andio the obsever of ddra memory
-    [ [ andbio>>  ] keep ddrb-add-connection ] keep   ! make andio the obsever of ddrb memory
-    [ [ orddra>> ] keep ddra-add-connection ] keep   ! make orddr the obsever of ddr memory
-    [ [ orddrb>> ] keep ddrb-add-connection ] keep
-    [ [ 0 <vcfgx> ] dip vcfg-add-connection ] keep 
-    [ [ 0 <vsclx> ] dip vscl-add-connection ] keep
-    [ [ 0 <ctrx> ] dip ctra-add-connection ] keep
-    [ [ 0 <ctrx> ] dip ctrb-add-connection ] keep
-    [ [ 0 <frqx> ] dip frqa-add-connection ] keep
-    [ [ 0 <frqx> ] dip frqb-add-connection ] keep
-    [ [ 0 <phsx> ] dip phsa-add-connection ] keep
-    [ [ 0 <phsx> ] dip phsb-add-connection ] keep
+    [ [ outa-model ] keep oraio>> orx-add-dependency ] keep
+    [ [ outb-model ] keep orbio>> orx-add-dependency ] keep    ! make orio observer of outb memory
+    [ [ vcfg-model ] keep vcfg>>  vcfgx-add-dependency ] keep
+    [ [ vcfg>>     ] keep oraio>> orx-add-dependency ] keep
+    [ [ vscl-model ] keep vscl>>  vsclx-add-dependency ] keep
+    [ [ vscl>>     ] keep oraio>> orx-add-dependency ] keep
+    [ [ ctra-model ] keep ctra>>  ctrx-add-dependency ] keep
+    [ [ ctra>>     ] keep oraio>> orx-add-dependency ] keep
+    [ [ ctrb-model ] keep ctrb>>  ctrx-add-dependency ] keep
+    [ [ ctrb>>     ] keep orbio>> orx-add-dependency ] keep
+    [ [ frqa-model ] keep frqa>>  frqx-add-dependency ] keep
+    [ [ frqa>>     ] keep oraio>> orx-add-dependency ] keep
+    [ [ frqb-model ] keep frqb>>  frqx-add-dependency ] keep
+    [ [ frqb>>     ] keep orbio>> orx-add-dependency ] keep    
+    [ [ phsa-model ] keep phsa>>  phsx-add-dependency ] keep
+    [ [ phsa>>     ] keep oraio>> orx-add-dependency ] keep
+    [ [ phsb-model ] keep phsb>>  frqx-add-dependency ] keep
+    [ [ phsb>>     ] keep orbio>> orx-add-dependency ] keep     
 
-    [ [ andbio>> ] [ orbio>> ] bi add-connection ] keep
-    [ [ oraout>> ] [ andaio>> ] bi add-connection ] keep ! orout is the obsever of andio
-    [ oraio>> activate-model ] keep
-    [ [ andaio>> ] [ oraio>> ] bi add-connection ] keep   ! andio is the obsever of orio
+    [ [ oraio>> ] keep andaio>> andx-add-dependency ] keep
+    [ [ orbio>> ] keep andbio>> andx-add-dependency ] keep
+    [ [ ddra-model ] keep andaio>> andx-add-dependency ] keep
+    [ [ ddrb-model ] keep andbio>> andx-add-dependency ] keep
+    [ [ andaio>> ] keep oraout>> orx-add-dependency ] keep
+    [ [ andbio>> ] keep orbout>> orx-add-dependency ] keep
+    [ [ ddra-model ] keep oraddr>> orx-add-dependency ] keep
+    [ [ ddrb-model ] keep orbddr>> orx-add-dependency ] keep
+
+!    break
+!    [ oraout>> activate-model ] keep
+!    [ oraddr>> activate-model ] keep
 ;
 
 ! create a cog and state is inactive

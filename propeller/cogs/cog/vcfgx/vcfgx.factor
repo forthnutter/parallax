@@ -9,7 +9,8 @@ TUPLE: vcfgx < model ;
 
 
 
-
+: vcfgx-add-dependency ( dep vcfg -- )
+    add-dependency ;
 
 ! vcfg is basically a model
 : <vcfgx> ( value -- par )

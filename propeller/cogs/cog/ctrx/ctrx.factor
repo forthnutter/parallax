@@ -9,14 +9,11 @@ TUPLE: ctrx < model ;
 
 
 
-M: ctrx model-changed
-   break drop drop ;
-
-: ctrx-dependency ( dep ctrx -- )
+: ctrx-add-dependency ( dep ctrx -- )
     add-dependency ;
 
 
-: <ctrx> ( value -- par )
+: <ctrx> ( value -- ctrx )
    ctrx new-model ;
 
 
