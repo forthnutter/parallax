@@ -15,15 +15,11 @@ CONSTANT: COGNUMBEROF 8
 
 
 
-CONSTANT: DDRA_ADDRESS 502
-CONSTANT: DDRB_ADDRESS 503
 
 
 TUPLE: logoutx < model vec ;
 
-TUPLE: cogs cog-array num-longs ina inb
-    logx
-;
+TUPLE: cogs cog-array num-longs ina inb logx ;
 
 
 : <logoutx> ( -- logoutx )
@@ -136,7 +132,8 @@ M: logoutx model-changed
         ! cogs cog
         [ [ ina>> ] keep swap ] dip ! cogs inx cog
         cog-ina-model swap  ! cogs model inx
-        inx-add-connection  ! cogs
+        ! inx-add-connection  ! cogs
+        inx-add-dependency
     ] each drop ;
 
 ! get cog inb memory and make it an observer of global INB
@@ -146,7 +143,8 @@ M: logoutx model-changed
         ! cogs cog
         [ [ inb>> ] keep swap ] dip ! cogs inx cog
         cog-inb-model swap  ! cogs model inx
-        inx-add-connection  ! cogs
+        ! inx-add-connection  ! cogs
+        inx-add-dependency
     ] each drop ;
 
 
@@ -165,7 +163,9 @@ M: logoutx model-changed
     [ [ 5 swap get-orout-model ] [ 4 swap get-orout-model ] bi add-dependency ] keep
     [ [ 6 swap get-orout-model ] [ 5 swap get-orout-model ] bi add-dependency ] keep
     [ [ 7 swap get-orout-model ] [ 6 swap get-orout-model ] bi add-dependency ] keep
-    [ 7 swap get-orout-model activate-model ] keep
+    [ [ 7 swap get-orout-model ] [ ina>> ] bi add-dependency ] keep
+    [ ina>> activate-model ] keep
+!    [ 7 swap get-orout-model activate-model ] keep
 ;
 
 : ddr-link ( cogs -- cogs )
@@ -176,6 +176,7 @@ M: logoutx model-changed
     [ [ 5 swap get-orddr-model ] [ 4 swap get-orddr-model ] bi add-dependency ] keep
     [ [ 6 swap get-orddr-model ] [ 5 swap get-orddr-model ] bi add-dependency ] keep
     [ [ 7 swap get-orddr-model ] [ 6 swap get-orddr-model ] bi add-dependency ] keep
+    [ [ inb>> ] [ 7 swap get-orddr-model ] bi add-dependency ] keep
     [ 7 swap get-orddr-model activate-model ] keep
 ;
 
@@ -191,7 +192,6 @@ M: logoutx model-changed
 
 ! builds up the array of cogs
 : <cogs> ( -- cogs )
-    break
     cogs new                      ! cog
     -1 <inx> >>ina
     -1 <inx> >>inb
@@ -200,6 +200,7 @@ M: logoutx model-changed
     4 >>num-longs ! this is the defult number of data longs to display
     [ cogs-ina-connect ] keep
     [ cogs-inb-connect ] keep
+    break
     out-link ddr-link
 
 ;

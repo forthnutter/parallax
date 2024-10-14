@@ -22,9 +22,5 @@ M: outx model-changed
    outx-write         ! send it out we may have others
 ;
 
-! add object to observe output
-: outx-add-connection ( observer outx -- )
-    add-connection ;
-
 : <outx> ( value -- out )
    0 outx new-model swap >>cogn ;

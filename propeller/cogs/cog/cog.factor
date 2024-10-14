@@ -1069,14 +1069,10 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ [ ddra-model ] keep oraddr>> orx-add-dependency ] keep
     [ [ ddrb-model ] keep orbddr>> orx-add-dependency ] keep
 
-!    break
-!    [ oraout>> activate-model ] keep
-!    [ oraddr>> activate-model ] keep
 ;
 
 ! create a cog and state is inactive
 : <cog> ( n -- cog )
-    break
     cog new-cog ! create the cog class
 ;
 

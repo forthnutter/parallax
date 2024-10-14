@@ -35,6 +35,8 @@ M: inx model-changed
     add-connection ;
 
 
+
+
 ! Sets the n th bit of inx to one
 : inx-set-bit ( inx n -- )
    [ dup value>> ] dip set-bit
@@ -54,6 +56,10 @@ M: inx model-changed
     [
         <model>
     ] map ;
+
+
+: inx-add-dependency ( dep inx -- )
+    add-dependency ;
 
 : <inx> ( value -- inp )
    inx new-model ;
