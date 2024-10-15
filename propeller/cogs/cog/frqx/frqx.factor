@@ -8,6 +8,9 @@ IN: parallax.propeller.cogs.cog.frqx
 TUPLE: frqx < model ;
 
 
+: frqx-add-connection ( observer frqx -- )
+    add-connection ;
+
 : frqx-add-dependency ( dep frqx -- )
     add-dependency ;
 

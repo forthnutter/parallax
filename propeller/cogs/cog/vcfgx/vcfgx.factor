@@ -8,6 +8,8 @@ IN: parallax.propeller.cogs.cog.vcfgx
 TUPLE: vcfgx < model ;
 
 
+: vcfgx-add-connection ( observer vcfgx -- )
+    add-connection ;
 
 : vcfgx-add-dependency ( dep vcfg -- )
     add-dependency ;

@@ -1034,31 +1034,30 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     0 <frqx> >>frqb
     0 <phsx> >>phsa
     0 <phsx> >>phsb
-
     [ cog-reset ] keep  ! cog is in reset state
     cog-mnuemonic >>hashmneu
     COG_HUB_GO >>wstate ! need to know if the cog is waiting for hub
     V{ } clone >>bp     ! break points
     cog-default-labels >>labels
-
-    [ [ outa-model ] keep oraio>> orx-add-dependency ] keep
-    [ [ outb-model ] keep orbio>> orx-add-dependency ] keep    ! make orio observer of outb memory
-    [ [ vcfg-model ] keep vcfg>>  vcfgx-add-dependency ] keep
-    [ [ vcfg>>     ] keep oraio>> orx-add-dependency ] keep
-    [ [ vscl-model ] keep vscl>>  vsclx-add-dependency ] keep
-    [ [ vscl>>     ] keep oraio>> orx-add-dependency ] keep
-    [ [ ctra-model ] keep ctra>>  ctrx-add-dependency ] keep
-    [ [ ctra>>     ] keep oraio>> orx-add-dependency ] keep
-    [ [ ctrb-model ] keep ctrb>>  ctrx-add-dependency ] keep
-    [ [ ctrb>>     ] keep orbio>> orx-add-dependency ] keep
-    [ [ frqa-model ] keep frqa>>  frqx-add-dependency ] keep
-    [ [ frqa>>     ] keep oraio>> orx-add-dependency ] keep
-    [ [ frqb-model ] keep frqb>>  frqx-add-dependency ] keep
-    [ [ frqb>>     ] keep orbio>> orx-add-dependency ] keep    
-    [ [ phsa-model ] keep phsa>>  phsx-add-dependency ] keep
-    [ [ phsa>>     ] keep oraio>> orx-add-dependency ] keep
-    [ [ phsb-model ] keep phsb>>  frqx-add-dependency ] keep
-    [ [ phsb>>     ] keep orbio>> orx-add-dependency ] keep     
+    break
+    [ [ oraio>> ] [ outa-model ] bi orx-add-connection   ] keep
+    [ [ orbio>> ] [ outb-model ] bi orx-add-connection   ] keep    ! make orio observer of outb memory
+    [ [ vcfg>>  ] [ vcfg-model ] bi vcfgx-add-connection ] keep
+    [ [ oraio>> ] [ vcfg>>     ] bi orx-add-connection   ] keep
+    [ [ vscl>>  ] [ vscl-model ] bi vsclx-add-connection ] keep
+    [ [ oraio>> ] [ vscl>>     ] bi orx-add-connection   ] keep
+    [ [ ctra>>  ] [ ctra-model ] bi ctrx-add-connection  ] keep
+    [ [ oraio>> ] [ ctra>>     ] bi orx-add-connection   ] keep
+    [ [ ctrb>>  ] [ ctrb-model ] bi ctrx-add-connection  ] keep
+    [ [ oraio>> ] [ ctrb>>     ] bi orx-add-connection   ] keep
+    [ [ frqa>>  ] [ frqa-model ] bi frqx-add-connection  ] keep
+    [ [ oraio>> ] [ frqa>>     ] bi orx-add-connection   ] keep
+    [ [ frqb>>  ] [ frqb-model ] bi frqx-add-connection  ] keep
+    [ [ orbio>> ] [ frqb>>     ] bi orx-add-connection   ] keep    
+    [ [ phsa>>  ] [ phsa-model ] bi phsx-add-connection  ] keep
+    [ [ oraio>> ] [ phsa>>     ] bi orx-add-connection   ] keep
+    [ [ phsb>>  ] [ phsb-model ] bi frqx-add-connection  ] keep
+    [ [ orbio>> ] [ phsb>>     ] bi orx-add-connection   ] keep     
 
     [ [ oraio>> ] keep andaio>> andx-add-dependency ] keep
     [ [ orbio>> ] keep andbio>> andx-add-dependency ] keep

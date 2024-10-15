@@ -200,7 +200,6 @@ M: logoutx model-changed
     4 >>num-longs ! this is the defult number of data longs to display
     [ cogs-ina-connect ] keep
     [ cogs-inb-connect ] keep
-    break
     out-link ddr-link
 
 ;

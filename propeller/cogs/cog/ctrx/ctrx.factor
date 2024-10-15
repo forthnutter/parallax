@@ -8,6 +8,8 @@ IN: parallax.propeller.cogs.cog.ctrx
 TUPLE: ctrx < model ;
 
 
+: ctrx-add-connection ( observer ctrx -- )
+    add-connection ;
 
 : ctrx-add-dependency ( dep ctrx -- )
     add-dependency ;

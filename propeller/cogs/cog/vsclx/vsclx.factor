@@ -8,6 +8,9 @@ IN: parallax.propeller.cogs.cog.vsclx
 TUPLE: vsclx < model ;
 
 
+: vsclx-add-connection ( obsever vsclx -- )
+    add-connection ;
+
 : vsclx-add-dependency ( dep vscl -- )
     add-dependency ;
 

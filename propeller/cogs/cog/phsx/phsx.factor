@@ -8,6 +8,9 @@ IN: parallax.propeller.cogs.cog.phsx
 TUPLE: phsx < model ;
 
 
+: phsx-add-connection ( observer phsx -- )
+    add-connection ;
+
 : phsx-add-dependency ( dep phsx -- )
     add-dependency ;
 
