@@ -3,6 +3,7 @@
 !
 USING:  accessors arrays assocs kernel sequences models vectors
         namespaces endian
+        parallax.propeller.cogs.cog.memory
         parallax.propeller.cogs.cog.par
         parallax.propeller.cogs.cog.cnt
         parallax.propeller.cogs.cog.frqx
@@ -196,7 +197,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-mem-setup ( -- vector )
   MEMORY_SIZE f <array>
   [
-    drop 0 <model> 
+    drop 0 <memory> 
   ] map >vector
 ;
 
@@ -1039,7 +1040,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     COG_HUB_GO >>wstate ! need to know if the cog is waiting for hub
     V{ } clone >>bp     ! break points
     cog-default-labels >>labels
-    break
     [ [ oraio>> ] [ outa-model ] bi orx-add-connection   ] keep
     [ [ orbio>> ] [ outb-model ] bi orx-add-connection   ] keep    ! make orio observer of outb memory
     [ [ vcfg>>  ] [ vcfg-model ] bi vcfgx-add-connection ] keep
@@ -1059,14 +1059,14 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ [ phsb>>  ] [ phsb-model ] bi frqx-add-connection  ] keep
     [ [ orbio>> ] [ phsb>>     ] bi orx-add-connection   ] keep     
 
-    [ [ oraio>> ] keep andaio>> andx-add-dependency ] keep
-    [ [ orbio>> ] keep andbio>> andx-add-dependency ] keep
-    [ [ ddra-model ] keep andaio>> andx-add-dependency ] keep
-    [ [ ddrb-model ] keep andbio>> andx-add-dependency ] keep
-    [ [ andaio>> ] keep oraout>> orx-add-dependency ] keep
-    [ [ andbio>> ] keep orbout>> orx-add-dependency ] keep
-    [ [ ddra-model ] keep oraddr>> orx-add-dependency ] keep
-    [ [ ddrb-model ] keep orbddr>> orx-add-dependency ] keep
+    [ [ andaio>> ] [ oraio>>    ] bi andx-add-connection  ] keep
+    [ [ andbio>> ] [ orbio>>    ] bi andx-add-connection  ] keep
+    [ [ andaio>> ] [ ddra-model ] bi andx-add-connection  ] keep
+    [ [ andbio>> ] [ ddrb-model ] bi andx-add-connection  ] keep
+    [ [ oraout>> ] [ andaio>>   ] bi orx-add-connection   ] keep
+    [ [ orbout>> ] [ andbio>>   ] bi orx-add-connection   ] keep
+    [ [ oraddr>> ] [ ddra-model ] bi orx-add-connection   ] keep
+    [ [ orbddr>> ] [ ddrb-model ] bi orx-add-connection   ] keep
 
 ;
 

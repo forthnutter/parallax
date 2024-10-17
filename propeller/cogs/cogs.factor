@@ -4,7 +4,8 @@
 USING: accessors arrays ascii combinators
      kernel parallax.propeller.cogs.cog
       math math.bitwise math.parser models
-       parallax.propeller.inx
+      parallax.propeller.inx
+      parallax.propeller.xin
       sequences tools.continuations vectors 
 ;
 
@@ -14,12 +15,9 @@ IN: parallax.propeller.cogs
 CONSTANT: COGNUMBEROF 8
 
 
-
-
-
 TUPLE: logoutx < model vec ;
 
-TUPLE: cogs cog-array num-longs ina inb logx ;
+TUPLE: cogs cog-array num-longs ina inb logx xina xinb ;
 
 
 : <logoutx> ( -- logoutx )
@@ -130,10 +128,9 @@ M: logoutx model-changed
     [ cog-array>> ] keep swap ! cogs array
     [
         ! cogs cog
-        [ [ ina>> ] keep swap ] dip ! cogs inx cog
-        cog-ina-model swap  ! cogs model inx
-        ! inx-add-connection  ! cogs
-        inx-add-dependency
+        cog-ina-model  over  ! cogs mem cogs
+        ina>>               ! cogs mem inx
+        inx-add-connection  ! cogs
     ] each drop ;
 
 ! get cog inb memory and make it an observer of global INB
@@ -141,10 +138,9 @@ M: logoutx model-changed
     [ cog-array>> ] keep swap   ! cogs array
     [
         ! cogs cog
-        [ [ inb>> ] keep swap ] dip ! cogs inx cog
-        cog-inb-model swap  ! cogs model inx
-        ! inx-add-connection  ! cogs
-        inx-add-dependency
+        cog-inb-model over  ! cogs mem cogs
+        inb>>               ! cogs mem inx
+        inx-add-connection  ! cogs
     ] each drop ;
 
 
@@ -156,29 +152,36 @@ M: logoutx model-changed
 
 
 : out-link ( cogs -- cogs )
-    [ [ 1 swap get-orout-model ] [ 0 swap get-orout-model ] bi add-dependency ] keep
-    [ [ 2 swap get-orout-model ] [ 1 swap get-orout-model ] bi add-dependency ] keep
-    [ [ 3 swap get-orout-model ] [ 2 swap get-orout-model ] bi add-dependency ] keep
-    [ [ 4 swap get-orout-model ] [ 3 swap get-orout-model ] bi add-dependency ] keep
-    [ [ 5 swap get-orout-model ] [ 4 swap get-orout-model ] bi add-dependency ] keep
-    [ [ 6 swap get-orout-model ] [ 5 swap get-orout-model ] bi add-dependency ] keep
-    [ [ 7 swap get-orout-model ] [ 6 swap get-orout-model ] bi add-dependency ] keep
-    [ [ 7 swap get-orout-model ] [ ina>> ] bi add-dependency ] keep
-    [ ina>> activate-model ] keep
+    [ [ 1 swap get-orout-model ] [ 0 swap get-orout-model ] bi add-connection ] keep
+    [ [ 2 swap get-orout-model ] [ 1 swap get-orout-model ] bi add-connection ] keep
+    [ [ 3 swap get-orout-model ] [ 2 swap get-orout-model ] bi add-connection ] keep
+    [ [ 4 swap get-orout-model ] [ 3 swap get-orout-model ] bi add-connection ] keep
+    [ [ 5 swap get-orout-model ] [ 4 swap get-orout-model ] bi add-connection ] keep
+    [ [ 6 swap get-orout-model ] [ 5 swap get-orout-model ] bi add-connection ] keep
+    [ [ 7 swap get-orout-model ] [ 6 swap get-orout-model ] bi add-connection ] keep
+!    [ [ 7 swap get-orout-model ] [ ina>> ] bi add-dependency ] keep
+!    [ ina>> activate-model ] keep
 !    [ 7 swap get-orout-model activate-model ] keep
 ;
 
 : ddr-link ( cogs -- cogs )
-    [ [ 1 swap get-orddr-model ] [ 0 swap get-orddr-model ] bi add-dependency ] keep
-    [ [ 2 swap get-orddr-model ] [ 1 swap get-orddr-model ] bi add-dependency ] keep
-    [ [ 3 swap get-orddr-model ] [ 2 swap get-orddr-model ] bi add-dependency ] keep
-    [ [ 4 swap get-orddr-model ] [ 3 swap get-orddr-model ] bi add-dependency ] keep
-    [ [ 5 swap get-orddr-model ] [ 4 swap get-orddr-model ] bi add-dependency ] keep
-    [ [ 6 swap get-orddr-model ] [ 5 swap get-orddr-model ] bi add-dependency ] keep
-    [ [ 7 swap get-orddr-model ] [ 6 swap get-orddr-model ] bi add-dependency ] keep
-    [ [ inb>> ] [ 7 swap get-orddr-model ] bi add-dependency ] keep
-    [ 7 swap get-orddr-model activate-model ] keep
+    [ [ 1 swap get-orddr-model ] [ 0 swap get-orddr-model ] bi add-connection ] keep
+    [ [ 2 swap get-orddr-model ] [ 1 swap get-orddr-model ] bi add-connection ] keep
+    [ [ 3 swap get-orddr-model ] [ 2 swap get-orddr-model ] bi add-connection ] keep
+    [ [ 4 swap get-orddr-model ] [ 3 swap get-orddr-model ] bi add-connection ] keep
+    [ [ 5 swap get-orddr-model ] [ 4 swap get-orddr-model ] bi add-connection ] keep
+    [ [ 6 swap get-orddr-model ] [ 5 swap get-orddr-model ] bi add-connection ] keep
+    [ [ 7 swap get-orddr-model ] [ 6 swap get-orddr-model ] bi add-connection ] keep
+!    [ [ inb>> ] [ 7 swap get-orddr-model ] bi add-dependency ] keep
+!    [ 7 swap get-orddr-model activate-model ] keep
 ;
+
+: out-ddr ( cogs -- cogs )
+    [ [ ina>> ] [ 7 swap get-orout-model ] [ 7 swap get-orddr-model ] tri 0 <xin> ] keep
+    [ xina<< ] keep
+    [ [ xina>> ] [ 7 swap get-orout-model ] bi add-connection ] keep
+    [ [ ina>> ] [ xina>> ] bi add-connection ] keep ;
+
 
 : cogs-dump ( address cogn cogs -- vector )
     [ 1 ] 3dip 
@@ -187,11 +190,12 @@ M: logoutx model-changed
 
 ! get the hex string of ina
 : ina-hex ( cogs -- hex )
-    ina>> in-read 32 bits >hex "0x" prepend ;
+    ina>> model-value 32 bits >hex "0x" prepend ;
 
 
 ! builds up the array of cogs
 : <cogs> ( -- cogs )
+    break
     cogs new                      ! cog
     -1 <inx> >>ina
     -1 <inx> >>inb
@@ -201,5 +205,5 @@ M: logoutx model-changed
     [ cogs-ina-connect ] keep
     [ cogs-inb-connect ] keep
     out-link ddr-link
-
+    out-ddr
 ;

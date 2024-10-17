@@ -13,43 +13,30 @@ CONSTANT: INXNUMBITS  32
 ! and lets combine model object
 TUPLE: inx < model bits ;
 
-! basic read of INX
-GENERIC: in-read ( inx -- d )
-GENERIC: in-write ( d inx -- )
-
-! Just read the value
-M: inx in-read
-   model-value ;
-
-! lets write
-M: inx in-write
-   set-model ;
 
 ! a change is applied by external routine
 M: inx model-changed
    break
-   in-write ;  ! this will change obsevers
-
+   [ model-value ] dip
+   set-model ;
+   
 ! add an observer to the inx
 : inx-add-connection ( observer inx -- )
     add-connection ;
 
-
-
-
 ! Sets the n th bit of inx to one
 : inx-set-bit ( inx n -- )
    [ dup value>> ] dip set-bit
-   swap in-write ;
+   swap set-model ;
 
 ! Sets the n th bit of inx to zero 
 : inx-clear-bit ( inx n -- )
    [ dup value>> ] dip clear-bit
-   swap in-write ;
+   swap set-model ;
 
 ! return inx into binary string
 : inx>bin ( inx -- str )
-   in-read >bin 32 CHAR: 0 pad-head ;
+   model-value >bin 32 CHAR: 0 pad-head ;
 
 : <inx-bits> ( n -- vb )
     f <array>

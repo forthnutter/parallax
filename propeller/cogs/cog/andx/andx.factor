@@ -10,15 +10,15 @@ IN: parallax.propeller.cogs.cog.andx
 ! andx is used as a dependancey
 ! for the io section of each cog
 ! it is here to OR in comming data to the current value
-TUPLE: andx < model hold ;
+TUPLE: andx < model hold vector ;
 
 
 
 
 ! a change is applied by external routine
 M: andx model-changed
-    break
-    [ dependencies>> length 0 = ] keep swap
+    ! break
+    [ vector>> length 0 = ] keep swap
     [
         [ model-value ] dip
         [ hold>> ] keep
@@ -28,7 +28,7 @@ M: andx model-changed
     [
         [ drop ] dip
         [ hold>> ] keep
-        [ dependencies>> [ model-value bitand ] each ] keep
+        [ vector>> [ model-value bitand ] each ] keep
         set-model
     ] if
 ;
@@ -36,6 +36,7 @@ M: andx model-changed
 
 ! add an observer to the andx
 : andx-add-connection ( observer andx -- )
+    [ swap vector>> push ] 2keep
     add-connection ;
 
 : andx-add-dependency ( dep andx -- )
@@ -47,4 +48,4 @@ M: andx model-changed
     ! break
     andx new-model
     -1 >>hold
-;
+    V{ } clone >>vector ;

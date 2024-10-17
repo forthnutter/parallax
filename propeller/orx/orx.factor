@@ -14,7 +14,7 @@ TUPLE: orx < model hold vector ;
 
 ! a change is applied by external routine
 M: orx model-changed
-    break
+    ! break
     [ vector>> length 0 = ] keep swap
     [
         [ model-value ] dip
