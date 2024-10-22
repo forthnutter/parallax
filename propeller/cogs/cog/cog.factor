@@ -72,14 +72,20 @@ CONSTANT: IF_Z_OR_C    14
 CONSTANT: IF_BE        14
 CONSTANT: ALLWAYS      15
 
-CONSTANT: CJMP         23   ! 0x17
-CONSTANT: CALL         23
+! CONSTANT: CJMP         23   ! 0x17
+! CONSTANT: CALL         23
 CONSTANT: CJMPRET      23
 CONSTANT: CRET         23
 CONSTANT: CAND         24   ! 0x18
 CONSTANT: CTEST        24
 CONSTANT: CANDN        25   ! 0x19
-CONSTANT: COR          26   ! 0x20
+CONSTANT: COR          26   ! 0x1A
+CONSTANT: CXOR         27   ! 0x1B
+CONSTANT: CMUXC         28  ! 0x1C
+CONSTANT: CMUXNC        29  ! 0x1D
+CONSTANT: CMUXZ         30  ! 0x1E
+CONSTANT: CMUXNZ        31  ! 0x1F
+CONSTANT: CADD          32  ! 0x20 
 CONSTANT: CSUB         33   ! 0x21
 CONSTANT: CMOV         40   ! 0x28
 CONSTANT: CABS         42   ! 0x2A
@@ -397,7 +403,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   ! break
   [ cog-isn-code ] keep swap
   {
-    { CJMP [ cog-jump ] }
+    { 0x17 [ cog-jump ] }
     { CAND [ cog-and ] }
     { CANDN [ cog-andn ] }
     { COR [ cog-or ] }
