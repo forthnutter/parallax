@@ -3,29 +3,21 @@
 
 USING: accessors arrays ascii combinators
      kernel parallax.propeller.cogs.cog
-      math math.parser models
-       parallax.propeller.ddrx
-       parallax.propeller.inx
-       parallax.propeller.outx
-       parallax.propeller.orx
-      sequences tools.continuations vectors ;
+      math math.bitwise math.parser models
+      parallax.propeller.inx
+      parallax.propeller.xin
+      sequences tools.continuations vectors 
+;
 
 
 IN: parallax.propeller.cogs
 
 CONSTANT: COGNUMBEROF 8
-CONSTANT: INA_ADDRESS 498
-CONSTANT: INB_ADDRESS 499
-CONSTANT: OUTA_ADDRESS 500
-CONSTANT: OUTB_ADDRESS 501
-CONSTANT: DDRA_ADDRESS 502
-CONSTANT: DDRB_ADDRESS 503
 
 
 TUPLE: logoutx < model vec ;
 
-TUPLE: cogs cog-array num-longs ina inb outa outb ddra ddrb 
-        logx ;
+TUPLE: cogs cog-array num-longs ina inb logx xina xinb ;
 
 
 : <logoutx> ( -- logoutx )
@@ -59,18 +51,17 @@ M: logoutx model-changed
     cog-execute
   ] each ;
 
-! Add to each cog the object dependency
-: cogs-add-dependency ( object address cogs -- )
-  cog-array>>
-  [
-    [ 2dup ] dip
-    cog-mem-dependency
-  ] each 2drop ;
 
-: cogs-set-dependency ( cogs -- )
-  [ [ ina>> INA_ADDRESS ] keep cogs-add-dependency ]
-  [ [ inb>> INB_ADDRESS ] keep cogs-add-dependency ]
-  bi ;
+
+: cogs-get-cog ( cogn cogs -- cog )
+    cog-array>>     ! cogn array 
+    nth             ! cog
+;
+
+! do execute cog till it reaches address
+: cogs-cog-run-address ( address cogn cogs -- )
+    cogs-get-cog cog-execute-address ;
+
 
 
 ! cog display memory
@@ -88,6 +79,17 @@ M: logoutx model-changed
   [
     drop [ cog-list ] 2keep [ 1 + ] dip rot
   ] map 2nip ;
+
+
+! display cogs disasembler from address
+: cogs-alist ( address cogs -- vector )
+    [ COGNUMBEROF <vector> ] 2dip   ! make an array for return
+    cog-array>>                     ! get the array of cogs
+    [
+        [ cog-active? ] keep swap
+        [ [ cog-list swap [ push ] keep ] 2keep drop ]
+        [ drop ] if
+    ] each drop ;
 
 ! get the pc address of each cog string the mnuemonic into list
 : cogs-list-pc ( cogs -- $array )
@@ -107,175 +109,101 @@ M: logoutx model-changed
     [ drop ] if
   ] each ; 
 
+
+: cogs-src-dst ( cogs -- $array )
+    COGNUMBEROF <vector>
+    swap cog-array>>
+    [
+        [ cog-active? ] keep swap
+        [ pc-src-dst swap [ push ] keep ] [ drop ] if
+    ] each ;
+
 : cogs-boot ( array cogs -- )
   cog-array>> first [ cog-copy ] keep cog-active ;
 
 
-! read INA value and return string
-: cogs-ina-read ( cogs -- $array )
-  1 <vector> swap   ! cogs first
-  ina>> in-read >hex 8 CHAR: 0 pad-head >upper
-  "$" prepend swap 
-  [ push ] keep ;
 
-! make cog 0 out or with cog 1 out
-: cogs-01-out ( cogs -- )
-    [ [ 0 ] dip cog-array>> nth gatethree>> ]
-    [ [ 1 ] dip cog-array>> nth gatethree>> ]
-    bi add-dependency ;
+! get cog ina memory and make it an observer of global INA
+: cogs-ina-connect ( cogs -- )
+    [ cog-array>> ] keep swap ! cogs array
+    [
+        ! cogs cog
+        cog-ina-model  over  ! cogs mem cogs
+        ina>>               ! cogs mem inx
+        inx-add-connection  ! cogs
+    ] each drop ;
 
-! make cog 1 out or with cog 2 out
-: cogs-12-out ( cogs -- )
-    [ [ 1 ] dip cog-array>> nth gatethree>> ]
-    [ [ 2 ] dip cog-array>> nth gatethree>> ]
-    bi add-dependency ;
-
-! make cog 2 out or with cog 3 out
-: cogs-23-out ( cogs -- )
-    [ [ 2 ] dip cog-array>> nth gatethree>> ]
-    [ [ 3 ] dip cog-array>> nth gatethree>> ]
-    bi add-dependency ;
-
-! make cog 3 out or with cog 4 out
-: cogs-34-out ( cogs -- )
-    [ [ 3 ] dip cog-array>> nth gatethree>> ]
-    [ [ 4 ] dip cog-array>> nth gatethree>> ]
-    bi add-dependency ;
-
-! make cog 4 out or with cog 5 out
-: cogs-45-out ( cogs -- )
-    [ [ 4 ] dip cog-array>> nth gatethree>> ]
-    [ [ 5 ] dip cog-array>> nth gatethree>> ]
-    bi add-dependency ;
-
-! make cog 5 out or with cog 6 out
-: cogs-56-out ( cogs -- )
-    [ [ 5 ] dip cog-array>> nth gatethree>> ]
-    [ [ 6 ] dip cog-array>> nth gatethree>> ]
-    bi add-dependency ;
-
-! make cog 6 out or with cog 7 out
-: cogs-67-out ( cogs -- )
-    [ [ 6 ] dip cog-array>> nth gatethree>> ]
-    [ [ 7 ] dip cog-array>> nth gatethree>> ]
-    bi add-dependency ;
-
-! make cog 7 out or with out
-: cogs-7A-out ( cogs -- )
-    [ [ 7 ] dip cog-array>> nth gatethree>> ]
-    [ outa>> ]
-    bi add-dependency ;
-
-! make cog 0 ddr or with cog 1 ddr
-: cogs-01-ddr ( cogs -- )
-    [ [ 0 ] dip cog-array>> nth gatefour>> ]
-    [ [ 1 ] dip cog-array>> nth gatefour>> ]
-    bi add-dependency ;
-
-! make cog 1 ddr or with cog 2 ddr
-: cogs-12-ddr ( cogs -- )
-    [ [ 1 ] dip cog-array>> nth gatefour>> ]
-    [ [ 2 ] dip cog-array>> nth gatefour>> ]
-    bi add-dependency ;
-
-! make cog 2 ddr or with cog 3 ddr
-: cogs-23-ddr ( cogs -- )
-    [ [ 2 ] dip cog-array>> nth gatefour>> ]
-    [ [ 3 ] dip cog-array>> nth gatefour>> ]
-    bi add-dependency ;
-
-! make cog 3 ddr or with cog 4 ddr
-: cogs-34-ddr ( cogs -- )
-    [ [ 3 ] dip cog-array>> nth gatefour>> ]
-    [ [ 4 ] dip cog-array>> nth gatefour>> ]
-    bi add-dependency ;
-
-! make cog 4 ddr or with cog 5 ddr
-: cogs-45-ddr ( cogs -- )
-    [ [ 4 ] dip cog-array>> nth gatefour>> ]
-    [ [ 5 ] dip cog-array>> nth gatefour>> ]
-    bi add-dependency ;
-
-! make cog 5 ddr or with cog 6 ddr
-: cogs-56-ddr ( cogs -- )
-    [ [ 5 ] dip cog-array>> nth gatefour>> ]
-    [ [ 6 ] dip cog-array>> nth gatefour>> ]
-    bi add-dependency ;
-
-! make cog 6 ddr or with cog 7 ddr
-: cogs-67-ddr ( cogs -- )
-    [ [ 6 ] dip cog-array>> nth gatefour>> ]
-    [ [ 7 ] dip cog-array>> nth gatefour>> ]
-    bi add-dependency ;
-
-! make cog 7 ddr or with ddr
-: cogs-7A-ddr ( cogs -- )
-    [ [ 7 ] dip cog-array>> nth gatefour>> ]
-    [ ddra>> ]
-    bi add-dependency ;
-
-: cogs-out-watch ( cogs -- )
-    [ outa>> ]
-    [ logx>> ]
-    bi add-dependency ;
+! get cog inb memory and make it an observer of global INB
+: cogs-inb-connect ( cogs -- )
+    [ cog-array>> ] keep swap   ! cogs array
+    [
+        ! cogs cog
+        cog-inb-model over  ! cogs mem cogs
+        inb>>               ! cogs mem inx
+        inx-add-connection  ! cogs
+    ] each drop ;
 
 
+: get-orout-model ( n cogs -- model )
+    cog-array>> nth oraout>> ;
 
-! this links the all the cog out to the next cog out
-: cogs-link-out ( cogs -- )
-    {
-        [ cogs-01-out ]
-        [ cogs-12-out ]
-        [ cogs-23-out ]
-        [ cogs-34-out ]
-        [ cogs-45-out ]
-        [ cogs-56-out ]
-        [ cogs-67-out ]
-        [ cogs-7A-out ]
-        [ cogs-out-watch ]
-    } cleave ;
-
-! link the cods ddr to the next cog ddr
-: cogs-link-ddr ( cogs -- )
-    {
-        [ cogs-01-ddr ]
-        [ cogs-12-ddr ]
-        [ cogs-23-ddr ]
-        [ cogs-34-ddr ]
-        [ cogs-45-ddr ]
-        [ cogs-56-ddr ]
-        [ cogs-67-ddr ]
-        [ cogs-7A-ddr ]
-    } cleave ;
-
-: cogs-link-activate ( cogs -- )
-    [ logx>> activate-model ]
-    [ ddra>> activate-model ] bi ;
+: get-orddr-model ( n cogs -- model )
+    cog-array>> nth oraddr>> ;
 
 
-! go through all cogs and activate all memory dependecies
-: cogs-activate ( cogs -- )
-  cog-array>>
-  [
-    cog-activate
-  ] each ;
+: out-link ( cogs -- cogs )
+    [ [ 1 swap get-orout-model ] [ 0 swap get-orout-model ] bi add-connection ] keep
+    [ [ 2 swap get-orout-model ] [ 1 swap get-orout-model ] bi add-connection ] keep
+    [ [ 3 swap get-orout-model ] [ 2 swap get-orout-model ] bi add-connection ] keep
+    [ [ 4 swap get-orout-model ] [ 3 swap get-orout-model ] bi add-connection ] keep
+    [ [ 5 swap get-orout-model ] [ 4 swap get-orout-model ] bi add-connection ] keep
+    [ [ 6 swap get-orout-model ] [ 5 swap get-orout-model ] bi add-connection ] keep
+    [ [ 7 swap get-orout-model ] [ 6 swap get-orout-model ] bi add-connection ] keep
+!    [ [ 7 swap get-orout-model ] [ ina>> ] bi add-dependency ] keep
+!    [ ina>> activate-model ] keep
+!    [ 7 swap get-orout-model activate-model ] keep
+;
 
-: cogs-add-output ( model cogs -- )
-    outa>> add-connection ;
+: ddr-link ( cogs -- cogs )
+    [ [ 1 swap get-orddr-model ] [ 0 swap get-orddr-model ] bi add-connection ] keep
+    [ [ 2 swap get-orddr-model ] [ 1 swap get-orddr-model ] bi add-connection ] keep
+    [ [ 3 swap get-orddr-model ] [ 2 swap get-orddr-model ] bi add-connection ] keep
+    [ [ 4 swap get-orddr-model ] [ 3 swap get-orddr-model ] bi add-connection ] keep
+    [ [ 5 swap get-orddr-model ] [ 4 swap get-orddr-model ] bi add-connection ] keep
+    [ [ 6 swap get-orddr-model ] [ 5 swap get-orddr-model ] bi add-connection ] keep
+    [ [ 7 swap get-orddr-model ] [ 6 swap get-orddr-model ] bi add-connection ] keep
+!    [ [ inb>> ] [ 7 swap get-orddr-model ] bi add-dependency ] keep
+!    [ 7 swap get-orddr-model activate-model ] keep
+;
 
+: out-ddr ( cogs -- cogs )
+    [ [ ina>> ] [ 7 swap get-orout-model ] [ 7 swap get-orddr-model ] tri 0 <xin> ] keep
+    [ xina<< ] keep
+    [ [ xina>> ] [ 7 swap get-orout-model ] bi add-connection ] keep
+    [ [ ina>> ] [ xina>> ] bi add-connection ] keep ;
+
+
+: cogs-dump ( address cogn cogs -- vector )
+    [ 1 ] 3dip 
+    [ swap ] dip 
+    cogs-mdl ;
+
+! get the hex string of ina
+: ina-hex ( cogs -- hex )
+    ina>> model-value 32 bits >hex "0x" prepend ;
+
+
+! builds up the array of cogs
 : <cogs> ( -- cogs )
-  break
-  cogs new
-  0 <inx> >>ina     ! INA is a global input
-  0 <inx> >>inb     ! same for INB
-  9 <outx> >>outa   ! global out
-  0 <ddrx> >>ddra   ! global ddr
-  <logoutx> >>logx  ! keep a record of out changes
-  cogs-array >>cog-array
-  4 >>num-longs ! this is the defult number of data longs to display
-  [ cogs-set-dependency ] keep
-  [ cogs-link-out ] keep
-  [ cogs-link-ddr ] keep
-  [ cogs-link-activate ] keep
-  [ cogs-activate ] keep
+    break
+    cogs new                      ! cog
+    -1 <inx> >>ina
+    -1 <inx> >>inb
+    <logoutx> >>logx  ! keep a record of out changes
+    cogs-array >>cog-array
+    4 >>num-longs ! this is the defult number of data longs to display
+    [ cogs-ina-connect ] keep
+    [ cogs-inb-connect ] keep
+    out-link ddr-link
+    out-ddr
 ;

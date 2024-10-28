@@ -11,19 +11,16 @@ TUPLE: outx < model cogn ;
 
 
 : outx-read ( out -- data )
-   value>> ;
+   model-value ;
 
 : outx-write ( data out -- )
    set-model ;
 
 M: outx model-changed
+    break
    [ value>> ] dip ! get memory value
    outx-write         ! send it out we may have others
 ;
-
-
-: outx-dependency ( dep outx -- )
-    add-dependency ;
 
 : <outx> ( value -- out )
    0 outx new-model swap >>cogn ;

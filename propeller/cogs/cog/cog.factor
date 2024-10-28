@@ -1,20 +1,21 @@
 ! Copyright (C) 2011 Joseph L Moschini.
 ! See http://factorcode.org/license.txt for BSD license.
 !
-USING: accessors arrays assocs kernel sequences models vectors
+USING:  accessors arrays assocs kernel sequences models vectors
         namespaces endian
-       parallax.propeller.cogs.cog.memory
-       parallax.propeller.cogs.cog.par
-       parallax.propeller.cogs.cog.cnt
-       parallax.propeller.cogs.cog.frq
-       parallax.propeller.cogs.cog.phs
-       parallax.propeller.cogs.cog.vscl
-       parallax.propeller.orx
-       parallax.propeller.outx
-       parallax.propeller.andx
-       parallax.propeller.ddrx
-       parallax.propeller.ctrx
-       parallax.propeller.vcfgx
+        parallax.propeller.cogs.cog.memory
+        parallax.propeller.cogs.cog.par
+        parallax.propeller.cogs.cog.cnt
+        parallax.propeller.cogs.cog.frqx
+        parallax.propeller.cogs.cog.phsx
+        parallax.propeller.cogs.cog.vcfgx
+        parallax.propeller.cogs.cog.vsclx
+        parallax.propeller.cogs.cog.ctrx
+        parallax.propeller.cogs.cog.andx
+        parallax.propeller.orx
+
+ 
+
        math math.bitwise math.parser alien.syntax combinators
        ! io.binary
        grouping bit-arrays bit-vectors
@@ -71,14 +72,20 @@ CONSTANT: IF_Z_OR_C    14
 CONSTANT: IF_BE        14
 CONSTANT: ALLWAYS      15
 
-CONSTANT: CJMP         23   ! 0x17
-CONSTANT: CALL         23
+! CONSTANT: CJMP         23   ! 0x17
+! CONSTANT: CALL         23
 CONSTANT: CJMPRET      23
 CONSTANT: CRET         23
 CONSTANT: CAND         24   ! 0x18
 CONSTANT: CTEST        24
 CONSTANT: CANDN        25   ! 0x19
-CONSTANT: COR          26   ! 0x20
+CONSTANT: COR          26   ! 0x1A
+CONSTANT: CXOR         27   ! 0x1B
+CONSTANT: CMUXC         28  ! 0x1C
+CONSTANT: CMUXNC        29  ! 0x1D
+CONSTANT: CMUXZ         30  ! 0x1E
+CONSTANT: CMUXNZ        31  ! 0x1F
+CONSTANT: CADD          32  ! 0x20 
 CONSTANT: CSUB         33   ! 0x21
 CONSTANT: CMOV         40   ! 0x28
 CONSTANT: CABS         42   ! 0x2A
@@ -88,17 +95,36 @@ CONSTANT: MEMORY_SIZE 512
 CONSTANT: INST_SIZE   496
 CONSTANT: SPR_SIZE    16
 
+CONSTANT: PAR_ADDRESS 496   ! 0x1f0
+CONSTANT: CNT_ADDRESS 497   ! 0x1f1
+CONSTANT: INA_ADDRESS 498   ! 0x1f2
+CONSTANT: INB_ADDRESS 499   ! 0x1f3
+CONSTANT: OUTA_ADDRESS 500  ! 0x1f4
+CONSTANT: OUTB_ADDRESS 501  ! 0x1f5
+CONSTANT: DDRA_ADDRESS 502  ! 0x1f6
+CONSTANT: DDRB_ADDRESS 503  ! 0x1f7
+CONSTANT: CTRA_ADDRESS 504  ! 0x1f8
+CONSTANT: CTRB_ADDRESS 505  ! 0x1f9
+CONSTANT: FRQA_ADDRESS 506  ! 0x1fa
+CONSTANT: FRQB_ADDRESS 507  ! 0x1fb
+CONSTANT: PHSA_ADDRESS 508  ! 0x1fc
+CONSTANT: PHSB_ADDRESS 509  ! 0x1fd
+CONSTANT: VCFG_ADDRESS 510  ! 0x1fe
+CONSTANT: VSCL_ADDRESS 511  ! 0x1ff
+
 ! tuple to hold cog stuff
 
 TUPLE: cog n pc pcold alu z c memory state isn fisn
     source dest result bp wstate gateone gatetwo
-    gatethree gatefour labels hashmneu ;
+    gatethree gatefour labels hashmneu ! porta portb
+    oraio orbio andaio andbio oraout orbout
+    oraddr orbddr vcfg vscl ctra ctrb frqa frqb phsa phsb ;
 
 
 
-! 32 bit hex string of value "0xHHHHHHHH" upper case
+! 32 bit hex string of value "HHHHHHHH" upper case
 : >hex-pad8 ( value -- string )
-    >hex 8 CHAR: 0 pad-head >upper "0x" prepend ;
+    >hex 8 CHAR: 0 pad-head >upper ;
 
 ! 12 bit hex string    
 : >hex-pad3 ( d -- $ )
@@ -109,47 +135,69 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   >hex 2 CHAR: 0 pad-head >upper ;
 
 
-: cog-memory ( address cog -- memory )
-   memory>> nth ;
+: read-memory-model ( address cog -- model )
+    [ 9 bits ] dip      ! we only focus on 9 bit
+    memory>> nth ;      ! get the model
 
-: cog-memory-select ( address -- mem/sfr )
-  {
-    { 496 [ 0 <par> ] }   ! $01f0 boot parameter
-    { 497 [ 0 <cnt> ] }   ! $01f1 system counter
+! get the cogs ina model
+: cog-ina-model ( cog -- model )
+    [ INA_ADDRESS ] dip read-memory-model ;
 
-    { 506 [ 0 <frq> ] }   ! $01fa Counter A Frequency
-    { 507 [ 0 <frq> ] }   ! $01fb Counter B Frequency
-    { 508 [ 0 <phs> ] }   ! $01fc Counter A phase
-    { 509 [ 0 <phs> ] }   ! $01fd Counter B phase
+! get the cogs ina model
+: cog-inb-model ( cog -- model )
+    [ INB_ADDRESS ] dip read-memory-model ;
 
-    { 511 [ 0 <vscl> ] }  ! $01ff Video Scale
-    [ drop 0 <memory> ]   ! default general memory function
-  } case ;
+! get the cog outa model
+: outa-model ( cog -- model )
+    [ OUTA_ADDRESS ] dip read-memory-model ;
 
-: cog-setup ( -- vector )
-   MEMORY_SIZE f <array>
-   [
-      [ drop ] dip cog-memory-select
-   ] map-index >vector ;
+: outa-add-dependency ( dep cog -- )
+    outa-model add-dependency ;
 
+! get the cog outb model
+: outb-model ( cog -- model )
+    [ OUTB_ADDRESS ] dip read-memory-model ;
 
+! get the cog ddra model
+: ddra-model ( cog -- model )
+    [ DDRA_ADDRESS ] dip read-memory-model ;
 
-: cog-deactivate ( cog -- )
-  memory>>
-  [
-    memory-deactivate
-  ] each ;
+! get the cog ddrb model
+: ddrb-model ( cog -- model )
+    [ DDRB_ADDRESS ] dip read-memory-model ;
 
-! routine to inject a object into dependecy
-! may require memory deactivation and then activation
-! : memory-set-dependency ( object address memory -- )
-!  nth memory-add-dependency ;
-: cog-mem-dependency ( dep address cog -- )
-  memory>> nth memory-add-dependency ;
+! get the cog vscl model from memory
+: vscl-model ( cog -- model )
+    [ VSCL_ADDRESS ] dip read-memory-model ;
 
+! get the cog vcfg model from memory
+: vcfg-model ( cog -- model )
+    [ VCFG_ADDRESS ] dip read-memory-model ;
 
-: cog-mem-connection ( object address cog -- )
-  memory>> nth add-connection ;
+! get the cog ctra model from memory
+: ctra-model ( cog -- model )
+    [ CTRA_ADDRESS ] dip read-memory-model ;
+
+! get the cog ctrb model from memory
+: ctrb-model ( cog -- model )
+    [ CTRB_ADDRESS ] dip read-memory-model ;
+
+! get the cog frqa model from memory
+: frqa-model ( cog -- model )
+    [ FRQA_ADDRESS ] dip read-memory-model ;
+
+! get the cog frqb model from memory
+: frqb-model ( cog -- model )
+    [ FRQB_ADDRESS ] dip read-memory-model ;
+
+! get the cog phsa model from memory
+: phsa-model ( cog -- model )
+    [ PHSA_ADDRESS ] dip read-memory-model ;
+
+! get the cog phsb model from memory
+: phsb-model ( cog -- model )
+    [ PHSB_ADDRESS ] dip read-memory-model ;
+
 
 ! Build the cog memory
 : cog-mem-setup ( -- vector )
@@ -163,47 +211,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-get-memory ( address cog -- memory )
     memory>> nth ;
 
-
-! create and 
-! create an Out and then add orx model
-: cog-out-set ( cog -- outx )
-    [ n>> <outx> ]
-    [ gateone>> ]
-    bi dupd add-dependency ;
-
-
-: cog-ctr-set ( cog -- ctrx )
-    [ drop 0 <ctrx> ]
-    [ gateone>> ]
-    bi dupd add-dependency ;
-
-
-: cog-ddr-set ( cog -- ddrx )
-    [
-        [ drop 0 <ddrx> ]
-        [ gatetwo>> ]
-        bi dupd add-dependency
-    ] keep
-    gatefour>> dupd add-dependency
-;
-
-
-: cog-vcfg-set ( cog -- vcfgx )
-    [ drop 0 <vcfgx> ]
-    [ gateone>> ]
-    bi dupd add-dependency ;
-
-
-
-! set up cog dependency for all special functions
-: cog-set-dependencies ( cog -- cog )
-    [ [ [ 500 ] dip cog-get-memory ] [ cog-out-set ] bi add-dependency ] keep
-    [ [ [ 502 ] dip cog-get-memory ] [ cog-ddr-set ] bi add-dependency ] keep
-!    [ [ cog-ddr-set 502 ] keep cog-mem-dependency ] keep
-!   [ [ cog-ctr-set 503 ] keep cog-mem-dependency ] keep
-!   [ [ cog-ctr-set 504 ] keep cog-mem-dependency ] keep
-!    [ [ cog-vcfg-set 510 ] keep cog-mem-dependency ] keep
-;
 
  
 : cog-reset ( cog -- )
@@ -227,19 +234,19 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   [ pc<< ] [ pcold<< ] 2bi ;
 
 
-: cog-read ( address cog -- d )
-  cog-memory read ;
+: read-memory-value ( address cog -- d )
+    read-memory-model model-value 32 bits ;
 
 : cog-read-array ( n address cog -- array )
   [ f <array> ] 2dip rot
   [
     drop
-    [ cog-read ] 2keep [ 1 + ] dip rot
+    [ read-memory-value ] 2keep [ 1 + ] dip rot
   ] map [ drop drop ] dip ;
 
-: cog-write ( value address cog -- )
+: write-memory-value ( value address cog -- )
   ! break
-  cog-memory memory-write ;
+    read-memory-model set-model ;
 
 ! make cog active
 : cog-active ( cog -- )
@@ -252,15 +259,25 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-isn-i ( cog -- ? )
   isn>> 22 bit? ;
 
-: cog-address-value ( address cog -- value )
-  cog-read ;
+: isn-source-address ( isn -- address )
+    8 0 bit-range ;
+
+! get isn destination address
+: isn-destination-address ( isn -- address )
+    17 9 bit-range ;
 
 : cog-source-address ( cog -- address )
-  isn>> 8 0 bit-range ;
+  isn>> isn-source-address ;
+
+: source-value ( isn cog -- value )
+    [ isn-source-address ] dip read-memory-value ;
+
+: destination-value ( isn cog -- address )
+    [ isn-destination-address ] dip read-memory-value ;
 
 
 : cog-source-value ( cog -- value )
-  [ cog-source-address ] keep cog-read ;
+  [ cog-source-address ] keep read-memory-value ;
 
 : cog-fetch-source ( cog -- source )
   [ cog-isn-i ] keep swap
@@ -270,14 +287,14 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 ! get isn destination address
 : cog-dest-address ( cog -- address )
-  isn>> 17 9 bit-range ;
+  isn>> isn-destination-address ;
 
 : cog-dest-value ( cog -- value )
-  [ cog-dest-address ] keep cog-read ;
+  [ cog-dest-address ] keep read-memory-value ;
 
 
 : cog-fetch-dest ( cog -- value )
-  [ cog-dest-address ] keep cog-read ;
+  [ cog-dest-address ] keep read-memory-value ;
 
 ! find out if the current address has a label
 : cog-label-string ( address cog -- $/? )
@@ -366,7 +383,6 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   alu>> alu-update drop ;
 
 : cog-djnz ( cog -- )
-    break
   [ dest>> 1 ] keep
   [ alu>> alu-sub ] keep swap
   alu-z not
@@ -387,7 +403,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   ! break
   [ cog-isn-code ] keep swap
   {
-    { CJMP [ cog-jump ] }
+    { 0x17 [ cog-jump ] }
     { CAND [ cog-and ] }
     { CANDN [ cog-andn ] }
     { COR [ cog-or ] }
@@ -473,7 +489,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   } case ;
 
 : cog-fetch ( cog -- inst )
-  [ pc>> ] keep [ cog-read ] keep PC+ ;
+  [ pc>> ] keep [ read-memory-value ] keep PC+ ;
 
 ! get status of update z
 : cog-isn-z ( cog -- ? )
@@ -502,7 +518,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   [
     [ alu>> alu-result ] keep
     [ cog-dest-address ] keep
-    [ cog-write ] keep
+    [ write-memory-value ] keep
   ] when drop ;
 
 
@@ -647,27 +663,27 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   [ le>  ] map
   INST_SIZE head cog-unscramble swap
   memory>>
-  [ memory-write ] 2each
+  [ set-model ] 2each
 ;
 
 
 ! return string value z
-! : z-string ( ? -- str )
-!  [ "Z" ] [ "z" ] if ;
+: z-string ( ? -- str )
+  [ "Z" ] [ "z" ] if ;
 
 ! return string vale c
-! : c-string ( ? -- str )
-!  [ "C" ] [ "c" ] if ;
+: c-string ( ? -- str )
+  [ "C" ] [ "c" ] if ;
 
 ! build up a string that indicate
 ! cogs flag codition
-! : cog-flag-condition ( cog -- str/f )
-!  dup cog? not
-!  [ drop f ]
-!  [
-!    [ z>> z-string ] [ c>> c-string ] bi ! get the two cog status
-!    [ " " append ] dip append 
-!  ] if ;
+: cog-flag-condition ( cog -- str/f )
+  dup cog? not
+  [ drop f ]
+  [
+    [ z>> z-string ] [ c>> c-string ] bi ! get the two cog status
+    [ " " append ] dip append 
+  ] if ;
 
 
 
@@ -711,14 +727,14 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 ! string of value from address
 : cog-address-value$ ( address cog -- string )
-    cog-address-value >hex-pad8 ;
+    read-memory-value >hex-pad8 ;
 
 : cog-isn ( cog -- isn )
     isn>> ;
 
 ! get the current opcode from ISN
-: cog-opcode ( cog -- op )
-    cog-isn 31 26 bit-range ;
+: opcode ( isn -- op )
+    31 26 bit-range ;
 
 ! : flags-exstract ( code -- flags )
 !  25 22 bit-range ;
@@ -726,38 +742,45 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 ! : cond-exstract ( code -- cond )
 !  21 18 bit-range ;
 
-
+! imediate flag
 : flag-imd ( cog -- ? )
-  cog-isn 22 bit? ;
+    22 bit? ;
 
 ! flags display
-: flag-imd-string ( cog -- $ )
-  flag-imd [ "<#>" ] [ " " ] if ;
+: flag-imd-string ( isn -- $ )
+    flag-imd [ "<#>" ] [ " " ] if ;
 
-: flag-r ( cog -- ? )
-  cog-isn 23 bit? ;
+! read or write flag
+: flag-r ( isn -- ? )
+    23 bit? ;
 
-: flag-r-string ( flags --  $ )
-  flag-r [ "WR" ] [ " " ] if ;
+! string r flag
+: flag-r-string ( isn --  $ )
+    flag-r [ "WR" ] [ " " ] if ;
 
-: flag-c ( code -- ? )
-  cog-isn 24 bit? ;
+! carry flag
+: flag-c ( isn -- ? )
+    24 bit? ;
 
-: flag-c-string ( cog -- $ )
-  flag-c [ "WC" ] [ " " ] if ;
+! string of carry
+: flag-c-string ( isn -- $ )
+    flag-c [ "WC" ] [ " " ] if ;
 
-: flag-z ( cog -- ? )
-  cog-isn 25 bit? ;
+! z flag
+: flag-z ( isn -- ? )
+    25 bit? ;
 
-: flag-z-string ( cog -- $ )
-  flag-z [ "WZ" ] [ " " ] if ;
+: flag-z-string ( isn -- $ )
+    flag-z [ "WZ" ] [ " " ] if ;
+
 
 : cog-flags-string ( cog -- $ )
-  [ "flags{ " ] dip
-  [ flag-z-string " " append ] keep [ append ] dip
-  [ flag-c-string " " append ] keep [ append ] dip
-  [ flag-r-string " " append ] keep [ append ] dip
-  flag-imd-string " " append append "} " append ;
+    cog-isn
+    [ "flags{ " ] dip
+    [ flag-z-string " " append ] keep [ append ] dip
+    [ flag-c-string " " append ] keep [ append ] dip
+    [ flag-r-string " " append ] keep [ append ] dip
+    flag-imd-string " " append append "} " append ;
 
 
 ! get the condition of the instruction 
@@ -808,7 +831,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 
 : code-sub-test ( code -- $/? )
-    [ flag-r ] [ cog-opcode ] bi swap
+    [ flag-r ] [ cog-isn opcode ] bi swap
     [
         H{
             { 0 "RDBYTE" } { 1 "RDWORD" } { 2 "RDLONG" }
@@ -824,7 +847,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 ;
 
 : cog-subcode ( cog -- $/? )
-    cog-opcode  ! code
+    cog-isn opcode  ! code
     dup         ! code code
     0 =         ! code ?
     [
@@ -843,7 +866,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 ! find out if the current address has a label
 : cog-mnuemonic-string ( cog -- $/? )
-    [ cog-opcode ] keep      ! code cog
+    [ cog-isn opcode ] keep      ! code cog
     [ hashmneu>> ] keep ! code hash cog
     [ at ] dip          ! ? cog
     swap                ! cog ?
@@ -857,53 +880,120 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 
 
+
+! generate a string of source this includes labels
+: source-string ( n cog -- string/? )
+    [ isn-source-address ] dip ! address cog
+    [ cog-label-string ] 2keep ! label address cog 
+    rot ! address cog label
+    dup ! address cog label label
+    [
+        ! address cog label
+        [
+            drop    ! address
+            drop
+            !  >hex-pad3 "0x" prepend ! hex-string
+            ! " " append
+        ] dip   ! hex label
+        ! append 
+    ]
+    [
+        ! address cog f
+        drop    ! address cog
+        drop    ! address
+        >hex-pad3 "0x" prepend ! hex-string
+    ] if    ! string
+;
+
+! get the condition of the instruction 
+: isn-conditions ( isn -- cond )
+  21 18 bit-range ;
+
+
+! test for nop condition
+: condition-string ( isn -- string/f )
+  isn-conditions
+  H{
+    { 0 "NEVER" } { 1 "IF_NC_AND_NZ" } { 2 "IF_NC_AND_Z" }
+    { 3 "IF_NC" } { 4 "IF_C_AND_NZ" } { 5 "IF_NZ" }
+    { 6 "IF_C_NE_Z" } { 7 "IF_NC_OR_NZ" } { 8 "IF_C_AND_Z" }
+    { 9 "IF_C_EQ_Z" } { 10 "IF_Z" } { 11 "IF_NC_OR_Z" }
+    { 12 "IF_C" } { 13 "IF_C_OR_NZ" } { 14 "IF_C_OR_Z" }
+    { 15 "ALLWAYS" }
+  } at ;
+
+
+
+! gererate a string of destination including labels
+: destination-string ( n cog -- string/? )
+    [ isn-destination-address ] dip    ! address cog
+    [ cog-label-string ] 2keep  ! label address cog 
+    rot ! address cog label
+    dup ! address cog label label
+    [
+        ! address cog label
+        [
+            drop    ! adddress
+            drop
+        ] dip
+    ]
+    [
+        ! address cog f
+        drop    ! address cog
+        drop    ! address
+        >hex-pad3 "0x" prepend ! hex-string
+    ] if    ! string
+;
+
+: flags-string ( isn -- $ )
+  [ "flags{ " ] dip
+  [ flag-z-string " " append ] keep [ append ] dip
+  [ flag-c-string " " append ] keep [ append ] dip
+  [ flag-r-string " " append ] keep [ append ] dip
+  flag-imd-string " " append append "} " append ;
+
+! find out if the current address has a label
+: mnuemonic-string ( isn cog -- $/? )
+    [ opcode ] dip      ! opcode cog
+    [ hashmneu>> at ] keep ! code hash cog
+!    [ at ] dip          ! ? cog
+    swap                ! cog ?
+    [
+        break
+        [ cog-subcode ] keep       ! string cog
+        swap                        ! cog string
+    ] unless*
+    [ drop ] dip
+;
+
+
 ! Display disasembled code
 : cog-list ( address cog --  str/f )
   dup cog? not      ! address cog ? make sure we are looking at cog
   [ drop drop f ]   ! drop everyting and indicate fail
   [
     [ cog-number$ swap cog-address$ append ] 2keep       ! string address cog
-    [ cog-address-value$ append ] keep                  ! string cog
-    [ " " append ] dip                                  ! string cog
-    [ cog-source-string append ] keep                   ! string cog
-    [ " " append ] dip                                  ! string cog
-    [ cog-dest-string append ] keep                     ! string cog
-    [ " " append ] dip                                  ! string cog
-    [ break cog-condition-string append ] keep                ! string cog
-    [ " " append ] dip                                  ! string cog
-    [ cog-flags-string append ] keep                    ! string cog
-
-    [ cog-mnuemonic-string append ] keep                ! sting cog 
-    drop
+    [ cog-address-value$ "0x" prepend " " append append ] 2keep  ! string address cog
+    [ read-memory-value ] keep                          ! string value cog
+    [ source-string " " append append ] 2keep           ! string cog
+    [ destination-string " " append append ] 2keep      ! string cog
+    [ swap drop cog-flag-condition " " append append ] 2keep
+    [ drop condition-string " " append append ] 2keep                ! string cog
+    [ drop flags-string append ] 2keep                    ! string cog
+    [ mnuemonic-string append ] 2keep                ! sting cog 
+    drop drop
   ] if ;
 
 : cog-list-pc ( cog -- str/f )
-    break
   [ pcold>> ] keep cog-list ;
 
-! or connects to and
-: cog-orand ( cog -- cog )
-    [ [ gateone>> ] [ gatetwo>> ] bi andx-dependency ] keep ; 
 
-: cog-andor ( cog -- cog )
-    [ gatetwo>> ] keep
-    [ gatethree>> add-dependency ] keep
-;
+! Need to execute the cog to an address
+: cog-execute-address ( address cog -- )
+    break
+    [ [ pcold>> = ] 2keep rot ]
+    [ [ cog-execute-cycle ] keep ] until drop drop ;
 
-
-: cog-gate-activate ( cog -- cog )
-    [ gateone>> activate-model ] keep
-    [ gatetwo>> activate-model ] keep
-    [ gatethree>> activate-model ] keep
-    [ gatefour>> activate-model ] keep ;
-
-! this will make all dependency point to memory 
-! so the memory will update to dependency changes
-: cog-activate ( cog -- )
-  memory>>
-  [
-    memory-activate
-  ] each ;
 
 : cog-default-labels ( -- hash )
   H{
@@ -913,30 +1003,81 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     { 508 "PHSA" } { 509 "PHSB" } { 510 "VCFG" } { 511 "VSCL" }
   } ;
 
-! create a cog and state is inactive
-: new-cog ( n cog -- cog' )
-  new swap >>n        ! allocate memory save the number of cog
-  cog-mem-setup >>memory  ! initialise memory componnet
-  <alu> >>alu         ! alu is a seperate class
-  [ cog-reset ] keep  ! cog is in reset state
-  cog-mnuemonic >>hashmneu
-  COG_HUB_GO >>wstate ! need to know if the cog is waiting for hub
-  V{ } clone >>bp     ! break points
-  0 <orx> >>gateone      ! or all the out amd some special function
-  0 <andx> >>gatetwo     !
-  0 <orx> >>gatethree    ! or out to next cog
-  0 <orx> >>gatefour
-  cog-orand
-  cog-andor
-  cog-set-dependencies
-  cog-default-labels >>labels
-  ! cog-gate-activate
+! get the value from source and destination of the current isn
+: get-src-dst ( address cog -- hex )
+    [ read-memory-value ] keep ! value cog
+    [ drop isn-source-address >hex-pad3 ] 2keep ! hex value cog
+    [ " " append ] 2dip ! hex value cog
+    [ source-value >hex-pad8 append ] 2keep ! "xxx xxxxxxxx" value cog
+    [ "  " append ] 2dip ! "xxx xxxxxxxx  " value cog
+    [ drop isn-destination-address >hex-pad3 ] 2keep ! "xxx xxxxxxxx  xxx" value cog
+    [ append ] 2dip
+    [ " " append ] 2dip ! "xxx xxxxxxxx  xxx " value cog
+    destination-value >hex-pad8 append 
 ;
 
 
+: pc-src-dst ( cog -- str/f )
+    [ pcold>> ] keep get-src-dst ;
 
+! create a cog and state is inactive
+: new-cog ( n cog -- cog' )
+    new swap >>n        ! allocate memory save the number of cog
+    cog-mem-setup >>memory  ! initialise memory componnet
+    <alu> >>alu               ! alu is a seperate class
+    0 <orx> >>oraio          ! OR the Outputs
+    0 <orx> >>orbio
+    0 <orx> >>oraout         ! this is used to or the previous cog out with this one
+    0 <orx> >>orbout
+    0 <andx> >>andaio        ! mainly ors the ddr with orio
+    0 <andx> >>andbio
+    0 <orx> >>oraddr         ! or all previous cog ddr with this ddr
+    0 <orx> >>orbddr
+    0 <vcfgx> >>vcfg
+    0 <vsclx> >>vscl
+    0 <ctrx> >>ctra
+    0 <ctrx> >>ctrb
+    0 <frqx> >>frqa
+    0 <frqx> >>frqb
+    0 <phsx> >>phsa
+    0 <phsx> >>phsb
+    [ cog-reset ] keep  ! cog is in reset state
+    cog-mnuemonic >>hashmneu
+    COG_HUB_GO >>wstate ! need to know if the cog is waiting for hub
+    V{ } clone >>bp     ! break points
+    cog-default-labels >>labels
+    [ [ oraio>> ] [ outa-model ] bi orx-add-connection   ] keep
+    [ [ orbio>> ] [ outb-model ] bi orx-add-connection   ] keep    ! make orio observer of outb memory
+    [ [ vcfg>>  ] [ vcfg-model ] bi vcfgx-add-connection ] keep
+    [ [ oraio>> ] [ vcfg>>     ] bi orx-add-connection   ] keep
+    [ [ vscl>>  ] [ vscl-model ] bi vsclx-add-connection ] keep
+    [ [ oraio>> ] [ vscl>>     ] bi orx-add-connection   ] keep
+    [ [ ctra>>  ] [ ctra-model ] bi ctrx-add-connection  ] keep
+    [ [ oraio>> ] [ ctra>>     ] bi orx-add-connection   ] keep
+    [ [ ctrb>>  ] [ ctrb-model ] bi ctrx-add-connection  ] keep
+    [ [ oraio>> ] [ ctrb>>     ] bi orx-add-connection   ] keep
+    [ [ frqa>>  ] [ frqa-model ] bi frqx-add-connection  ] keep
+    [ [ oraio>> ] [ frqa>>     ] bi orx-add-connection   ] keep
+    [ [ frqb>>  ] [ frqb-model ] bi frqx-add-connection  ] keep
+    [ [ orbio>> ] [ frqb>>     ] bi orx-add-connection   ] keep    
+    [ [ phsa>>  ] [ phsa-model ] bi phsx-add-connection  ] keep
+    [ [ oraio>> ] [ phsa>>     ] bi orx-add-connection   ] keep
+    [ [ phsb>>  ] [ phsb-model ] bi frqx-add-connection  ] keep
+    [ [ orbio>> ] [ phsb>>     ] bi orx-add-connection   ] keep     
+
+    [ [ andaio>> ] [ oraio>>    ] bi andx-add-connection  ] keep
+    [ [ andbio>> ] [ orbio>>    ] bi andx-add-connection  ] keep
+    [ [ andaio>> ] [ ddra-model ] bi andx-add-connection  ] keep
+    [ [ andbio>> ] [ ddrb-model ] bi andx-add-connection  ] keep
+    [ [ oraout>> ] [ andaio>>   ] bi orx-add-connection   ] keep
+    [ [ orbout>> ] [ andbio>>   ] bi orx-add-connection   ] keep
+    [ [ oraddr>> ] [ ddra-model ] bi orx-add-connection   ] keep
+    [ [ orbddr>> ] [ ddrb-model ] bi orx-add-connection   ] keep
+
+;
 
 ! create a cog and state is inactive
 : <cog> ( n -- cog )
-  cog new-cog ! create the cog class
+    cog new-cog ! create the cog class
 ;
+

@@ -2,7 +2,7 @@
 ! See http://factorcode.org/license.txt for BSD license.
 !
 USING: accessors kernel models sequences
-   math.bitwise math.parser tools.continuations ;
+   math math.bitwise math.parser tools.continuations ;
 
 IN: parallax.propeller.ddrx
 
@@ -24,8 +24,12 @@ M: ddrx ddr-write
 
 ! a change is applied by external routine
 M: ddrx model-changed
+    break
    [ value>> ] dip
-   ddr-write ;  ! this will change obsevers
+   [ model-value ] keep
+   [ bitor ] dip set-model
+;
+
 
 
 ! Sets the n th bit of DDR to one

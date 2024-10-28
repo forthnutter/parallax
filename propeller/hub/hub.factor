@@ -30,6 +30,10 @@ TUPLE: hub cogs bus ram rom enable lock config ;
 : hub-clock-step ( hub -- )
   drop ;
 
+
+: hub-run-address ( address cogn hub -- )
+    cogs>> cogs-cog-run-address ;
+
 : hub-cog-boot ( hub -- )
   [ rom>> BOOTLOC tail ] keep
   cogs>> cogs-boot ;
@@ -55,6 +59,11 @@ TUPLE: hub cogs bus ram rom enable lock config ;
   ] keep ;
 
 
+! display active cog disasembley
+: hub-cog-alist ( address hub -- vector )
+    cogs>> cogs-alist ;
+
+
 ! list all cogs PC instruction
 : hub-pc-list ( hub -- hub )
   [
@@ -70,15 +79,24 @@ TUPLE: hub cogs bus ram rom enable lock config ;
   ] keep ;
 
 ! let get the INA and display it
-: hub-ina ( hub -- hub )
-  [
-    cogs>> cogs-ina-read
-    [ print ] each
-  ] keep ;
+! : hub-ina ( hub -- hub )
+!  [
+!    cogs>> cogs-ina-read
+!    [ print ] each
+!  ] keep ;
 
 
-: hub-add-output ( model hub -- )
-    cogs>> cogs-add-output ;
+! : hub-add-output ( model hub -- )
+!    cogs>> cogs-outa-connection ;
+
+: hub-dump-cog ( address cogn hub -- vector )
+    cogs>> cogs-dump ;
+
+: hub-ina-hex ( hub -- vector )
+    cogs>> ina-hex ;
+
+: hub-src-dst ( hub -- vector )
+    cogs>> cogs-src-dst ;
 
 
 ! initalise the HUB 

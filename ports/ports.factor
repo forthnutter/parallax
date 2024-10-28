@@ -1,41 +1,67 @@
 ! Pin control starts here
 
 
-USING: accessors arrays kernel models parallax.at24c256
-        sequences ;
+USING: accessors arrays
+    kernel
+  
+    math models
+    parallax.at24c256
+    parallax.propeller.inx
+    parallax.propeller.outx
+    parallax.propeller.ddrx
+    sequences 
+    tools.continuations ;
 
 IN: parallax.ports
 
 
-TUPLE: port < model number ;
+TUPLE: port in out ddr ;
 
 
 
-: <port> ( n -- port )
-    f port new-model
-    swap >>number ;
+! write to in port
+: port-in-write ( n port --  )
+    in>> ?set-model ;
 
+! or value to in port
+: port-in-or ( n port -- )
+    break
+    in>>                    ! n model
+    [ model-value ] keep    ! n value model
+    [ bitor ] dip            ! or model
+    ?set-model
+;
 
-TUPLE: ports array ;
+! and value to in port
+: port-in-and ( n port -- )
+    break
+    in>>            ! n model
+    [ model-value ] keep    ! n value model
+    [ bitand ] dip          ! and model
+    ?set-model
+;
 
-! get the model for pin number n
-: ports-getport ( n port -- model )
-    array>> ?nth ;
+! Read the in value
+: port-in-read ( port -- in )
+    in>> model-value    ! in
+;
 
-! add an observer to pin model
-: ports-observer ( n observer ports -- )
-    [ swap ] dip ! observer n ports
-    ports-getport     ! obsever ports
+: port-add-connection ( observer port -- )
     add-connection ;
 
-: ports-init ( array -- array' )
-    [
-        [ drop ] dip        ! get rid of element
-        <port>
-    ] map-index
-    [ 29 swap nth 0 <24c256> swap add-connection ] keep ;
+! add observer to port
+: port-in-add-connection ( observer port --  )
+    in>> port-add-connection ;
 
-! create the number of bit ports
-: <ports> ( n -- ports )
-    ports new
-    swap f <array> ports-init >>array ;
+! add observer to out port
+: port-out-add-connection ( observer port -- )
+    out>> port-add-connection ;
+
+
+! initilise port object
+: <port> (  -- port )
+    port new
+    -1 <inx> >>in
+    0 <outx> >>out
+    0 <ddrx> >>ddr
+;

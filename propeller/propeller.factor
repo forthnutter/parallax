@@ -82,9 +82,9 @@ TUPLE: propeller hub ;
 : pmain ( -- )
   <cog> stest start drop ;
 
-! need to add moduel to output
-: propeller-add-output ( model propeller --  )
-    hub>> hub-add-output ;
+! need to add module to output
+! : propeller-add-output ( model propeller --  )
+!    hub>> hub-add-output ;
 
 ! kind of a wrapper
 : propeller-step ( propeller -- )
@@ -92,6 +92,21 @@ TUPLE: propeller hub ;
 
 : propeller-pc-alist ( propeller -- )
     hub>> hub-pc-alist drop ;
+
+: propeller-alist ( address propeller -- slist )
+    hub>> hub-cog-alist ;
+
+: propeller-run-address ( address cogn propeller -- )
+    hub>> hub-run-address ;
+
+: propeller-dump-cog ( address cogn propeller -- vector )
+    hub>> hub-dump-cog ;
+
+: propeller-ina-hex ( propeller -- vector )
+    hub>> hub-ina-hex ;
+
+: propeller-src-dst ( propeller -- vector )
+    hub>> hub-src-dst ;
 
 : <propeller> ( -- propeller )
     propeller new

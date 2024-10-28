@@ -3,20 +3,19 @@
 !
 USING: accessors arrays kernel sequences models vectors tools.continuations ;
 
-IN: parallax.propeller.ctrx
+IN: parallax.propeller.cogs.cog.ctrx
 
 TUPLE: ctrx < model ;
 
 
+: ctrx-add-connection ( observer ctrx -- )
+    add-connection ;
 
-M: ctrx model-changed
-   break drop drop ;
-
-: ctrx-dependency ( dep ctrx -- )
+: ctrx-add-dependency ( dep ctrx -- )
     add-dependency ;
 
 
-: <ctrx> ( value -- par )
+: <ctrx> ( value -- ctrx )
    ctrx new-model ;
 
 

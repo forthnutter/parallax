@@ -10,3 +10,5 @@ propeller/assembler/Datasheets/P8X32A/CogMem.bak
 propeller/assembler/Datasheets/P8X32A/LatestProject.dat
 
 propeller/assembler/Datasheets/P8X32A/Processor.bak
+
+*.bkp

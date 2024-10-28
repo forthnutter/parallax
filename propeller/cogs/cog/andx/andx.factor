@@ -2,43 +2,50 @@
 ! See http://factorcode.org/license.txt for BSD license.
 
 
-USING: accessors arrays kernel sequences math models
+USING: accessors arrays combinators kernel sequences math models
    vectors tools.continuations ;
 
-IN: parallax.propeller.orx
+IN: parallax.propeller.cogs.cog.andx
 
-! orx is used as a dependancey
+! andx is used as a dependancey
 ! for the io section of each cog
 ! it is here to OR in comming data to the current value
-TUPLE: orx < model hold vector ;
+TUPLE: andx < model hold vector ;
+
+
+
 
 ! a change is applied by external routine
-M: orx model-changed
+M: andx model-changed
     ! break
     [ vector>> length 0 = ] keep swap
     [
         [ model-value ] dip
         [ hold>> ] keep
-        [ bitor ] dip
+        [ bitand ] dip
         set-model
     ]
     [
         [ drop ] dip
         [ hold>> ] keep
-        [ vector>> [ model-value bitor ] each ] keep
+        [ vector>> [ model-value bitand ] each ] keep
         set-model
-     ] if ;
+    ] if
+;
 
-! add an observer to the orx
-: orx-add-connection ( observer orx -- )
+
+! add an observer to the andx
+: andx-add-connection ( observer andx -- )
     [ swap vector>> push ] 2keep
     add-connection ;
 
-: orx-add-dependency ( dep orx -- )
+: andx-add-dependency ( dep andx -- )
     add-dependency ;
 
+
 ! init this object 
-: <orx> ( value -- model )
-    orx new-model 
-    0 >>hold 
+: <andx> ( value -- andx )
+    ! break
+    andx new-model
+    -1 >>hold
     V{ } clone >>vector ;
