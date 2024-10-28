@@ -34,12 +34,34 @@ TUPLE: alu z c result ;
   [ result>> ] keep swap odd-parity? >>c
 ;
 
-! alu add
+! alu or
 : alu-or ( a b alu -- alu )
   [ bitor ] dip swap >>result
   [ result>> ] keep swap 0 = >>z
   [ result>> ] keep swap odd-parity? >>c
 ;
+
+! alu xor
+: alu-xor ( a b alu -- alu )
+  [ bitxor ] dip swap >>result
+  [ result>> ] keep swap 0 = >>z
+  [ result>> ] keep swap odd-parity? >>c
+;
+
+! MUXC sets each bit of the value in Destination, which corresponds to Mask’s high (1) bits,
+! to the C state. All bits of Destination that are not targeted by high (1) bits of Mask are
+! unaffected.
+! If the WZ effect is specified, the Z flag is set (1) if Destination’s final value is 0.
+! If the WC effect is specified, the C flag is set (1) if the resulting Destination contains
+! an odd number of high (1) bits.
+: alu-muxc ( a b alu -- alu )
+    [ alu-c ] keep swap
+    [ [ mask ] dip ] [ [ bitnot mask ] dip ] if
+    swap >>result
+    [ result>> ] keep swap 0 = >>z 
+    [ result>> ] keep swap odd-parity? >>c 
+;
+
 
 
 ! alu update flags and result
