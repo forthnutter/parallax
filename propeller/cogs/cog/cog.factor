@@ -409,10 +409,19 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ source>> ] keep
     alu>> alu-sub drop ;
 
+
+
+! do a cog shift left 
+: cog-shl ( cog -- )
+    [ dest>> ] keep
+    [ source>> ] keep
+    alu>> alu-shl drop ;
+
 : cog-exec-condition ( cog -- )
   ! break
   [ cog-isn-code ] keep swap
   {
+    { 0x0B [ cog-shl  ] }
     { 0x17 [ cog-jump ] }
     { 0x18 [ cog-and  ] }
     { 0x19 [ cog-andn ] }

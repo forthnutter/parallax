@@ -1,6 +1,7 @@
 ! ALU words for parallax Propeller
 
-USING: kernel accessors math math.bitwise ;
+USING: kernel accessors math math.bitwise 
+    tools.continuations ;
 
 IN: parallax.propeller.cogs.alu
 
@@ -85,6 +86,15 @@ TUPLE: alu z c result ;
   [ 32 >signed abs ] dip swap >>result
   [ drop ] dip
   [ result>> ] keep swap 0 = >>z ;
+
+! shift left function
+: alu-shl ( a b alu -- alu )
+    break
+    [ shift ] dip swap >>result
+    [ result>> ] keep swap 0 = >>z 
+    [ result>> ] keep swap 32 bit? >>c 
+;
+
 
 ! make a ALU Tuple to store stuff in
 : <alu> ( -- alu )
