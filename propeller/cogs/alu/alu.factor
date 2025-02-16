@@ -95,6 +95,11 @@ TUPLE: alu z c result ;
     [ result>> ] keep swap 32 bit? >>c 
 ;
 
+! Rotate carry left function
+: alu-rcl ( a b alu -- alu )
+    break
+;
+
 
 ! make a ALU Tuple to store stuff in
 : <alu> ( -- alu )

@@ -24,8 +24,11 @@ TUPLE: parallax propeller at24 ;
 : x ( parallax -- parallax )
     [ propeller>> propeller-pc-alist ] keep ;
 
-: r ( address cogn parallax -- parallax )
-    [ propeller>> propeller-run-address ] keep ;
+: r ( parallax address cogn -- parallax )
+    [
+        [ propeller>> ] 2dip [ swap ] dip ! address prop cogn
+        swap propeller-run-address
+    ] 3keep 2drop ;
 
 : l ( parallax address -- parallax )
     swap
