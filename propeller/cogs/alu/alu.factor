@@ -7,7 +7,7 @@ IN: parallax.propeller.cogs.alu
 
 
 
-TUPLE: alu z c result ;
+TUPLE: alu z c result lc ;
 
 
 ! return the z status
@@ -98,6 +98,16 @@ TUPLE: alu z c result ;
 ! Rotate carry left function
 : alu-rcl ( a b alu -- alu )
     break
+    [ shift ] dip swap >>result
+    [ result>> 32 bits ] keep swap 0 = >>z
+    [ c>> ] keep swap 
+    [ 
+        [ result>> 0 set-bit ] keep
+    ]
+    [
+        [ result>> 0 clear-bit ] keep
+     ] if
+    [ result<< ] keep
 ;
 
 

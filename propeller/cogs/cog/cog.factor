@@ -417,11 +417,17 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ source>> ] keep
     alu>> alu-shl drop ;
 
+: cog-rcl ( cog -- )
+    [ dest>> ] keep
+    [ source>> ] keep
+    alu>> alu-rcl drop ;
+
 : cog-exec-condition ( cog -- )
   ! break
   [ cog-isn-code ] keep swap
   {
     { 0x0B [ cog-shl  ] }
+    { 0x0D [ cog-rcl  ] }
     { 0x17 [ cog-jump ] }
     { 0x18 [ cog-and  ] }
     { 0x19 [ cog-andn ] }
