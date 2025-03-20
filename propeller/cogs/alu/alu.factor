@@ -98,6 +98,7 @@ TUPLE: alu z c result lc ;
 ! Rotate carry left function
 : alu-rcl ( a b alu -- alu )
     break
+    [ 31 ] 2dip
     [ shift ] dip swap >>result
     [ result>> 32 bits ] keep swap 0 = >>z
     [ c>> ] keep swap 
