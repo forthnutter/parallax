@@ -380,6 +380,11 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [  [ dest>> ] [ source>> ] bi ] keep
     alu>> alu-muxc drop ;
 
+! Set discrete bits of a value to the state of Z
+: cog-muxz ( cog -- )
+    [  [ dest>> ] [ source>> ] bi ] keep
+    alu>> alu-muxz drop ;
+
 ! multi function jump can return 
 : cog-jump ( cog -- )
   [ dest>> 0b111111111 unmask ] keep
@@ -434,6 +439,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     { 0x1A [ cog-or   ] }
     { 0x1B [ cog-xor  ] }
     { 0x1C [ cog-muxc ] }
+    { 0x1E [ cog-muxz ] }
     { 0x28 [ cog-mov  ] }
     { CABS [ cog-abs  ] }
     { CSUB [ cog-sub  ] }

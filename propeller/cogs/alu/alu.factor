@@ -63,6 +63,20 @@ TUPLE: alu z c result lc ;
     [ result>> ] keep swap odd-parity? >>c 
 ;
 
+! MUXZ sets each bit of the value in Destination, which corresponds to Mask’s high (1) bits,
+! to the Z state. All bits of Destination that are not targeted by high (1) bits of Mask are
+! unaffected.
+! If the WZ effect is specified, the Z flag is set (1) if Destination’s final value is 0.
+! If the WC effect is specified, the C flag is set (1) if the resulting Destination contains
+! an odd number of high (1) bits.
+: alu-muxz ( a b alu -- alu )
+    break
+    [ alu-z ] keep swap
+    [ [ mask ] dip ] [ [ bitnot mask ] dip ] if
+    swap >>result
+    [ result>> ] keep swap 0 = >>z 
+    [ result>> ] keep swap odd-parity? >>c 
+;
 
 
 ! alu update flags and result
@@ -89,7 +103,6 @@ TUPLE: alu z c result lc ;
 
 ! shift left function
 : alu-shl ( a b alu -- alu )
-    break
     [ shift ] dip swap >>result
     [ result>> ] keep swap 0 = >>z 
     [ result>> ] keep swap 32 bit? >>c 
@@ -97,18 +110,13 @@ TUPLE: alu z c result lc ;
 
 ! Rotate carry left function
 : alu-rcl ( a b alu -- alu )
-    break
-    [ 31 ] 2dip
-    [ shift ] dip swap >>result
-    [ result>> 32 bits ] keep swap 0 = >>z
-    [ c>> ] keep swap 
-    [ 
-        [ result>> 0 set-bit ] keep
-    ]
-    [
-        [ result>> 0 clear-bit ] keep
-     ] if
-    [ result<< ] keep
+    [ dup 31 bit? ] 2dip [ [ swap ] dip lc<< ] keep ! here we save bit 31
+    [ c>> ] keep swap       ! now get the carry flag
+    [ [ 0xFFFFFFFF00000000 bitor ] 2dip ] ! this should work
+    [ [ 0x00000000FFFFFFFF bitand ] 2dip ] ! rotate carry bits into lsb
+    if 
+    [ bitroll-64 32 bits ] dip swap >>result
+    [ result>> ] keep swap 0 = >>z
 ;
 
 
