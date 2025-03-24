@@ -116,7 +116,7 @@ TUPLE: cogdasm labels ;
 ;
 
 : opcode-subcode ( code -- $/? )
-    break
+    ! break
     dup 0 = 
     [ drop "NOP" ]
     [ 

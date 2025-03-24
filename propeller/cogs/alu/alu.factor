@@ -1,12 +1,13 @@
 ! ALU words for parallax Propeller
 
-USING: kernel accessors math math.bitwise ;
+USING: kernel accessors math math.bitwise 
+    tools.continuations ;
 
 IN: parallax.propeller.cogs.alu
 
 
 
-TUPLE: alu z c result ;
+TUPLE: alu z c result lc ;
 
 
 ! return the z status
@@ -34,11 +35,46 @@ TUPLE: alu z c result ;
   [ result>> ] keep swap odd-parity? >>c
 ;
 
-! alu add
+! alu or
 : alu-or ( a b alu -- alu )
   [ bitor ] dip swap >>result
   [ result>> ] keep swap 0 = >>z
   [ result>> ] keep swap odd-parity? >>c
+;
+
+! alu xor
+: alu-xor ( a b alu -- alu )
+  [ bitxor ] dip swap >>result
+  [ result>> ] keep swap 0 = >>z
+  [ result>> ] keep swap odd-parity? >>c
+;
+
+! MUXC sets each bit of the value in Destination, which corresponds to Mask’s high (1) bits,
+! to the C state. All bits of Destination that are not targeted by high (1) bits of Mask are
+! unaffected.
+! If the WZ effect is specified, the Z flag is set (1) if Destination’s final value is 0.
+! If the WC effect is specified, the C flag is set (1) if the resulting Destination contains
+! an odd number of high (1) bits.
+: alu-muxc ( a b alu -- alu )
+    [ alu-c ] keep swap
+    [ [ mask ] dip ] [ [ bitnot mask ] dip ] if
+    swap >>result
+    [ result>> ] keep swap 0 = >>z 
+    [ result>> ] keep swap odd-parity? >>c 
+;
+
+! MUXZ sets each bit of the value in Destination, which corresponds to Mask’s high (1) bits,
+! to the Z state. All bits of Destination that are not targeted by high (1) bits of Mask are
+! unaffected.
+! If the WZ effect is specified, the Z flag is set (1) if Destination’s final value is 0.
+! If the WC effect is specified, the C flag is set (1) if the resulting Destination contains
+! an odd number of high (1) bits.
+: alu-muxz ( a b alu -- alu )
+    [ alu-z ] keep swap
+    [ [ mask ] dip ] [ [ bitnot mask ] dip ] if
+    swap >>result
+    [ result>> ] keep swap 0 = >>z 
+    [ result>> ] keep swap odd-parity? >>c 
 ;
 
 
@@ -63,6 +99,25 @@ TUPLE: alu z c result ;
   [ 32 >signed abs ] dip swap >>result
   [ drop ] dip
   [ result>> ] keep swap 0 = >>z ;
+
+! shift left function
+: alu-shl ( a b alu -- alu )
+    [ shift ] dip swap >>result
+    [ result>> ] keep swap 0 = >>z 
+    [ result>> ] keep swap 32 bit? >>c 
+;
+
+! Rotate carry left function
+: alu-rcl ( a b alu -- alu )
+    [ dup 31 bit? ] 2dip [ [ swap ] dip lc<< ] keep ! here we save bit 31
+    [ c>> ] keep swap       ! now get the carry flag
+    [ [ 0xFFFFFFFF00000000 bitor ] 2dip ] ! this should work
+    [ [ 0x00000000FFFFFFFF bitand ] 2dip ] ! rotate carry bits into lsb
+    if 
+    [ bitroll-64 32 bits ] dip swap >>result
+    [ result>> ] keep swap 0 = >>z
+;
+
 
 ! make a ALU Tuple to store stuff in
 : <alu> ( -- alu )

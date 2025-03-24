@@ -74,13 +74,13 @@ CONSTANT: ALLWAYS      15
 
 ! CONSTANT: CJMP         23   ! 0x17
 ! CONSTANT: CALL         23
-CONSTANT: CJMPRET      23
-CONSTANT: CRET         23
-CONSTANT: CAND         24   ! 0x18
-CONSTANT: CTEST        24
-CONSTANT: CANDN        25   ! 0x19
-CONSTANT: COR          26   ! 0x1A
-CONSTANT: CXOR         27   ! 0x1B
+! CONSTANT: CJMPRET      23
+! CONSTANT: CRET         23
+! CONSTANT: CAND         24   ! 0x18
+! CONSTANT: CTEST        24
+! CONSTANT: CANDN        25   ! 0x19
+! CONSTANT: COR          26   ! 0x1A
+! CONSTANT: CXOR         27   ! 0x1B
 CONSTANT: CMUXC         28  ! 0x1C
 CONSTANT: CMUXNC        29  ! 0x1D
 CONSTANT: CMUXZ         30  ! 0x1E
@@ -370,6 +370,21 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   [ [ dest>> ] [ source>> ] bi ] keep
   alu>> alu-or drop ;
 
+! xor function for cog
+: cog-xor ( cog -- )
+    [ [ dest>> ] [ source>> ] bi ] keep
+    alu>> alu-xor drop ;
+
+! Set discrete bits of a value to the state of C
+: cog-muxc ( cog -- )
+    [  [ dest>> ] [ source>> ] bi ] keep
+    alu>> alu-muxc drop ;
+
+! Set discrete bits of a value to the state of Z
+: cog-muxz ( cog -- )
+    [  [ dest>> ] [ source>> ] bi ] keep
+    alu>> alu-muxz drop ;
+
 ! multi function jump can return 
 : cog-jump ( cog -- )
   [ dest>> 0b111111111 unmask ] keep
@@ -399,19 +414,38 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ source>> ] keep
     alu>> alu-sub drop ;
 
+
+
+! do a cog shift left 
+: cog-shl ( cog -- )
+    [ dest>> ] keep
+    [ source>> ] keep
+    alu>> alu-shl drop ;
+
+: cog-rcl ( cog -- )
+    [ dest>> ] keep
+    [ source>> ] keep
+    alu>> alu-rcl drop ;
+
 : cog-exec-condition ( cog -- )
   ! break
   [ cog-isn-code ] keep swap
   {
+    { 0x0B [ cog-shl  ] }
+    { 0x0D [ cog-rcl  ] }
     { 0x17 [ cog-jump ] }
-    { CAND [ cog-and ] }
-    { CANDN [ cog-andn ] }
-    { COR [ cog-or ] }
-    { CMOV [ cog-mov ] }
-    { CABS [ cog-abs ] }
-    { CSUB [ cog-sub ] }
+    { 0x18 [ cog-and  ] }
+    { 0x19 [ cog-andn ] }
+    { 0x1A [ cog-or   ] }
+    { 0x1B [ cog-xor  ] }
+    { 0x1C [ cog-muxc ] }
+    { 0x1E [ cog-muxz ] }
+    { 0x28 [ cog-mov  ] }
+    { CABS [ cog-abs  ] }
+    { CSUB [ cog-sub  ] }
     { CDJNZ [ cog-djnz ] }
     [ break drop drop ]
+!    [ drop drop ]
   } case
 ;
 
@@ -871,7 +905,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ at ] dip          ! ? cog
     swap                ! cog ?
     [
-        break
+!        break
         [ cog-subcode ] keep       ! string cog
         swap                        ! cog string
     ] unless*
@@ -959,7 +993,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 !    [ at ] dip          ! ? cog
     swap                ! cog ?
     [
-        break
+!        break
         [ cog-subcode ] keep       ! string cog
         swap                        ! cog string
     ] unless*
