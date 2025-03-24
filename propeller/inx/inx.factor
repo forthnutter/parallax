@@ -16,7 +16,7 @@ TUPLE: inx < model bits ;
 
 ! a change is applied by external routine
 M: inx model-changed
-   break
+!   break
    [ model-value ] dip
    set-model ;
    

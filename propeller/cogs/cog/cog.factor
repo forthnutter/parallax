@@ -445,6 +445,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     { CSUB [ cog-sub  ] }
     { CDJNZ [ cog-djnz ] }
     [ break drop drop ]
+!    [ drop drop ]
   } case
 ;
 
@@ -904,7 +905,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ at ] dip          ! ? cog
     swap                ! cog ?
     [
-        break
+!        break
         [ cog-subcode ] keep       ! string cog
         swap                        ! cog string
     ] unless*
@@ -992,7 +993,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 !    [ at ] dip          ! ? cog
     swap                ! cog ?
     [
-        break
+!        break
         [ cog-subcode ] keep       ! string cog
         swap                        ! cog string
     ] unless*

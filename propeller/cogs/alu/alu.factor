@@ -70,7 +70,6 @@ TUPLE: alu z c result lc ;
 ! If the WC effect is specified, the C flag is set (1) if the resulting Destination contains
 ! an odd number of high (1) bits.
 : alu-muxz ( a b alu -- alu )
-    break
     [ alu-z ] keep swap
     [ [ mask ] dip ] [ [ bitnot mask ] dip ] if
     swap >>result

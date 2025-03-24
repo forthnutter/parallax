@@ -13,7 +13,7 @@ IN: parallax.propeller.xin
 TUPLE: xin < model out ddr in ;
 
 M: xin model-changed
-    break
+!    break
     [ drop ] dip
     [ [ out>> ] [ ddr>> ] [ in>> ] tri ] keep
     [ or or ] dip swap
