@@ -95,6 +95,8 @@ TUPLE: cogdasm labels ;
   [ flag-r$ " " append ] keep [ append ] dip
   flag-imd$ " " append append "}" append ;
 
+
+! Extract that opcode
 : opcode-exstract ( d -- op )
   31 26 bit-range ;
 
@@ -124,6 +126,24 @@ TUPLE: cogdasm labels ;
         [ drop "ERROR" ] unless
     ] if
   ;
+
+: hub-opcode$ ( code -- $/? )
+    break
+    source-exstract 3 bits
+    H{
+        { 0 "CLKSET" }
+        { 1 "COGID" }
+        { 2 "COGINIT" }
+        { 3 "COGSTOP" }
+        { 4 "LOCKNEW" }
+        { 5 "LOCKRET" }
+        { 6 "LOCKSET" }
+        { 7 "LOCKCLR" }
+    } at
+;
+
+
+
 
 : opcode-exstract$ ( code -- $/? )
   [ opcode-exstract ] keep swap
