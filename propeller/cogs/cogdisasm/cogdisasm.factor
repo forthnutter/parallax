@@ -118,7 +118,7 @@ TUPLE: cogdasm labels ;
 ;
 
 : opcode-subcode ( code -- $/? )
-    ! break
+    break
     dup 0 = 
     [ drop "NOP" ]
     [ 
@@ -127,20 +127,6 @@ TUPLE: cogdasm labels ;
     ] if
   ;
 
-: hub-opcode$ ( code -- $/? )
-    break
-    source-exstract 3 bits
-    H{
-        { 0 "CLKSET" }
-        { 1 "COGID" }
-        { 2 "COGINIT" }
-        { 3 "COGSTOP" }
-        { 4 "LOCKNEW" }
-        { 5 "LOCKRET" }
-        { 6 "LOCKSET" }
-        { 7 "LOCKCLR" }
-    } at
-;
 
 
 
@@ -149,7 +135,8 @@ TUPLE: cogdasm labels ;
   [ opcode-exstract ] keep swap
   H{
     { 1 "DWORD" } { 2 "DLONG" }
-    { 3 "SYSOP" } { 8 "ROR" }
+!    { 3 "SYSOP" }
+    { 8 "ROR" }
     { 9 "ROL" } { 10 "SHR" } { 11 "SHL" }
     { 12 "RCR" } { 13 "RCL" } { 14 "SAR" }
     { 15 "REV" } { 16 "MINS" } { 17 "MAXS" }

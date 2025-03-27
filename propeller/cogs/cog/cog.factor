@@ -839,7 +839,8 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 : cog-mnuemonic ( -- hash )
   H{
     { 1 "DWORD" } { 2 "DLONG" }
-    { 3 "SYSOP" } { 8 "ROR" }
+!    { 3 "SYSOP" }
+    { 8 "ROR" }
     { 9 "ROL" } { 10 "SHR" } { 11 "SHL" }
     { 12 "RCR" } { 13 "RCL" } { 14 "SAR" }
     { 15 "REV" } { 16 "MINS" } { 17 "MAXS" }
@@ -880,6 +881,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     ] if
 ;
 
+
 : cog-subcode ( cog -- $/? )
     cog-isn opcode  ! code
     dup         ! code code
@@ -889,7 +891,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
         "NOP"   ! string
     ]
     [
-        ! code
+        break
         [ code-sub-test ] keep  ! string code
         swap                    ! code string
         [ drop "ERROR" ] unless
@@ -986,18 +988,40 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
   [ flag-r-string " " append ] keep [ append ] dip
   flag-imd-string " " append append "} " append ;
 
+
+! source destination condition flags opcode
+: isn-source ( isn -- source )
+  9 bits ;
+
+
+
+! we need the instruction to decode
+: isn-subcode$ ( isn -- $/? )
+    break
+    isn-source 3 bits
+    H{
+        { 0 "CLKSET" }
+        { 1 "COGID" }
+        { 2 "COGINIT" }
+        { 3 "COGSTOP" }
+        { 4 "LOCKNEW" }
+        { 5 "LOCKRET" }
+        { 6 "LOCKSET" }
+        { 7 "LOCKCLR" }
+    } at
+;
+
+
+
 ! find out if the current address has a label
 : mnuemonic-string ( isn cog -- $/? )
-    [ opcode ] dip      ! opcode cog
-    [ hashmneu>> at ] keep ! code hash cog
-!    [ at ] dip          ! ? cog
-    swap                ! cog ?
-    [
-!        break
-        [ cog-subcode ] keep       ! string cog
-        swap                        ! cog string
-    ] unless*
-    [ drop ] dip
+!    break
+    [ [ opcode ] keep swap ] dip swap     ! isn cog opcode
+    {
+        { 0 [ cog-subcode drop ] }
+        { 3 [ break swap isn-subcode$ swap drop ] }
+        [ swap hashmneu>> at swap drop ] 
+    } case
 ;
 
 
@@ -1024,7 +1048,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 ! Need to execute the cog to an address
 : cog-execute-address ( address cog -- )
-    break
+    ! break
     [ [ pcold>> = ] 2keep rot ]
     [ [ cog-execute-cycle ] keep ] until drop drop ;
 
