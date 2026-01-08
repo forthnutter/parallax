@@ -782,7 +782,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 ! flags display
 : flag-imd-string ( isn -- $ )
-    flag-imd [ "<#>" ] [ " " ] if ;
+    flag-imd [ "<#>" ] [ "  " ] if ;
 
 ! read or write flag
 : flag-r ( isn -- ? )
@@ -790,7 +790,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 
 ! string r flag
 : flag-r-string ( isn --  $ )
-    flag-r [ "WR" ] [ " " ] if ;
+    flag-r [ "WR" ] [ "  " ] if ;
 
 ! carry flag
 : flag-c ( isn -- ? )
@@ -1018,7 +1018,7 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
 !    break
     [ [ opcode ] keep swap ] dip swap     ! isn cog opcode
     {
-        { 0 [ cog-subcode drop ] }
+        { 0 [ cog-subcode swap drop ] }
         { 3 [ break swap isn-subcode$ swap drop ] }
         [ swap hashmneu>> at swap drop ] 
     } case

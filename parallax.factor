@@ -44,6 +44,7 @@ TUPLE: parallax propeller at24 ;
         [ print ] each
     ] 3keep 2drop ;
 
+
 ! display ina port hex
 : ina ( parallax -- parallax )
     [ propeller>> propeller-ina-hex print ] keep ;
