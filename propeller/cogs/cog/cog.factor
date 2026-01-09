@@ -72,6 +72,7 @@ CONSTANT: IF_Z_OR_C    14
 CONSTANT: IF_BE        14
 CONSTANT: ALLWAYS      15
 
+CONSTANT: COG_HUBOP     3       ! 0x03
 ! CONSTANT: CJMP         23   ! 0x17
 ! CONSTANT: CALL         23
 ! CONSTANT: CJMPRET      23
@@ -426,11 +427,15 @@ TUPLE: cog n pc pcold alu z c memory state isn fisn
     [ dest>> ] keep
     [ source>> ] keep
     alu>> alu-rcl drop ;
+    
+: cog-hubop ( cog -- )
+    drop ; ! need to do something 
 
 : cog-exec-condition ( cog -- )
   ! break
   [ cog-isn-code ] keep swap
   {
+    { COG_HUBOP [ break cog-hubop ] }     ! hub operation
     { 0x0B [ cog-shl  ] }
     { 0x0D [ cog-rcl  ] }
     { 0x17 [ cog-jump ] }

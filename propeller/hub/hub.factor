@@ -98,12 +98,12 @@ TUPLE: hub cogs bus ram rom enable lock config ;
 : hub-src-dst ( hub -- vector )
     cogs>> cogs-src-dst ;
 
-
+! spin vm and loader Plus math tables and character fonts
+! needs to be loaded into ROM to be loaded into cog memory
 ! initalise the HUB 
 : <hub> ( -- hub )
   hub new
-  ! spin vm and loader Plus math tables and character fonts
-  ! needs to be loaded into ROM to be loaded into cog memory
+
   "work/parallax/propeller/hub/StartupROM.bin" <binfile> >>rom
   RAMSIZE <byte-array> >>ram  ! ram needed for user programs
   <cogs> >>cogs ! cogs is seperate class

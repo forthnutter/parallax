@@ -49,6 +49,7 @@ TUPLE: parallax propeller at24 ;
 : ina ( parallax -- parallax )
     [ propeller>> propeller-ina-hex print ] keep ;
 
+! display contence of source and desination
 : sd ( parallax -- parallax )
     [ propeller>> propeller-src-dst [ print ] each ] keep ;
 
