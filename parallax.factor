@@ -30,6 +30,7 @@ TUPLE: parallax propeller at24 ;
         swap propeller-run-address
     ] 3keep 2drop ;
 
+! list the instruction from address
 : l ( parallax address -- parallax )
     swap
     [
