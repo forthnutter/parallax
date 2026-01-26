@@ -6,7 +6,9 @@ USING: accessors math math.bitwise make kernel literals byte-arrays binfile
   parallax.propeller.cogs parallax.propeller.inx
   arrays namespaces
   intel.hex bit-arrays bit-vectors io
+  calendar threads
  ;
+ 
 IN: parallax.propeller.hub
 
 CONSTANT: ROMSIZE 32768
@@ -14,7 +16,7 @@ CONSTANT: BOOTLOC 0x7800   ! $F800
 CONSTANT: RAMSIZE 32768
 
 
-TUPLE: hub cogs bus ram rom enable lock config ;
+TUPLE: hub cogs bus ram rom enable lock config end ;
 
 
 
@@ -98,15 +100,27 @@ TUPLE: hub cogs bus ram rom enable lock config ;
 : hub-src-dst ( hub -- vector )
     cogs>> cogs-src-dst ;
 
+
+! hub function run from a thread
+: hub-thread ( hub -- )
+    [
+        [ [ end>> ] keep swap ]
+        [
+            10 milliseconds sleep
+        ] until
+    ] curry "HUB-THREAD" spawn drop ;
+
 ! spin vm and loader Plus math tables and character fonts
 ! needs to be loaded into ROM to be loaded into cog memory
 ! initalise the HUB 
 : <hub> ( -- hub )
-  hub new
-
-  "work/parallax/propeller/hub/StartupROM.bin" <binfile> >>rom
-  RAMSIZE <byte-array> >>ram  ! ram needed for user programs
-  <cogs> >>cogs ! cogs is seperate class
-  [ hub-cog-boot ] keep   ! boot cog 0 to start loader
-  hub-step  ! do a cog cycle to init cog state
- ;
+    break
+    hub new
+    f >>end         ! tells the tread to end
+    "work/parallax/propeller/hub/StartupROM.bin" <binfile> >>rom    ! read in the startup rom
+    RAMSIZE <byte-array> >>ram    ! ram needed for user programs
+    <cogs> >>cogs ! cogs is seperate class
+    [ hub-cog-boot ] keep   ! boot cog 0 to start loader
+    hub-step  ! do a cog cycle to init cog state
+    [ hub-thread ] keep     ! run thread
+;
