@@ -30,6 +30,7 @@ TUPLE: parallax propeller at24 ;
         swap propeller-run-address
     ] 3keep 2drop ;
 
+! list the instruction from address
 : l ( parallax address -- parallax )
     swap
     [
@@ -44,10 +45,12 @@ TUPLE: parallax propeller at24 ;
         [ print ] each
     ] 3keep 2drop ;
 
+
 ! display ina port hex
 : ina ( parallax -- parallax )
     [ propeller>> propeller-ina-hex print ] keep ;
 
+! display contence of source and desination
 : sd ( parallax -- parallax )
     [ propeller>> propeller-src-dst [ print ] each ] keep ;
 
