@@ -6,7 +6,7 @@ USING: accessors math math.bitwise make kernel literals byte-arrays binfile
   parallax.propeller.cogs parallax.propeller.inx
   arrays namespaces
   intel.hex bit-arrays bit-vectors io
-  calendar threads
+  calendar threads concurrency.mailboxes
  ;
  
 IN: parallax.propeller.hub
@@ -16,7 +16,8 @@ CONSTANT: BOOTLOC 0x7800   ! $F800
 CONSTANT: RAMSIZE 32768
 
 
-TUPLE: hub cogs bus ram rom enable lock config end ;
+TUPLE: hub cogs bus ram rom enable lock config end receiver
+;
 
 
 
@@ -100,13 +101,19 @@ TUPLE: hub cogs bus ram rom enable lock config end ;
 : hub-src-dst ( hub -- vector )
     cogs>> cogs-src-dst ;
 
+: hub-message ( hub data -- hub )
+    break
+    drop ;
 
 ! hub function run from a thread
 : hub-thread ( hub -- )
+    break
     [
         [ [ end>> ] keep swap ]
         [
-            10 milliseconds sleep
+            [ break receiver>> 10 milliseconds mailbox-get-timeout ] keep swap
+            hub-message
+            ! 10 milliseconds sleep
         ] until
     ] curry "HUB-THREAD" spawn drop ;
 
@@ -117,6 +124,7 @@ TUPLE: hub cogs bus ram rom enable lock config end ;
     break
     hub new
     f >>end         ! tells the tread to end
+    <mailbox> >>receiver
     "work/parallax/propeller/hub/StartupROM.bin" <binfile> >>rom    ! read in the startup rom
     RAMSIZE <byte-array> >>ram    ! ram needed for user programs
     <cogs> >>cogs ! cogs is seperate class
