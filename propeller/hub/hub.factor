@@ -107,7 +107,6 @@ TUPLE: hub cogs bus ram rom enable lock config end receiver
 
 ! hub function run from a thread
 : hub-thread ( hub -- )
-    break
     [
         [ [ end>> ] keep swap ]
         [
@@ -115,6 +114,7 @@ TUPLE: hub cogs bus ram rom enable lock config end receiver
             hub-message
             ! 10 milliseconds sleep
         ] until
+        break
     ] curry "HUB-THREAD" spawn drop ;
 
 ! spin vm and loader Plus math tables and character fonts
