@@ -105,17 +105,26 @@ TUPLE: hub cogs bus ram rom enable lock config end receiver
     break
     drop ;
 
+
+! lets process the hub that runs in a concurrent loop
+: hub-process ( hub -- )
+  break
+  dup end>>
+  [
+    ! it is the end of the world as we know it
+    drop
+  ]
+  [
+    [ receiver>> 10 milliseconds mailbox-get-timeout hub-message ] keep
+    break hub-process
+  ] if
+;
+
+
 ! hub function run from a thread
 : hub-thread ( hub -- )
-    [
-        [ [ end>> ] keep swap ]
-        [
-            [ break receiver>> 10 milliseconds mailbox-get-timeout ] keep swap
-            hub-message
-            ! 10 milliseconds sleep
-        ] until
-        break
-    ] curry "HUB-THREAD" spawn drop ;
+  [ hub-process ] curry
+  "HUB-THREAD" spawn drop ;
 
 ! spin vm and loader Plus math tables and character fonts
 ! needs to be loaded into ROM to be loaded into cog memory
